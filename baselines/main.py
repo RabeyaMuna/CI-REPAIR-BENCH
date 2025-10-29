@@ -5,6 +5,8 @@ import subprocess
 from omegaconf import OmegaConf
 from dotenv import load_dotenv
 from datasets import load_dataset
+from ci_repair.ci_log_analyzer import CILogAnalyzer
+from utilities.ensure_repo import ensure_repo_at_commit
 
 load_dotenv()
 
@@ -28,16 +30,14 @@ def process_entire_dataset(dataset, config):
         
         print(f" Proceed with the commit: {sha_fail}")
         
-        subprocess.run(["git", "reset", "--hard", sha_fail], cwd=repo_path, check=True)
-        subprocess.run(["git", "clean", "-fd"], cwd=repo_path, check=True)
-        subprocess.run(["git", "checkout", sha_fail], cwd=repo_path, check=True)
+        ensure_repo_at_commit(repo_url, repo_path, sha_fail)
 
         try:
             log_analysis_result = CILogAnalyzer(repo_path, logs, sha_fail, workflow, workflow_path).run()
             
             error_details.append(log_analysis_result)
 
-            with open(os.path.join(config.out_folder, "generated_filtered_log_error.json"), "w") as f:
+            with open(os.path.join(config.project_result_dir, "log_details.json"), "w") as f:
                 json.dump(error_details, f, indent=4)
 
         except Exception as e:
@@ -49,7 +49,7 @@ def process_entire_dataset(dataset, config):
 
 
 if __name__ == "__main__":
-    config_path = os.path.join(os.path.dirname(__file__), "config.yml")
+    config_path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")
     config = OmegaConf.load(config_path)
     # Construct dataset path dynamically
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # one level up from ci-build-repair-project

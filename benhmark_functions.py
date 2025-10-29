@@ -8,6 +8,57 @@ from git import GitCommandError
 from ruamel.yaml import YAML
 
 
+replacement_map = {
+        "ubuntu-20.04": "ubuntu-latest",
+        "ubuntu-latest-unit-tester": "ubuntu-latest"
+    }
+
+def has_deprecated_runner(workflow_file):
+    """
+    Checks whether the workflow contains any deprecated runners.
+    Returns:
+        (True, deprecated_runner)  → if a deprecated runner is found
+        (False, None)              → if no deprecated runners are found
+    """
+    yaml = YAML()
+
+    with open(workflow_file, "r", encoding="utf-8") as f:
+        yaml_data = yaml.load(f)
+
+    if not isinstance(yaml_data, dict) or "jobs" not in yaml_data:
+        return False, None
+
+    for job_name, job in yaml_data.get("jobs", {}).items():
+        # --- Check runs-on ---
+        runner = job.get("runs-on")
+        if isinstance(runner, str):
+            lower = runner.lower()
+            if lower in replacement_map:
+                print(f"[FOUND] Deprecated runner in job '{job_name}': {runner}")
+                return True, lower
+        elif isinstance(runner, list):
+            for r in runner:
+                lower = str(r).lower()
+                if lower in replacement_map:
+                    print(f"[FOUND] Deprecated runner in job '{job_name}': {r}")
+                    return True, lower
+
+        # --- Check strategy.matrix.os ---
+        strategy = job.get("strategy")
+        if strategy and isinstance(strategy, dict):
+            matrix = strategy.get("matrix")
+            if matrix and isinstance(matrix, dict) and "os" in matrix:
+                os_list = matrix["os"]
+                if isinstance(os_list, list):
+                    for os_val in os_list:
+                        lower = str(os_val).lower()
+                        if lower in replacement_map:
+                            print(f"[FOUND] Deprecated matrix OS in job '{job_name}': {os_val}")
+                            return True, lower
+
+    return False, None
+
+    
 def edit_workflow_push(workflow_file):
     """
     editing workflow.yaml so, that it would be run on push
@@ -57,78 +108,50 @@ def delete_unreferenced_workflows(workflow_dir, referenced_files):
             except Exception as e:
                 print(f"[WARN] Could not delete {filename}: {e}")
 
-def detect_and_normalize_runners(workflow_file, replace=True):
+def detect_and_normalize_runners(workflow_file, keyword):
     """
-    Detects deprecated GitHub-hosted runners in a workflow YAML file.
-    If `replace=True`, fixes them in place while preserving YAML formatting.
-    Returns:
-        True  → if deprecated runners were found (and optionally replaced)
-        False → if no deprecated runners were found
+    Replaces all occurrences of a specific deprecated GitHub-hosted runner
+    in a workflow YAML file with its replacement, preserving other values
+    and the exact structure/formatting.
+
+    Args:
+        workflow_file (str): Path to the YAML workflow file.
+        keyword (str): The deprecated runner keyword to replace.
     """
     yaml = YAML()
-
+    yaml.preserve_quotes = True
+    
     with open(workflow_file, "r", encoding="utf-8") as f:
         yaml_data = yaml.load(f)
 
-    if not isinstance(yaml_data, dict) or "jobs" not in yaml_data:
-        return False
-
-    replacement_map = {
-        "ubuntu-16.04": "ubuntu-22.04",
-        "ubuntu-18.04": "ubuntu-22.04",
-        "ubuntu-20.04": "ubuntu-latest",
-        "windows-2019": "windows-latest",
-        "macos-13": "macos-latest",
-        "ubuntu-latest-unit-tester": "ubuntu-latest"
-    }
-
-    deprecated_found = False
+    keyword_lower = keyword.lower()
+    replacement = replacement_map[keyword_lower]
 
     for job_name, job in yaml_data.get("jobs", {}).items():
-        # --- Case 1: runs-on ---
+        # --- Replace in runs-on ---
         runner = job.get("runs-on")
         if isinstance(runner, str):
-            lower = runner.lower()
-            if lower in replacement_map:
-                print(f"[FOUND] Deprecated runner in job '{job_name}': {runner}")
-                deprecated_found = True
-                if replace:
-                    job["runs-on"] = replacement_map[lower]
-                    print(f"[FIXED] '{job_name}' runs-on → {job['runs-on']}")
+            if runner.lower() == keyword_lower:
+                job["runs-on"] = replacement
         elif isinstance(runner, list):
             for i, r in enumerate(runner):
-                lower = str(r).lower()
-                if lower in replacement_map:
-                    print(f"[FOUND] Deprecated runner in job '{job_name}': {r}")
-                    deprecated_found = True
-                    if replace:
-                        job["runs-on"][i] = replacement_map[lower]
-                        print(f"[FIXED] '{job_name}' runs-on → {job['runs-on'][i]}")
+                if str(r).lower() == keyword_lower:
+                    runner[i] = replacement
 
-        # --- Case 2: strategy.matrix.os ---
+        # --- Replace in strategy.matrix.os ---
         strategy = job.get("strategy")
-        if strategy and isinstance(strategy, dict):
+        if isinstance(strategy, dict):
             matrix = strategy.get("matrix")
-            if matrix and isinstance(matrix, dict) and "os" in matrix:
+            if isinstance(matrix, dict) and "os" in matrix:
                 os_list = matrix["os"]
                 if isinstance(os_list, list):
                     for i, os_val in enumerate(os_list):
-                        lower = str(os_val).lower()
-                        if lower in replacement_map:
-                            print(f"[FOUND] Deprecated matrix OS in job '{job_name}': {os_val}")
-                            deprecated_found = True
-                            if replace:
-                                matrix["os"][i] = replacement_map[lower]
-                                print(f"[FIXED] '{job_name}' matrix.os → {matrix['os'][i]}")
+                        if str(os_val).lower() == keyword_lower:
+                            os_list[i] = replacement
 
-    # Only rewrite file if replacements were made
-    if deprecated_found:
-        with open(workflow_file, "w", encoding="utf-8") as f:
-            yaml.dump(yaml_data, f)
-
-    return deprecated_found
-
-
+    # --- Write the modified YAML back ---
+    with open(workflow_file, "w", encoding="utf-8") as f:
+        yaml.dump(yaml_data, f)
 
 def copy_and_edit_workflow_file(datapoint, repo):
     """
@@ -148,15 +171,19 @@ def copy_and_edit_workflow_file(datapoint, repo):
 
     target_file = os.path.join(workflow_dir, os.path.basename(workflow_path))
 
-    # --- 1. Normalize runners only if deprecated found
-    # yaml_data, deprecated_found = detect_and_normalize_runners(target_file, replace=True)
-    # --- 2. Add push trigger (preserves all formatting)
     edit_workflow_push(target_file)
     reference_files = extract_referenced_workflows(target_file)
 
     reference_files.add(os.path.basename(target_file))
 
     delete_unreferenced_workflows(workflow_dir, reference_files)
+        # --- 1. Normalize deprecated runners only if found
+    deprecated_found, deprecated_keyword = has_deprecated_runner(target_file) 
+    if deprecated_found:
+        print("[INFO] Deprecated runner detected. Normalizing...")
+        detect_and_normalize_runners(target_file, deprecated_keyword)
+    else:
+        print("[INFO] No deprecated runners found. Skipping normalization.")
 
     print(f"[INFO] Workflow updated: {target_file}")
 

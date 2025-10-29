@@ -5,6 +5,7 @@ import sys
 import time
 import demjson3
 import tiktoken
+from dotenv import load_dotenv
 
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
@@ -12,10 +13,14 @@ from langgraph.graph import StateGraph, END
 
 from utilities.load_config import load_config
 from utilities.chunking_logic import chunk_log_by_tokens
-from utilities.clean_json_output import clean_llm_json_output
-from prompt.workflow_analysis_prompt_template import workflow_analysis_prompt
 
-class CiLogAnalyzer:
+load_dotenv()
+
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY not found. Make sure it's in your .env file.")
+
+class CILogAnalyzer:
     def __init__(self, repo_path: str, ci_log: List[Dict[str, Any]], sha_fail: str, workflow: str, workflow_path: str):
         self.config = load_config()
         self.ci_log = ci_log
@@ -210,6 +215,7 @@ Your goal is to read CI job logs and workflow context, then return a clean, stru
 
 ### Final output JSON format (strict):
 {{
+  "sha_fail": "{self.sha_fail}",
   "error_context": ["..."],
   "relevant_files": [
     {{
