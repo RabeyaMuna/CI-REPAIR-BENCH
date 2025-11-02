@@ -97,6 +97,7 @@ class CIFixBenchmark:
                 job_identificator = process_datapoint(
                     datapoint, fix_repo_function, self.config, self.credentials
                 )
+
                 self.jobs_ids.append(job_identificator)
                 json.dump(job_identificator, writer)
                 writer.write("\n")
@@ -295,6 +296,7 @@ class CIFixBenchmark:
             )
             json.dump(job_identificator, writer)
             writer.write("\n")
+            
         return job_identificator
 
     def eval_datapoint(self, job_identificator):

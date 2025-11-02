@@ -1,0 +1,25 @@
+[
+    {
+        "sha_fail": "2c06ffa4c9d2c37846c60ad75899b4d72f214ff9",
+        "fault_localization_data": [
+            {
+                "file_path": "examples/community/ip_adapter_face_id.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/ip_adapter_face_id.py",
+                "faults": [
+                    {
+                        "file_path": "examples/community/ip_adapter_face_id.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/ip_adapter_face_id.py",
+                        "line_range": [
+                            15,
+                            22
+                        ],
+                        "reason": "The import block is un-sorted or un-formatted as per the CI check (ruff I001). This affects the readability and maintainability of the code.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import inspect\nfrom typing import Any, Callable, Dict, List, Optional, Union\nfrom safetensors import safe_open\n\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom packaging import version"
+                    }
+                ]
+            }
+        ]
+    }
+]

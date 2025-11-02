@@ -1,155 +1,183 @@
-from typing import List, Dict, Any, TypedDict
+from typing import List, Dict, Any
 import json
 import os
-import sys
 import time
 import demjson3
 import tiktoken
 from dotenv import load_dotenv
-
+from rank_bm25 import BM25Okapi
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
-from langgraph.graph import StateGraph, END
 
 from utilities.load_config import load_config
 from utilities.chunking_logic import chunk_log_by_tokens
 
 load_dotenv()
 
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("OPENAI_API_KEY not found. Make sure it's in your .env file.")
 
 class CILogAnalyzer:
     def __init__(self, repo_path: str, ci_log: List[Dict[str, Any]], sha_fail: str, workflow: str, workflow_path: str):
         self.config = load_config()
+        self.repo_path = repo_path
         self.ci_log = ci_log
         self.sha_fail = sha_fail
         self.workflow = workflow
         self.workflow_path = workflow_path
         self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-        self.all_step_outputs = []
         self.error_details = []
-        self.summary = {}
-        self.repo_path = repo_path
-        self.workflow_tools_detail = None
-        self.workflow_validation_checks = None
-    
 
+        self.error_keywords = [
+            "Traceback", "Exception", "AssertionError", "ImportError", "ModuleNotFoundError",
+            "TypeError", "ValueError", "AttributeError", "RuntimeError", "IndexError", "KeyError",
+            "SyntaxError", "IndentationError", "NameError", "FileNotFoundError",
+            "pytest", "E ", "FAILED", "FAIL", "error", "fail", "exit code 1",
+            "black", "ruff", "flake8", "mypy", "coverage", "unittest"
+        ]
+
+    # ----------------------------------------------------------------------
+    def _extract_relevant_context(self, chunk_text: str, step_name: str) -> Dict[str, Any]:
+        """
+        Extract relevant error context lines using BM25 and group them.
+        """
+        lines = chunk_text.splitlines()
+        if not lines:
+            return {"step_name": step_name, "relevant_failures": []}
+
+        tokenized_corpus = [line.split() for line in lines]
+        bm25 = BM25Okapi(tokenized_corpus)
+        query = " ".join(self.error_keywords)
+        tokenized_query = query.split()
+        scores = bm25.get_scores(tokenized_query)
+
+        BM25_TOP_N = 100
+        CONTEXT_LINES = 10
+        top_indices = [
+            i for i, score in sorted(enumerate(scores), key=lambda x: x[1], reverse=True)
+            if score > 0.0
+        ][:BM25_TOP_N]
+
+        relevant_failures = []
+        seen = set()
+        for idx in top_indices:
+            line_text = lines[idx].strip()
+            if not line_text or line_text in seen:
+                continue
+            seen.add(line_text)
+
+            error_type = next((kw for kw in self.error_keywords if kw.lower() in line_text.lower()), "UnknownError")
+            start = max(0, idx - CONTEXT_LINES)
+            end = min(len(lines), idx + CONTEXT_LINES + 1)
+            context_window = [lines[i] for i in range(start, end) if lines[i].strip()]
+
+            if "Error" in line_text or "Exception" in line_text:
+                parts = line_text.split(":", 1)
+                message = parts[1].strip() if len(parts) > 1 else line_text
+            else:
+                message = line_text
+
+            relevant_failures.append({
+                "line_number": idx + 1,
+                "error_type": error_type,
+                "message": message,
+                "context_lines": context_window
+            })
+
+        return {"step_name": step_name, "relevant_failures": relevant_failures}
+
+    # ----------------------------------------------------------------------
+    def _retrieve_relevant_files(self, query_text: str, top_k: int = 10) -> List[Dict[str, Any]]:
+        """
+        Use BM25 to retrieve the most relevant Python files in the repo
+        given the combined error context text.
+        """
+        documents = []
+        file_paths = []
+
+        # Walk through repo and collect all Python source files
+        for root, _, files in os.walk(self.repo_path):
+            for f in files:
+                if f.endswith(".py"):
+                    path = os.path.join(root, f)
+                    try:
+                        with open(path, "r", encoding="utf-8", errors="ignore") as fp:
+                            content = fp.read()
+                            documents.append(content)
+                            file_paths.append(path)
+                    except Exception:
+                        continue
+
+        if not documents:
+            return []
+
+        tokenized_docs = [doc.split() for doc in documents]
+        bm25 = BM25Okapi(tokenized_docs)
+        tokenized_query = query_text.split()
+        scores = bm25.get_scores(tokenized_query)
+
+        # Sort and select top files
+        top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
+        ranked_files = [
+            {
+                "file": file_paths[i],
+                "score": float(scores[i]),
+                "reason": f"Matched tokens from error context (score={scores[i]:.2f})"
+            }
+            for i in top_indices if scores[i] > 0.0
+        ]
+
+        return ranked_files
+
+    # ----------------------------------------------------------------------
     def ci_log_analysis(self) -> List[Dict[str, Any]]:
-        """Extract all CI step, error contexts, chunk logs if necessary, and capture summaries, relevant files, and error blocks."""
-        
-        print("Running Tool: process_ci_steps_to_extract_error_contexts")
+        """
+        Analyze CI logs using BM25 (for both error context + file retrieval).
+        """
+        print("Running Tool: BM25 Log + File Retrieval Analyzer")
         results = []
         THRESHOLD = 100_000
 
         for step in self.ci_log:
-            step_name = step.get("step_name")
-            log = step.get("log")
+            step_name = step.get("step_name", "unknown_step")
+            log = step.get("log", "")
             print(f"\nProcessing Step: {step_name}")
 
             try:
-                log_text = log if isinstance(log, str) else "\n".join(log)
+                log_lines = log if isinstance(log, list) else log.splitlines()
+                log_text = "\n".join(log_lines)
                 enc = tiktoken.encoding_for_model("gpt-4o-mini")
                 total_tokens = len(enc.encode(log_text))
 
-                print(f"Token count for '{step_name}': {total_tokens}")
-
                 if total_tokens > THRESHOLD:
-                    chunks = chunk_log_by_tokens(log_text, max_tokens=60000, overlap=200)
-                    print(f"Chunking activated: {len(chunks)} chunks created for step '{step_name}'")
+                    chunks = chunk_log_by_tokens(log_text, max_tokens=80000, overlap=200)
+                    print(f"Chunking activated: {len(chunks)} chunks for '{step_name}'")
                 else:
                     chunks = [log_text]
-                    print(f"No chunking needed for '{step_name}'")
 
-                step_chunks = []
+                all_failures = []
+                for chunk_text in chunks:
+                    details = self._extract_relevant_context(chunk_text, step_name)
+                    all_failures.extend(details["relevant_failures"])
 
-                for i, chunk in enumerate(chunks):
-                    print(f"Processing chunk {i + 1}/{len(chunks)}...")
+                # Combine all error lines to create the file retrieval query
+                combined_query = " ".join(f["message"] for f in all_failures if f["message"])
 
-                    prompt = f"""
-Analyze the following CI log chunk and extract comprehensive information with a focus on capturing all error context.
-
-## INSTRUCTIONS:
-1. Create an extremely detailed natural language summary that includes EVERY piece of information from the log chunk
-   - Mention ALL commands, operations, and outcomes
-   - Mention ALL test results
-   - Mention ALL files (with repo-relative paths) and why they appear
-   - Mention ALL warnings and errors
-2. Extract ALL file paths mentioned in the log (normalized to repo-relative format)
-3. Identify ALL failures, errors, and issues with their complete context
-4. Extract the exact error blocks with their complete surrounding context
-
-## OUTPUT FORMAT:
-Return ONLY valid JSON with this exact structure:
-
-{{
-  "step_name": "{step_name}",
-  "relevant_files": [
-    {{
-      "file": "normalized/path/to/file1.py",
-      "reason": "Exact CI log evidence why this file is mentioned in the CI Log and if there is any relevance of CI failure if so why",
-    }},
-    {{
-      "file": "normalized/path/to/file2.py",
-      "reason":  "Exact CI log evidence why this file is mentioned in the CI Log and if there is any relevance of CI failure if so why",
-    }}
-   ],
-    "relevant_failures": [
-        "Complete error block 1 from CI log with all context lines",
-        "Complete error block 2 from CI log with all context lines"
-    ]
-}}
-
-## CRITICAL RULES:
-- The summary MUST be exhaustive and include ALL information from the log chunk
-- The `"reason"` for each file MUST be derived from the log itself (quote log lines or write a precise explanation). NEVER return generic placeholders like "mentioned in log".
-- Normalize file paths: convert absolute paths (e.g., `/opt/.../optuna/study/_optimize.py`) to repo-relative (`optuna/study/_optimize.py`).
-- Deduplicate files but preserve unique reasons if a file appears multiple times with different contexts.
-- Preserve exact wording and formatting of error/warning lines inside `relevant_failures`.
-- **Do NOT wrap the JSON in ```json or ``` markers. Output plain JSON only.**
-
-## CI LOG CHUNK:
-{chunk}
-
-## CRITICAL RULES:
-- Return ONLY raw JSON in the above format — absolutely no text before or after.
-- Do NOT include ```json or ``` markers.
-- Do NOT add any extra keys, commentary, or filler text.
-- Fill in every field based only on the provided log chunk.
-- If no files or CI failures reasons exist, return empty arrays [] for those fields.
-"""
-
-                    response = self.llm.invoke([HumanMessage(content=prompt)])
-
-                    time.sleep(1.0)  # throttle
-                    content = response.content.strip()
-                    
-                    try:
-                    # Try standard JSON decoding
-                        cleaned_json = json.loads(content)
-                    except json.JSONDecodeError:
-                    # Fallback: tolerant decoder
-                        cleaned_json = demjson3.decode(content)
-                    
-                    step_chunks.append(cleaned_json)
+                relevant_files = self._retrieve_relevant_files(combined_query) if combined_query else []
 
                 results.append({
                     "step_name": step_name,
-                    "chunks": step_chunks
+                    "relevant_failures": all_failures,
+                    "relevant_files": relevant_files
                 })
 
             except Exception as e:
-                print(f"[ERROR] Processing step '{step_name}': {str(e)}")
                 results.append({
                     "step_name": step_name,
-                    "chunks": [],
-                    "error": str(e)
+                    "error": str(e),
+                    "relevant_failures": [],
+                    "relevant_files": []
                 })
-                
-        return results
 
-    
+        return results
 
     def _generate_summary(self, log_details) -> Dict:
         """Generate a structured final error summary from error details, workflow tools, and validation checks."""
@@ -159,88 +187,78 @@ Return ONLY valid JSON with this exact structure:
         workflow_details = self.workflow
 
         prompt = f"""
-You are a CI failure summarizer agent.
+You are a CI failure summarization agent.
 
-Your goal is to read CI job logs and workflow context, then return a clean, structured summary with:
-- concise error_context (plain English reasons with evidence),
-- relevant_files tied to the failure,
-- error_types that YOU derive from the evidence (no pre-given taxonomy),
-- failed_job mapping (job/step/command) linked to the failure.
+Your task:
+Read CI job logs and workflow details, then produce a **structured, evidence-based JSON summary** that classifies the errors clearly by category and subcategory.
 
 ---
-## Inputs
 
-1. CI Log Details from step analysis:
+## INPUTS
+
+1. CI Log Details (from step analysis):
 {json.dumps(log_details, indent=2, ensure_ascii=False)}
 
 2. Workflow Details:
 {json.dumps(workflow_details, indent=2, ensure_ascii=False)}
+
 ---
 
-## Category Instructions (derive, don't assume)
-- Do NOT use any pre-defined category list.
-- Infer clear, data-driven categories directly from the logs and failed commit evidence.
-- Each item in error_types must be concise and specific, e.g.:
-  - "ImportError: No module named 'X'"
-  - "AssertionError: expected 2 == 3 in tests/test_api.py::test_y"
-  - "Black formatting check failed (line length > 88)"
-  - "Type checking (mypy): Incompatible return type in foo.py:123"
-  - "Pytest collection error: syntax error in bar.py:45"
-  - "GitHub Actions: step 'Run tests' exited with code 2"
-- If you cannot justify a category with log evidence, do not include it.
-- Deduplicate near-duplicates (merge similar items).
+## OUTPUT FORMAT (strict JSON only)
 
-### Instructions:
-
-1. RELEVANT FILES (unique):
-   - List only files directly tied to the failure.
-   - For each: include "file", "line_number" (integer or null), and "reason" (quote or paraphrase log evidence).
-
-2. ERROR CONTEXT (plain English):
-   - Summarize root cause(s) in short sentences.
-   - Include exception type, file + line (if available), exact error message, and a brief explanation.
-
-3. JOBS RELEVANT TO ERRORS:
-   - For each failed step: return
-     {{
-       "job": "<job name or ID>",
-       "step": "<step name>",
-       "command": "<command or action run>"
-     }}
-
-4. ERROR TYPES (derived):
-   - Produce a list of concise, evidence-backed labels as described above.
-   - No generic buckets; be concrete and tied to the log.
-   - Include both primary failure(s) and any clearly validated checks that passed/failed if the evidence is explicit.
-
-### Final output JSON format (strict):
 {{
   "sha_fail": "{self.sha_fail}",
-  "error_context": ["..."],
+  "error_context": [
+    "Plain-English explanation(s) of the root cause(s), supported by log evidence."
+  ],
   "relevant_files": [
     {{
-      "file": "...",
-      "line_number": null,
-      "reason": "Provided error or workflow failure reason from the CI log"
+      "file": "path/to/file.py",
+      "line_number": 123,
+      "reason": "Short evidence-based explanation of why this file is tied to the failure."
     }}
   ],
-  "error_types": ["..."],
+  "error_types": [
+    {{
+      "category": "High-level category, e.g. 'Code Formatting', 'Dependency Error', 'Test Failure', 'Runtime Error', 'Type Checking', 'Configuration Error'",
+      "subcategory": "More specific type under that category, e.g. 'Unused Import', 'Line Length Exceeded', 'ImportError: No module named X', 'AssertionError', 'Missing dependency', 'Mypy type mismatch'",
+      "evidence": "Brief quote or paraphrase from logs that proves this classification."
+    }}
+  ],
   "failed_job": [
     {{
-      "job": "...",
-      "step": "...",
-      "command": "..."
+      "job": "Job name or ID",
+      "step": "Step name that failed",
+      "command": "Exact command or action that caused the failure"
     }}
   ]
 }}
 
-## CRITICAL RULES:
-- Return ONLY raw JSON in the above format—no text before or after.
-- Do NOT include code fences.
-- Do NOT add any extra keys, commentary, or filler text.
+---
+
+## INSTRUCTIONS
+
+1. **Derive — do not assume.**
+   - Infer both `category` and `subcategory` based on log and workflow evidence.
+   - Each subcategory must be concrete and justifiable (e.g. “ImportError: No module named taipy.gui.servers.fastapi” → category: “Dependency Error”, subcategory: “Missing Module”).
+
+2. **Error Context**
+   - Use 1–3 short English sentences summarizing root causes.
+   - Include exception type, file, and line if available.
+
+3. **Relevant Files**
+   - Include only files explicitly tied to the failure.
+   - Use `"line_number": null` if the line is not specified.
+   - Each must have a `"reason"` summarizing the file’s relation to the failure.
+
+4. **Failed Job**
+   - Identify the CI job and step that failed, and its triggering command.
+
+5. **Output Rules**
+   - Return **only valid JSON** — no markdown, commentary, or code fences.
+   - Do not hallucinate; use `null` for unknowns.
+   - Merge duplicates and ensure each item is concise, evidence-based, and traceable to the logs.
 """
-
-
         try:
             response = self.llm.invoke([HumanMessage(content=prompt)]).content
             

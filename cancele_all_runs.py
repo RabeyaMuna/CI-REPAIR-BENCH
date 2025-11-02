@@ -13,21 +13,15 @@ import requests
 import pandas as pd
 from omegaconf import OmegaConf
 from dotenv import load_dotenv
-
+from load_config import load_config
 # ----------------------------------------------------
 # Load configuration and environment
 # ----------------------------------------------------
 load_dotenv()
 
-CONFIG_PATH = "/Users/rabeyakhatunmuna/Documents/Automated-CI-Build-Repair_with_benchmark/ci-builds-repair-benchmark/config.yaml"
-DATASET_PATH = "/Users/rabeyakhatunmuna/Documents/Automated-CI-Build-Repair_with_benchmark/dataset/lca_dataset.parquet"
+config, CONFIG_PATH = load_config()
+DATASET_PATH = os.path.join(config.get("base_dir"), "dataset", "lca_dataset.parquet")
 
-if not os.path.exists(CONFIG_PATH):
-    raise FileNotFoundError(f"Configuration file not found at {CONFIG_PATH}")
-if not os.path.exists(DATASET_PATH):
-    raise FileNotFoundError(f"Dataset file not found at {DATASET_PATH}")
-
-config = OmegaConf.load(CONFIG_PATH)
 OWNER = config.get("benchmark_owner")  # <-- Force override to your GitHub username
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 if not GITHUB_TOKEN:
