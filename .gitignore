@@ -3,3 +3,5 @@ repo/
 dataset/
 venv/
 .env
+baselines/exceptions
+baselines/repo_cloned

@@ -16,3 +16,4 @@ toml
 ruamel.yaml
 json5
 GitPython
+rank-bm25

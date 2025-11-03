@@ -1,7 +1,10 @@
 import json
 import os
 import shutil
+from omegaconf import OmegaConf
+from load_config import load_config
 
+config, CONFIG_PATH = load_config()
 
 def read_jsonl(file_path):
     data = []
@@ -28,7 +31,7 @@ def _safe_read_jsonl(path):
 def filter_out_res(
     data_folder,
     out_folder,
-    jobs_error_path="/Users/rabeyakhatunmuna/Documents/Automated-CI-Build-Repair_with_benchmark/ci-builds-repair-benchmark/results/jobs_error_diff.jsonl",
+    jobs_error_path=os.path.join(config.out_folder, "jobs_error_diff.jsonl")
 ):
     """
     Filter according to results benchmarks.

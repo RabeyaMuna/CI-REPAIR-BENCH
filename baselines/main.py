@@ -5,20 +5,29 @@ import subprocess
 from omegaconf import OmegaConf
 from dotenv import load_dotenv
 from datasets import load_dataset
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
+from langgraph.graph import StateGraph, END
 from ci_repair.ci_log_analyzer import CILogAnalyzer
+from ci_repair.fault_localization import FaultLocalization
+from ci_repair.patch_generation import PatchGeneration
 from utilities.ensure_repo import ensure_repo_at_commit
 
 load_dotenv()
 
 def process_entire_dataset(dataset, config):
     error_details = []
+    fault_localization = []
+    generated_patches = []
     results = []
+    
+    # subset = dataset[133:]
     
     for datapoint in dataset:
         task_id = datapoint["id"]
         repo_name = datapoint["repo_name"]
         repo_owner = datapoint["repo_owner"]
-        repo_path = os.path.join(config.repos_folder, repo_name)
+        repo_path = os.path.join(config.baseline_repo_folder, repo_name)
         head_branch = datapoint["head_branch"]
         sha_fail = datapoint["sha_fail"]
         benchmark_owner = config.benchmark_owner  
@@ -43,8 +52,38 @@ def process_entire_dataset(dataset, config):
         except Exception as e:
             print(f" Failed processing {sha_fail} during error extraction: {e}")
             continue
+        
+        try:
+            fault_localizer = FaultLocalization(
+                                                sha_fail=sha_fail,
+                                                repo_path=repo_path,
+                                                error_logs=log_analysis_result,
+                                                workflow=workflow,
+                                            ).run()
+            
+            fault_localization.append(fault_localizer)
 
+            with open(os.path.join(config.project_result_dir, "fault_localization.json"), "w") as f:
+                json.dump(fault_localization, f, indent=4)
 
+        except Exception as e:
+            print(f" Failed processing {sha_fail} during error extraction: {e}")
+            continue
+        
+        try:
+            patch_generator = PatchGeneration(  bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
+            error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow).run()
+            
+            generated_patches.append(patch_generator)
+
+            with open(os.path.join(config.project_result_dir, "generated_patches.json"), "w") as f:
+                json.dump(generated_patches, f, indent=4)
+
+        except Exception as e:
+            print(f" Failed processing {sha_fail} during error extraction: {e}")
+            continue
+        
+    results = generated_patches
     return results
 
 
@@ -61,7 +100,7 @@ if __name__ == "__main__":
 
     results = process_entire_dataset(dataset, config)
 
-    output_file = os.path.join(config.result_dir, "generated_patches.json")
+    output_file = os.path.join(config.project_result_dir, "generated_patches.json")
     with open(output_file, "w") as f:
         json.dump(results, f, indent=4)
 

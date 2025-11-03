@@ -1,19 +1,19 @@
 # ============================================================
 #  run_benchmark.py — CI-Builds-Repair Benchmark Runner
 # ============================================================
-
+import os
+from omegaconf import OmegaConf
 from benchmark import CIFixBenchmark
+from load_config import load_config
 from benhmark_functions import fix_apply_generated_patch
 
 # ============================================================
 #  Configuration
 # ============================================================
 model_name = "diff"
-config_path = (
-    "/Users/rabeyakhatunmuna/Documents/"
-    "Automated-CI-Build-Repair_with_benchmark/"
-    "ci-builds-repair-benchmark/config.yaml"
-)
+config_path = "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/config.yaml"
+
+config = OmegaConf.load(config_path)
 
 # Initialize benchmark object
 CIBenchPython = CIFixBenchmark(model_name, config_path)
@@ -24,9 +24,8 @@ CIBenchPython = CIFixBenchmark(model_name, config_path)
 
 # ---------- OPTION 1: Local Dataset ----------
 # Uncomment this block if you already have a dataset locally
-dataset_info = (
-    "/Users/rabeyakhatunmuna/Documents/Automated-CI-Build-Repair_with_benchmark/dataset/lca_dataset.parquet"
-)
+
+dataset_info = os.path.join(config.get("base_dir"), "dataset", "lca_dataset.parquet")
 
 # ---------- OPTION 2: Online Dataset ----------
 # Uncomment this block if you want to fetch dataset from an online source (e.g., Hugging Face)

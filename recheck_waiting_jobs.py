@@ -33,11 +33,7 @@ def save_overwrite(path, records):
     save_jsonl(path, records)
 
 # --- Load main config ---
-CONFIG_PATH = (
-    "/Users/rabeyakhatunmuna/Documents/"
-    "Automated-CI-Build-Repair_with_benchmark/"
-    "ci-builds-repair-benchmark/config.yaml"
-)
+CONFIG_PATH = "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/config.yaml"
 config = OmegaConf.load(CONFIG_PATH)
 base_dir = config.get("base_dir")
 
