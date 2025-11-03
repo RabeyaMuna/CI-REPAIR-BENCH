@@ -82,7 +82,8 @@ def process_entire_dataset(dataset, config):
         except Exception as e:
             print(f" Failed processing {sha_fail} during error extraction: {e}")
             continue
-
+        
+    results = generated_patches
     return results
 
 
