@@ -111,8 +111,8 @@ class CIFixBenchmark:
         to avoid exceeding GitHub’s 5000 req/hour limit.
         """
 
-        WAIT_INTERVAL = 600       # 10 minutes between polling cycles
-        MAX_ATTEMPTS = 12         # total 2-hour window
+        WAIT_INTERVAL = 900       # 10 minutes between polling cycles
+        MAX_ATTEMPTS = 15         # total 2-hour window
         REQ_DELAY = 0.8           # ~0.8s between requests → 4500 req/hour safe margin
 
         if result_filename is None:
@@ -204,8 +204,6 @@ class CIFixBenchmark:
 
         self.jobs_results = jobs_results
         return jobs_results
-
-
 
     def get_results(self, job_ids_file=None, result_filename=None):
         if job_ids_file is None:

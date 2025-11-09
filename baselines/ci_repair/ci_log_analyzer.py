@@ -180,112 +180,233 @@ class CILogAnalyzer:
         return results
 
     def _generate_summary(self, log_details) -> Dict:
-        """Generate a structured final error summary from error details, workflow tools, and validation checks."""
+        """
+        Generate structured CI error summary with adaptive chunking, cumulative context,
+        and a final LLM synthesis step to merge all chunk summaries (no truncation, no ```json fences).
+        """
         print(" Running Tool: _generate_summary")
-        
-        log_details = log_details
+
+        enc = tiktoken.encoding_for_model("gpt-4o-mini")
+        MAX_CONTEXT = 120_000   # safe upper bound for GPT-4o-mini
+        CHUNK_LIMIT = 80_000    # when to start chunking
+        CHUNK_SIZE = 60_000     # approximate per-chunk size
+
         workflow_details = self.workflow
+        log_json = json.dumps(log_details, indent=2, ensure_ascii=False)
+        workflow_json = json.dumps(workflow_details, indent=2, ensure_ascii=False)
 
-        prompt = f"""
-You are a CI failure summarization agent.
+        log_tokens = len(enc.encode(log_json))
+        workflow_tokens = len(enc.encode(workflow_json))
+        combined_tokens = log_tokens + workflow_tokens
+        print(f"  [INFO] log_tokens={log_tokens}, workflow_tokens={workflow_tokens}, combined={combined_tokens}")
 
-Your task:
-Read CI job logs and workflow details, then produce a **structured, evidence-based JSON summary** that classifies the errors clearly by category and subcategory.
+        # =====================
+        # Step 1: Chunk logs and workflow if needed
+        # =====================
+        def make_chunks(text, limit=CHUNK_LIMIT, chunk_size=CHUNK_SIZE):
+            """Split long JSON text by line into smaller token-safe chunks."""
+            tokens = len(enc.encode(text))
+            if tokens <= limit:
+                return [text]
 
----
+            print(f"  [WARN] Splitting content ({tokens} tokens) into chunks of ~{chunk_size} tokens.")
+            lines = text.splitlines()
+            chunks, current, counter = [], [], 0
+            for line in lines:
+                current.append(line)
+                counter += len(enc.encode(line))
+                if counter >= chunk_size:
+                    chunks.append("\n".join(current))
+                    current, counter = [], 0
+            if current:
+                chunks.append("\n".join(current))
+            return chunks
 
-## INPUTS
+        log_chunks = make_chunks(log_json)
+        workflow_chunks = make_chunks(workflow_json)
+        total_parts = max(len(workflow_chunks), len(log_chunks))
 
-1. CI Log Details (from step analysis):
-{json.dumps(log_details, indent=2, ensure_ascii=False)}
+        # =====================
+        # Step 2: Analyze each chunk with cumulative context
+        # =====================
+        summaries = []
+        exception_dir = os.path.join(self.config["exception_dir"], "chunk_summaries")
+        os.makedirs(exception_dir, exist_ok=True)
 
-2. Workflow Details:
-{json.dumps(workflow_details, indent=2, ensure_ascii=False)}
+        OUTPUT_RULES = """
+    STRICT OUTPUT RULES:
+    - Return **raw JSON only**.
+    - Do NOT include any backticks or code fences (no ```json or ```).
+    - Do NOT include markdown or explanations.
+    - The first character must be '{' and the last must be '}'.
+    """
 
----
-
-## OUTPUT FORMAT (strict JSON only)
-
-{{
-  "sha_fail": "{self.sha_fail}",
-  "error_context": [
-    "Plain-English explanation(s) of the root cause(s), supported by log evidence."
-  ],
-  "relevant_files": [
-    {{
-      "file": "path/to/file.py",
-      "line_number": 123,
-      "reason": "Short evidence-based explanation of why this file is tied to the failure."
-    }}
-  ],
-  "error_types": [
-    {{
-      "category": "High-level category, e.g. 'Code Formatting', 'Dependency Error', 'Test Failure', 'Runtime Error', 'Type Checking', 'Configuration Error'",
-      "subcategory": "More specific type under that category, e.g. 'Unused Import', 'Line Length Exceeded', 'ImportError: No module named X', 'AssertionError', 'Missing dependency', 'Mypy type mismatch'",
-      "evidence": "Brief quote or paraphrase from logs that proves this classification."
-    }}
-  ],
-  "failed_job": [
-    {{
-      "job": "Job name or ID",
-      "step": "Step name that failed",
-      "command": "Exact command or action that caused the failure"
-    }}
-  ]
-}}
-
----
-
-## INSTRUCTIONS
-
-1. **Derive — do not assume.**
-   - Infer both `category` and `subcategory` based on log and workflow evidence.
-   - Each subcategory must be concrete and justifiable (e.g. “ImportError: No module named taipy.gui.servers.fastapi” → category: “Dependency Error”, subcategory: “Missing Module”).
-
-2. **Error Context**
-   - Use 1–3 short English sentences summarizing root causes.
-   - Include exception type, file, and line if available.
-
-3. **Relevant Files**
-   - Include only files explicitly tied to the failure.
-   - Use `"line_number": null` if the line is not specified.
-   - Each must have a `"reason"` summarizing the file’s relation to the failure.
-
-4. **Failed Job**
-   - Identify the CI job and step that failed, and its triggering command.
-
-5. **Output Rules**
-   - Return **only valid JSON** — no markdown, commentary, or code fences.
-   - Do not hallucinate; use `null` for unknowns.
-   - Merge duplicates and ensure each item is concise, evidence-based, and traceable to the logs.
-"""
-        try:
-            response = self.llm.invoke([HumanMessage(content=prompt)]).content
-            
-            try: 
-              summary = json.loads(response)
+        def _safe_json_parse(text: str):
+            """Remove stray markdown and parse JSON safely."""
+            cleaned = text.strip()
+            if cleaned.startswith("```"):
+                cleaned = cleaned.strip("`")
+                if cleaned.lower().startswith("json"):
+                    cleaned = cleaned[4:].strip()
+            try:
+                return json.loads(cleaned)
             except json.JSONDecodeError:
-              summary = demjson3.decode(response)
-            
-            print(" Completed: _generate_summary")
+                return demjson3.decode(cleaned)
 
-            return summary
+        for i in range(total_parts):
+            workflow_part = workflow_chunks[i] if i < len(workflow_chunks) else workflow_chunks[-1]
+            log_part = log_chunks[i] if i < len(log_chunks) else log_chunks[-1]
+
+            print(f"  [INFO] Processing chunk {i + 1}/{total_parts}")
+
+            previous_results_text = (
+                json.dumps(summaries, indent=2, ensure_ascii=False) if summaries else "None"
+            )
+
+            prompt = f"""
+    You are a CI failure summarization agent analyzing part {i + 1} of {total_parts}.
+
+    ## CONTEXT
+    Earlier chunk summaries are provided below to ensure continuity:
+    {previous_results_text}
+
+    ---
+
+    ### CI Log Details (Part {i + 1}/{total_parts})
+    {log_part}
+
+    ### Workflow Details (Part {i + 1}/{total_parts})
+    {workflow_part}
+
+    ---
+
+    ### TASK
+    Summarize this part’s errors into a structured JSON object, combining prior insights if applicable.
+
+    {OUTPUT_RULES}
+
+    ### OUTPUT FORMAT (strict JSON)
+    {{
+    "sha_fail": "{self.sha_fail}",
+    "part": {i + 1},
+    "error_context": ["Concise root cause(s)."],
+    "relevant_files": [
+        {{
+        "file": "path/to/file.py",
+        "line_number": 123,
+        "reason": "Why it's related to the failure."
+        }}
+    ],
+    "error_types": [
+        {{
+        "category": "High-level (e.g., Test Failure, Dependency Error, Runtime Error)",
+        "subcategory": "Specific subtype (e.g., AssertionError, ImportError)",
+        "evidence": "Short quote or paraphrase from logs."
+        }}
+    ],
+    "failed_job": [
+        {{
+        "job": "Job name",
+        "step": "Step name that failed",
+        "command": "Command/tool that caused failure"
+        }}
+    ]
+    }}
+    """
+
+            try:
+                response = self.llm.invoke([HumanMessage(content=prompt)]).content
+                summary = _safe_json_parse(response)
+                summaries.append(summary)
+
+                # Save each chunk’s result
+                part_path = os.path.join(exception_dir, f"{self.sha_fail}_part{i + 1}.json")
+                with open(part_path, "w", encoding="utf-8") as f:
+                    json.dump(summary, f, indent=2, ensure_ascii=False)
+            except Exception as e:
+                print(f"[ERROR] Failure in chunk {i + 1}: {e}")
+                err_obj = {"part": i + 1, "error": str(e)}
+                summaries.append(err_obj)
+                with open(
+                    os.path.join(exception_dir, f"{self.sha_fail}_part{i + 1}_error.json"),
+                    "w",
+                    encoding="utf-8",
+                ) as f:
+                    json.dump(err_obj, f, indent=2)
+
+        # =====================
+        # Step 3: Final synthesis LLM pass (no truncation, no chunking)
+        # =====================
+        print("  [INFO] Running final LLM synthesis across all chunk summaries.")
+        summaries_json = json.dumps(summaries, indent=2, ensure_ascii=False)
+
+        synthesis_prompt = f"""
+    You are an advanced CI repair analyst.
+
+    Below are structured JSON summaries of all analyzed log/workflow chunks for commit `{self.sha_fail}`:
+
+    {summaries_json}
+
+    {OUTPUT_RULES}
+
+    ### TASK
+    Integrate all partial summaries into **one coherent, deduplicated final summary**.
+
+    ### REQUIREMENTS
+    - Merge overlapping errors and evidence.
+    - Combine related error_context items.
+    - Deduplicate relevant_files and error_types.
+    - Produce ONE concise, clean JSON.
+
+    ### OUTPUT FORMAT (strict JSON)
+    {{
+    "sha_fail": "{self.sha_fail}",
+    "error_context": ["Merged plain-English root causes."],
+    "relevant_files": [
+        {{
+        "file": "path/to/file.py",
+        "line_number": 123,
+        "reason": "Why this file is tied to the error."
+        }}
+    ],
+    "error_types": [
+        {{
+        "category": "Error category",
+        "subcategory": "Error subtype",
+        "evidence": "Representative log snippet."
+        }}
+    ],
+    "failed_job": [
+        {{
+        "job": "Job name",
+        "step": "Step name",
+        "command": "Command that failed"
+        }}
+    ]
+    }}
+    """
+
+        try:
+            synthesis_response = self.llm.invoke([HumanMessage(content=synthesis_prompt)]).content
+            final_summary = _safe_json_parse(synthesis_response)
         except Exception as e:
-            error_dir = os.path.join(self.config["exception_dir"], "interrupted_error_log")
-
-            os.makedirs(error_dir, exist_ok=True)
-
-            error_data = {
-                "sha_fail": self.sha_fail,
+            print(f"[ERROR] Final synthesis step failed: {e}")
+            final_summary = {
                 "error": str(e),
-                "tool": "ErrorContextExtractionAgent.run"
+                "sha_fail": self.sha_fail,
+                "note": "Failed during final synthesis"
             }
 
-            error_file = os.path.join(error_dir, f"{self.sha_fail}_error.json")
-            with open(error_file, "w", encoding="utf-8") as f:
-                json.dump(error_data, f, indent=4)
+        # Save final synthesis output
+        final_path = os.path.join(exception_dir, f"{self.sha_fail}_final_summary.json")
+        with open(final_path, "w", encoding="utf-8") as f:
+            json.dump(final_summary, f, indent=2, ensure_ascii=False)
 
-            return {"error": f"Failed to generate summary: {e}"}
+        print(f" Completed: _generate_summary (multi-step LLM synthesis). Final summary saved to: {final_path}")
+
+        return final_summary
+
+
        
 
     def run(self) -> Dict[str, Any]:

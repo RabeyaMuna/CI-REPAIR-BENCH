@@ -1,4 +1,5 @@
 import os
+import io
 import re
 import json
 import git
@@ -58,7 +59,8 @@ def has_deprecated_runner(workflow_file):
 
     return False, None
 
-    
+# --- add near the top of benchmark_utils.py ---
+  
 def edit_workflow_push(workflow_file):
     """
     editing workflow.yaml so, that it would be run on push
@@ -165,11 +167,20 @@ def copy_and_edit_workflow_file(datapoint, repo):
     os.makedirs(workflow_dir, exist_ok=True)
 
     workflow_path = datapoint.get("workflow_path")
+    workflow_content = datapoint.get("workflow")
+    
     if not workflow_path or not os.path.isfile(os.path.join(repo.working_dir, workflow_path)):
         print(f"[WARN] Workflow path invalid or missing for {datapoint['id']}: {workflow_path}")
         return
 
     target_file = os.path.join(workflow_dir, os.path.basename(workflow_path))
+    # --- Load workflow YAML ---
+    if workflow_content:
+        yaml = YAML()
+        yaml.preserve_quotes = True
+        yaml_data = yaml.load(io.StringIO(workflow_content))
+        with open(target_file, "w", encoding="utf-8") as f:
+          yaml.dump(yaml_data, f)
 
     edit_workflow_push(target_file)
     reference_files = extract_referenced_workflows(target_file)
@@ -178,12 +189,12 @@ def copy_and_edit_workflow_file(datapoint, repo):
 
     delete_unreferenced_workflows(workflow_dir, reference_files)
         # --- 1. Normalize deprecated runners only if found
-    deprecated_found, deprecated_keyword = has_deprecated_runner(target_file) 
-    if deprecated_found:
-        print("[INFO] Deprecated runner detected. Normalizing...")
-        detect_and_normalize_runners(target_file, deprecated_keyword)
-    else:
-        print("[INFO] No deprecated runners found. Skipping normalization.")
+    # deprecated_found, deprecated_keyword = has_deprecated_runner(target_file) 
+    # if deprecated_found:
+    #     print("[INFO] Deprecated runner detected. Normalizing...")
+    #     detect_and_normalize_runners(target_file, deprecated_keyword)
+    # else:
+    #     print("[INFO] No deprecated runners found. Skipping normalization.")
 
     print(f"[INFO] Workflow updated: {target_file}")
 
@@ -401,7 +412,11 @@ def fix_apply_generated_patch(datapoint, repo_path, repo, out_folder):
 
     # Load all patches
     with open(patch_file, "r", encoding="utf-8") as f:
-        patches = json.load(f)
+        try:
+            patches = json.load(f)
+        except json.JSONDecodeError:
+            print(f"[WARN] Patch file empty or invalid, using empty list: {patch_file}")
+            patches = []
 
     current_id = datapoint["id"]
     patch_data = next((p for p in patches if p["id"] == current_id and p.get("diff", "").strip()), None)

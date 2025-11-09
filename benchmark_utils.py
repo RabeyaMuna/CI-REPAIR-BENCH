@@ -6,6 +6,50 @@ from load_config import load_config
 
 config, CONFIG_PATH = load_config()
 
+def _normalize_fastfail_conclusion(records):
+    """
+    Fast-fail policy:
+      - If ANY job is completed AND conclusion == 'failure' => mark run 'failure'.
+      - Else, if ANY job (even if not completed) has conclusion == 'failure' => mark run 'failure'.
+      - Else, leave record unchanged.
+    """
+    out = []
+    for r in records:
+        jobs = r.get("jobs") or r.get("job_list") or []
+        if not jobs:
+            out.append(r)
+            continue
+
+        # 1) Completed failure has priority
+        completed_failure = any(
+            ((j or {}).get("status", "").lower() == "completed") and
+            ((j or {}).get("conclusion", "").lower() == "failure")
+            for j in jobs
+        )
+        if completed_failure:
+            rr = dict(r)
+            rr["conclusion"] = "failure"
+            out.append(rr)
+            continue
+
+        # 2) Otherwise, any failure (even if not completed yet)
+        any_failure = any(
+            ((j or {}).get("conclusion", "").lower() == "failure")
+            for j in jobs
+        )
+        if any_failure:
+            rr = dict(r)
+            rr["conclusion"] = "failure"
+            out.append(rr)
+            continue
+
+        # 3) No failures → leave as-is
+        out.append(r)
+
+    return out
+
+
+
 def read_jsonl(file_path):
     data = []
     with open(file_path, "r") as f:
@@ -47,6 +91,7 @@ def filter_out_res(
     results_diff_path = os.path.join(out_folder, "jobs_results_diff.jsonl")
 
     results_none = _safe_read_jsonl(results_none_path)
+    results_none = _normalize_fastfail_conclusion(results_none)
     results_diff = _safe_read_jsonl(results_diff_path)
     results_error = _safe_read_jsonl(jobs_error_path)
 

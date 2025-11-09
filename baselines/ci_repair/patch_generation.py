@@ -23,6 +23,7 @@ automated_commands_available = [
   {
     "tool": "ruff",
     "purpose": "Unified linter and formatter for Python (replaces flake8, pyflakes, pycodestyle, etc.)",
+    "install_command": "pip install ruff",
     "check_command": "ruff check {{file_or_dir}}",
     "fix_command": "ruff check --fix {{file_or_dir}}",
     "file_pattern": "*.py"
@@ -30,6 +31,7 @@ automated_commands_available = [
   {
     "tool": "black",
     "purpose": "Code formatter enforcing uniform style and indentation",
+    "install_command": "pip install black",
     "check_command": "black --check {{file_or_dir}}",
     "fix_command": "black {{file_or_dir}}",
     "file_pattern": "*.py"
@@ -37,6 +39,7 @@ automated_commands_available = [
   {
     "tool": "isort",
     "purpose": "Sort and group imports automatically",
+    "install_command": "pip install isort",
     "check_command": "isort --check-only {{file_or_dir}}",
     "fix_command": "isort {{file_or_dir}}",
     "file_pattern": "*.py"
@@ -44,6 +47,7 @@ automated_commands_available = [
   {
     "tool": "flake8",
     "purpose": "Linting tool for style and logical errors (PEP8, unused imports, etc.)",
+    "install_command": "pip install flake8",
     "check_command": "flake8 {{file_or_dir}}",
     "fix_command": "ruff check --fix {{file_or_dir}}",
     "file_pattern": "*.py"
@@ -51,6 +55,7 @@ automated_commands_available = [
   {
     "tool": "autopep8",
     "purpose": "Automatically formats Python code to be PEP8 compliant",
+    "install_command": "pip install autopep8",
     "check_command": "autopep8 --diff {{file_or_dir}}",
     "fix_command": "autopep8 --in-place --aggressive {{file_or_dir}}",
     "file_pattern": "*.py"
@@ -58,6 +63,7 @@ automated_commands_available = [
   {
     "tool": "yapf",
     "purpose": "Code formatter (alternative to black/autopep8)",
+    "install_command": "pip install yapf",
     "check_command": "yapf --diff {{file_or_dir}}",
     "fix_command": "yapf -i {{file_or_dir}}",
     "file_pattern": "*.py"
@@ -65,13 +71,15 @@ automated_commands_available = [
   {
     "tool": "pylint",
     "purpose": "Comprehensive linter for detecting code smells and logical issues",
+    "install_command": "pip install pylint",
     "check_command": "pylint {{file_or_dir}}",
-    "fix_command": "ruff check --fix {{file_or_dir}}",
+    "fix_command": "ruff check --fix {{file_or_dir}}",  # fixes are delegated to Ruff
     "file_pattern": "*.py"
   },
   {
     "tool": "mypy",
     "purpose": "Static type checker for Python",
+    "install_command": "pip install mypy",
     "check_command": "mypy {{file_or_dir}}",
     "fix_command": "",
     "file_pattern": "*.py"
@@ -79,6 +87,7 @@ automated_commands_available = [
   {
     "tool": "pytest",
     "purpose": "Run unit and integration tests",
+    "install_command": "pip install pytest",
     "check_command": "pytest {{file_or_dir}}",
     "fix_command": "",
     "file_pattern": "tests/*.py"
@@ -86,6 +95,7 @@ automated_commands_available = [
   {
     "tool": "bandit",
     "purpose": "Security linter (checks for hardcoded secrets, dangerous calls, etc.)",
+    "install_command": "pip install bandit",
     "check_command": "bandit -r {{file_or_dir}}",
     "fix_command": "",
     "file_pattern": "*.py"
@@ -93,6 +103,7 @@ automated_commands_available = [
   {
     "tool": "codespell",
     "purpose": "Spell checker for comments and docstrings",
+    "install_command": "pip install codespell",
     "check_command": "codespell {{file_or_dir}}",
     "fix_command": "codespell -w {{file_or_dir}}",
     "file_pattern": ["*.py", "*.md", "*.rst"]
@@ -100,6 +111,7 @@ automated_commands_available = [
   {
     "tool": "docformatter",
     "purpose": "Format docstrings to follow PEP 257 conventions",
+    "install_command": "pip install docformatter",
     "check_command": "docformatter --check {{file_or_dir}}",
     "fix_command": "docformatter --in-place {{file_or_dir}}",
     "file_pattern": "*.py"
@@ -332,6 +344,7 @@ Output:
 
             install_cmds = result.get("installation_commands", [])
             fix_cmds = result.get("fix_commands", [])
+            import pdb; pdb.set_trace()
             explanation = result.get("tool_explanation", "")
 
             logger.info(f"Tool explanation: {explanation}")

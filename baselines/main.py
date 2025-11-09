@@ -21,9 +21,9 @@ def process_entire_dataset(dataset, config):
     generated_patches = []
     results = []
     
-    # subset = dataset[133:]
+    subset = dataset[72:328]
     
-    for datapoint in dataset:
+    for datapoint in subset:
         task_id = datapoint["id"]
         repo_name = datapoint["repo_name"]
         repo_owner = datapoint["repo_owner"]
