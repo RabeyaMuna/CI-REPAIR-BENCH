@@ -28,9 +28,103 @@ def read_jsonl(path):
 
 def save_overwrite(path, records):
     """Overwrite JSONL at path with records (no merge)."""
-    # ensure parent dir
     os.makedirs(os.path.dirname(path), exist_ok=True)
     save_jsonl(path, records)
+
+# --- Failure-only fast-fail normalization (no success inference) -----------
+def normalize_failure_only(records):
+    """
+    Normalize ONLY failures (leave success as reported by the API).
+
+    Embedded-jobs case (r['jobs'] / r['job_list']):
+      1) If ANY job has status=='completed' AND conclusion=='failure' => run 'failure'
+      2) Else, fast-fail heuristic: if ANY job is 'cancelled' AND at least one job is 'completed' => run 'failure'
+      3) Else, if ANY job has conclusion=='failure' (even if not completed) => run 'failure'
+      4) Else unchanged
+
+    Flat per-job rows case (group by run_id/workflow_run_id/runId):
+      1) If ANY row has status=='completed' AND conclusion=='failure' in group => run 'failure'
+      2) Else, fast-fail heuristic: ANY row 'cancelled' AND at least one row 'completed' => run 'failure'
+      3) Else, if ANY row has conclusion=='failure' in group => run 'failure'
+      4) Else unchanged
+    """
+    # ---- Case A: at least one record embeds a jobs list ----
+    if any(isinstance(r, dict) and (r.get("jobs") or r.get("job_list")) for r in records):
+        out = []
+        for r in records:
+            if not isinstance(r, dict):
+                out.append(r)
+                continue
+
+            jobs = r.get("jobs") or r.get("job_list") or []
+            if not jobs:
+                out.append(r)
+                continue
+
+            statuses    = [((j or {}).get("status") or "").lower() for j in jobs]
+            conclusions = [((j or {}).get("conclusion") or "").lower() for j in jobs]
+
+            # 1) completed failure wins immediately
+            if any(st == "completed" and co == "failure" for st, co in zip(statuses, conclusions)):
+                rr = dict(r); rr["conclusion"] = "failure"; out.append(rr); continue
+
+            # 2) fast-fail heuristic: cancellations visible alongside at least one completed job
+            if ("cancelled" in conclusions) and ("completed" in statuses):
+                rr = dict(r); rr["conclusion"] = "failure"; out.append(rr); continue
+
+            # 3) any failure (even if not completed yet)
+            if any(co == "failure" for co in conclusions):
+                rr = dict(r); rr["conclusion"] = "failure"; out.append(rr); continue
+
+            # 4) unchanged (do NOT set success here)
+            out.append(r)
+        return out
+
+    # ---- Case B: flat per-job rows → group by a run id ----
+    run_key = None
+    for k in ("run_id", "workflow_run_id", "runId"):
+        if any(isinstance(r, dict) and k in r for r in records):
+            run_key = k
+            break
+    if run_key is None:
+        return records  # nothing to group by; leave unchanged
+
+    by_run = {}
+    for r in records:
+        if not isinstance(r, dict):
+            continue
+        by_run.setdefault(r.get(run_key), []).append(r)
+
+    runs_fail = set()
+    for rid, rows in by_run.items():
+        if rid is None:
+            continue
+
+        statuses    = [((row.get("status") or "").lower()) for row in rows]
+        conclusions = [((row.get("conclusion") or "").lower()) for row in rows]
+
+        # 1) completed failure in the group
+        if any(st == "completed" and co == "failure" for st, co in zip(statuses, conclusions)):
+            runs_fail.add(rid)
+            continue
+
+        # 2) fast-fail heuristic: cancelled present + at least one completed row
+        if ("cancelled" in conclusions) and ("completed" in statuses):
+            runs_fail.add(rid)
+            continue
+
+        # 3) any row already marked failure (not necessarily completed)
+        if any(co == "failure" for co in conclusions):
+            runs_fail.add(rid)
+
+    out = []
+    for r in records:
+        if isinstance(r, dict) and r.get(run_key) in runs_fail:
+            rr = dict(r); rr["conclusion"] = "failure"; out.append(rr)
+        else:
+            out.append(r)
+    return out
+# --------------------------------------------------------------------------
 
 # --- Load main config ---
 CONFIG_PATH = "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/config.yaml"
@@ -66,44 +160,47 @@ if not pushed_jobs:
 
 print(f"Found {len(pushed_jobs)} pushed job(s) to check.\n")
 
-# --- Process all pushed jobs, no merging with past data ---
-success = []
-failure = []
-errors  = []
-waiting = []
+# --- Process all pushed jobs (collect first; then normalize) ---
+checked = []
 
 for job in pushed_jobs:
     if not isinstance(job, dict) or "id" not in job:
         continue
-
     try:
         job_url, conclusion = get_results(job, bench.config, bench.credentials)
         job["url"] = job_url
         job["conclusion"] = conclusion
-
-        repo   = job.get("repo_name", "unknown")
-        branch = job.get("branch_name", "unknown")
-
-        if conclusion in ("waiting", None):
-            waiting.append(job)
-            print(f"[{repo} | {branch}] still waiting...")
-        elif conclusion == "success":
-            success.append(job)
-            print(f"[{repo} | {branch}] → SUCCESS")
-        elif conclusion == "failure":
-            failure.append(job)
-            print(f"[{repo} | {branch}] → FAILURE")
-        elif conclusion == "error":
-            errors.append(job)
-            print(f"[{repo} | {branch}] → ERROR")
-        else:
-            # Unknown → treat as waiting to retry later
-            waiting.append(job)
-            print(f"[{repo} | {branch}] unknown conclusion '{conclusion}', keeping as waiting")
-
     except Exception as e:
         print(f"Error checking {job.get('repo_name', 'unknown')} (id={job.get('id')}): {e}")
+        job.setdefault("conclusion", "waiting")
+    checked.append(job)
+
+# --- Apply FAILURE-ONLY fast-fail normalization BEFORE splitting ---
+normalized = normalize_failure_only(checked)
+
+# --- Split after normalization ---
+success, failure, errors, waiting = [], [], [], []
+for job in normalized:
+    repo   = job.get("repo_name", "unknown")
+    branch = job.get("branch_name", "unknown")
+    concl  = (job.get("conclusion") or "").lower()
+
+    # keep your original buckets; treat transient states as waiting
+    if concl in ("waiting", "queued", "in_progress", ""):
         waiting.append(job)
+        print(f"[{repo} | {branch}] still waiting...")
+    elif concl == "success":
+        success.append(job)
+        print(f"[{repo} | {branch}] → SUCCESS")
+    elif concl == "failure":
+        failure.append(job)
+        print(f"[{repo} | {branch}] → FAILURE")
+    elif concl == "error":
+        errors.append(job)
+        print(f"[{repo} | {branch}] → ERROR")
+    else:
+        waiting.append(job)
+        print(f"[{repo} | {branch}] unknown conclusion '{concl}', keeping as waiting")
 
 # --- Overwrite split outputs (NO reading of existing files) ---
 save_overwrite(success_file, success)

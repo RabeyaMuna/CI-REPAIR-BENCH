@@ -8,10 +8,11 @@ config, CONFIG_PATH = load_config()
 
 def _normalize_fastfail_conclusion(records):
     """
-    Fast-fail policy:
+    Fast-fail policy (failure-only normalization):
       - If ANY job is completed AND conclusion == 'failure' => mark run 'failure'.
+      - Else, if fast-fail pattern observed: ANY job is 'cancelled' AND at least one job is 'completed' => mark run 'failure'.
       - Else, if ANY job (even if not completed) has conclusion == 'failure' => mark run 'failure'.
-      - Else, leave record unchanged.
+      - Else, leave record unchanged.  (No success normalization here.)
     """
     out = []
     for r in records:
@@ -20,34 +21,41 @@ def _normalize_fastfail_conclusion(records):
             out.append(r)
             continue
 
-        # 1) Completed failure has priority
-        completed_failure = any(
-            ((j or {}).get("status", "").lower() == "completed") and
-            ((j or {}).get("conclusion", "").lower() == "failure")
-            for j in jobs
-        )
+        # Normalize values (case-insensitive)
+        statuses    = [((j or {}).get("status") or "").lower() for j in jobs]
+        conclusions = [((j or {}).get("conclusion") or "").lower() for j in jobs]
+
+        # 1) Immediate failure if any completed job failed
+        completed_failure = any(st == "completed" and co == "failure"
+                                for st, co in zip(statuses, conclusions))
         if completed_failure:
             rr = dict(r)
             rr["conclusion"] = "failure"
             out.append(rr)
             continue
 
-        # 2) Otherwise, any failure (even if not completed yet)
-        any_failure = any(
-            ((j or {}).get("conclusion", "").lower() == "failure")
-            for j in jobs
-        )
+        # 2) Fast-fail pattern: jobs cancelled because a sibling failed
+        #    (often shows up as some 'cancelled' and at least one 'completed' in the same snapshot)
+        has_cancelled  = "cancelled" in conclusions
+        any_completed  = "completed" in statuses
+        if has_cancelled and any_completed:
+            rr = dict(r)
+            rr["conclusion"] = "failure"
+            out.append(rr)
+            continue
+
+        # 3) Otherwise, any (not-yet-completed) job already marked as failure
+        any_failure = any(co == "failure" for co in conclusions)
         if any_failure:
             rr = dict(r)
             rr["conclusion"] = "failure"
             out.append(rr)
             continue
 
-        # 3) No failures → leave as-is
+        # 4) No failures detected -> leave as-is (success logic remains unchanged)
         out.append(r)
 
     return out
-
 
 
 def read_jsonl(file_path):
