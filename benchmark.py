@@ -8,7 +8,7 @@ from datasets import load_dataset
 from omegaconf import OmegaConf
 from tqdm import tqdm
 from typing import List
-
+from fast_fail_detail import finalize_after_last_poll
 from benchmark_utils import read_jsonl, save_jsonl
 from benhmark_functions import get_results, process_datapoint
 
@@ -196,6 +196,14 @@ class CIFixBenchmark:
                 time.sleep(WAIT_INTERVAL)
 
         result_file.close()
+        
+        finalize_after_last_poll(
+            self,
+            jobs_results=jobs_results,
+            jobs_ids_await=jobs_ids_await,
+            jobs_ids_invalid=jobs_ids_invalid,
+            stream_results_path=jobs_results_file_path,
+        )
 
         print("\nFinal summary:")
         print(f"Completed: {len(jobs_results)}")
@@ -285,7 +293,6 @@ class CIFixBenchmark:
         print("---------------- Getting results -------------------")
         self.eval_jobs(result_filename=result_filename)
         self.analyze_results()
-
 
     def run_datapoint(self, datapoint, fix_repo_function):
         # This method is for debugging reasons

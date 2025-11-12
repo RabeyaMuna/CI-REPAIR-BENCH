@@ -21,9 +21,9 @@ def process_entire_dataset(dataset, config):
     generated_patches = []
     results = []
     
-    subset = dataset[72:328]
+    # subset = dataset[72:328]
     
-    for datapoint in subset:
+    for datapoint in dataset:
         task_id = datapoint["id"]
         repo_name = datapoint["repo_name"]
         repo_owner = datapoint["repo_owner"]
@@ -71,7 +71,7 @@ def process_entire_dataset(dataset, config):
             continue
         
         try:
-            patch_generator = PatchGeneration(  bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
+            patch_generator = PatchGeneration(bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
             error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow).run()
             
             generated_patches.append(patch_generator)
