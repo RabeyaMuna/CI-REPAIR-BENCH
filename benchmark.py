@@ -8,7 +8,7 @@ from datasets import load_dataset
 from omegaconf import OmegaConf
 from tqdm import tqdm
 from typing import List
-
+from fast_fail_detail import finalize_after_last_poll
 from benchmark_utils import read_jsonl, save_jsonl
 from benhmark_functions import get_results, process_datapoint
 
@@ -106,13 +106,14 @@ class CIFixBenchmark:
 
     def eval_jobs(self, jobs_ids=None, job_ids_file=None, result_filename=None):
         """
-        Evaluate all submitted jobs by polling GitHub Actions results safely.
-        Includes rate-limit protection, batch polling, and 10-minute interval cycles.
+        Evaluate all submitted jobs by polling all GitHub Actions results periodically.
+        Fetches all jobs each cycle but includes delay and rate-limit protection
+        to avoid exceeding GitHub’s 5000 req/hour limit.
         """
 
-        WAIT_INTERVAL = 600        # 10 minutes between polling cycles
-        MAX_ATTEMPTS = 12          # total 2-hour window
-        BATCH_SIZE = 100           # to stay below GitHub 5000 req/hr limit
+        WAIT_INTERVAL = 900       # 10 minutes between polling cycles
+        MAX_ATTEMPTS = 12         # total 2-hour window
+        REQ_DELAY = 0.8           # ~0.8s between requests → 4500 req/hour safe margin
 
         if result_filename is None:
             result_filename = f"jobs_results_{self.model_name}.jsonl"
@@ -142,74 +143,81 @@ class CIFixBenchmark:
 
         while len(jobs_ids_await) > 0 and n_attempts < MAX_ATTEMPTS:
             n_attempts += 1
-            print(f"\nCycle {n_attempts}: checking up to {BATCH_SIZE} jobs")
+            print(f"\nCycle {n_attempts}: polling all {len(jobs_ids_await)} jobs")
 
             new_waiting = []
             start_time = time.time()
 
-            for i in range(0, len(jobs_ids_await), BATCH_SIZE):
-                batch = jobs_ids_await[i:i + BATCH_SIZE]
-                for job_id in batch:
-                    try:
-                        job_url, conclusion = get_results(job_id, self.config, self.credentials)
-                    except Exception as e:
-                        print(f"Warning: API error for {job_id.get('repo_name')}: {e}")
-                        new_waiting.append(job_id)
-                        continue
+            for job_id in jobs_ids_await:
+                try:
+                    job_url, conclusion = get_results(job_id, self.config, self.credentials)
+                except Exception as e:
+                    print(f"Warning: API error for {job_id.get('repo_name')}: {e}")
+                    new_waiting.append(job_id)
+                    time.sleep(REQ_DELAY)
+                    continue
 
-                    # Handle rate limit explicitly
-                    if isinstance(job_url, dict) and "API rate limit" in str(job_url):
-                        print("Rate limit reached. Waiting 15 minutes before retrying...")
-                        time.sleep(900)
-                        new_waiting.extend(batch[i:])
-                        break
+                # Detect API rate limit response
+                if isinstance(job_url, dict) and "API rate limit" in str(job_url):
+                    print("Rate limit reached. Sleeping 15 minutes before retrying...")
+                    time.sleep(900)
+                    new_waiting.append(job_id)
+                    continue
 
-                    if conclusion == "waiting":
-                        new_waiting.append(job_id)
-                    elif conclusion == "error":
-                        jobs_ids_invalid.append(job_id)
-                    else:
-                        job_id["url"] = job_url
-                        job_id["conclusion"] = conclusion
-                        jobs_results.append(job_id)
-                        json.dump(job_id, result_file)
-                        result_file.write("\n")
+                # Categorize job state
+                if conclusion == "waiting":
+                    new_waiting.append(job_id)
+                elif conclusion == "error":
+                    jobs_ids_invalid.append(job_id)
+                else:
+                    job_id["url"] = job_url
+                    job_id["conclusion"] = conclusion
+                    jobs_results.append(job_id)
+                    json.dump(job_id, result_file)
+                    result_file.write("\n")
 
-                # brief pause between batches
-                time.sleep(2)
+                # Delay between requests to avoid hitting limit
+                time.sleep(REQ_DELAY)
 
             jobs_ids_await = new_waiting
 
+            # Save intermediate states
             save_jsonl(jobs_awaiting_file_path, jobs_ids_await)
             save_jsonl(jobs_invalid_file_path, jobs_ids_invalid)
 
             elapsed = (time.time() - start_time) / 60
-            print(f"Cycle {n_attempts} completed in {elapsed:.1f} minutes.")
-            print(f"Results so far: {len(jobs_results)} success, "
+            print(f"Cycle {n_attempts} done in {elapsed:.1f} minutes.")
+            print(f"Results: {len(jobs_results)} success, "
                 f"{len(jobs_ids_invalid)} invalid, {len(jobs_ids_await)} waiting.")
 
+            # Wait before next cycle if needed
             if len(jobs_ids_await) > 0 and n_attempts < MAX_ATTEMPTS:
-                print(f"Waiting {WAIT_INTERVAL/60:.0f} minutes before next evaluation...")
+                print(f"Sleeping {WAIT_INTERVAL/60:.0f} minutes before next cycle...")
                 time.sleep(WAIT_INTERVAL)
 
         result_file.close()
+        
+        finalize_after_last_poll(
+            self,
+            jobs_results=jobs_results,
+            jobs_ids_await=jobs_ids_await,
+            jobs_ids_invalid=jobs_ids_invalid,
+            stream_results_path=jobs_results_file_path,
+        )
 
         print("\nFinal summary:")
-        print(f"{len(jobs_results)} jobs completed successfully.")
-        print(f"{len(jobs_ids_invalid)} jobs invalid.")
-        print(f"{len(jobs_ids_await)} still waiting after {MAX_ATTEMPTS} attempts.")
+        print(f"Completed: {len(jobs_results)}")
+        print(f"Invalid: {len(jobs_ids_invalid)}")
+        print(f"Still waiting: {len(jobs_ids_await)} after {MAX_ATTEMPTS} attempts")
 
         self.jobs_results = jobs_results
         return jobs_results
-
 
     def get_results(self, job_ids_file=None, result_filename=None):
         if job_ids_file is None:
             job_ids_file = os.path.join(
                 self.config.out_folder, f"jobs_ids_{self.model_name}.jsonl"
             )
-
-        self.eval_jobs(self, job_ids_file, result_filename)
         
         if result_filename is None:
             result_filename = f"jobs_results_{self.model_name}.jsonl"
@@ -283,7 +291,6 @@ class CIFixBenchmark:
         print("---------------- Getting results -------------------")
         self.eval_jobs(result_filename=result_filename)
         self.analyze_results()
-
 
     def run_datapoint(self, datapoint, fix_repo_function):
         # This method is for debugging reasons

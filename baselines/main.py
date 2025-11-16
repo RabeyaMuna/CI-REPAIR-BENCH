@@ -8,6 +8,7 @@ from datasets import load_dataset
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, END
+from utilities.llm_provider import get_llm
 from ci_repair.ci_log_analyzer import CILogAnalyzer
 from ci_repair.fault_localization import FaultLocalization
 from ci_repair.patch_generation import PatchGeneration
@@ -15,15 +16,15 @@ from utilities.ensure_repo import ensure_repo_at_commit
 
 load_dotenv()
 
-def process_entire_dataset(dataset, config):
+def process_entire_dataset(dataset, config, llm):
     error_details = []
     fault_localization = []
     generated_patches = []
     results = []
     
-    # subset = dataset[133:]
+    subset = dataset[26:27]
     
-    for datapoint in dataset:
+    for datapoint in subset:
         task_id = datapoint["id"]
         repo_name = datapoint["repo_name"]
         repo_owner = datapoint["repo_owner"]
@@ -42,7 +43,7 @@ def process_entire_dataset(dataset, config):
         ensure_repo_at_commit(repo_url, repo_path, sha_fail)
 
         try:
-            log_analysis_result = CILogAnalyzer(repo_path, logs, sha_fail, workflow, workflow_path).run()
+            log_analysis_result = CILogAnalyzer(repo_path, logs, sha_fail, workflow, workflow_path, llm=llm).run()
             
             error_details.append(log_analysis_result)
 
@@ -59,6 +60,7 @@ def process_entire_dataset(dataset, config):
                                                 repo_path=repo_path,
                                                 error_logs=log_analysis_result,
                                                 workflow=workflow,
+                                                llm=llm
                                             ).run()
             
             fault_localization.append(fault_localizer)
@@ -71,9 +73,13 @@ def process_entire_dataset(dataset, config):
             continue
         
         try:
-            patch_generator = PatchGeneration(  bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
-            error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow).run()
+            patch_generator = PatchGeneration(bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
+            error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow, llm=llm).run()
             
+            if patch_generator["diff"] =="":
+                print(f" No patch generated for {sha_fail}")
+                continue
+
             generated_patches.append(patch_generator)
 
             with open(os.path.join(config.project_result_dir, "generated_patches.json"), "w") as f:
@@ -93,12 +99,13 @@ if __name__ == "__main__":
     # Construct dataset path dynamically
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # one level up from ci-build-repair-project
     dataset_path = os.path.join(base_dir, "dataset", "lca_dataset.parquet")
-
+    model_key = "gpt4o-mini"   # or "gpt4o", "deepseek-chat", etc.
+    llm = get_llm(model_key)
     # Load dataset
     dataset_df = pd.read_parquet(dataset_path)
     dataset = dataset_df.to_dict(orient="records")
 
-    results = process_entire_dataset(dataset, config)
+    results = process_entire_dataset(dataset, config, llm)
 
     output_file = os.path.join(config.project_result_dir, "generated_patches.json")
     with open(output_file, "w") as f:

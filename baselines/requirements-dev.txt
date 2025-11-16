@@ -17,3 +17,8 @@ ruamel.yaml
 json5
 GitPython
 rank-bm25
+flake8
+mypy
+ruff
+pytest
+black
