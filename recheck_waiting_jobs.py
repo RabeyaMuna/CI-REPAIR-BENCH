@@ -361,15 +361,4 @@ print(f"[Sanity] Combined row count: {len(combined_results)}")
 # -----------------------------
 analysis_dir = os.path.join(base_dir, "analysis_isolated")
 os.makedirs(analysis_dir, exist_ok=True)
-tmp_results_for_analysis = os.path.join(analysis_dir, "jobs_results_diff_SINGLE_RUN.jsonl")
-shutil.copy2(results_file, tmp_results_for_analysis)
 
-print("\n===============================")
-print(" Running Evaluation Summary (isolated file)...")
-print("===============================\n")
-print(f"[Analyze] Passing: {tmp_results_for_analysis}")
-
-bench.analyze_results(jobs_results_file=tmp_results_for_analysis)
-
-print("\nEvaluation complete — metrics printed above.")
-print("\nRecheck cycle finished.\n")
