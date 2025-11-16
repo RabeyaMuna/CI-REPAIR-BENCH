@@ -110,51 +110,6 @@ def delete_unreferenced_workflows(workflow_dir, referenced_files):
             except Exception as e:
                 print(f"[WARN] Could not delete {filename}: {e}")
 
-def detect_and_normalize_runners(workflow_file, keyword):
-    """
-    Replaces all occurrences of a specific deprecated GitHub-hosted runner
-    in a workflow YAML file with its replacement, preserving other values
-    and the exact structure/formatting.
-
-    Args:
-        workflow_file (str): Path to the YAML workflow file.
-        keyword (str): The deprecated runner keyword to replace.
-    """
-    yaml = YAML()
-    yaml.preserve_quotes = True
-    
-    with open(workflow_file, "r", encoding="utf-8") as f:
-        yaml_data = yaml.load(f)
-
-    keyword_lower = keyword.lower()
-    replacement = replacement_map[keyword_lower]
-
-    for job_name, job in yaml_data.get("jobs", {}).items():
-        # --- Replace in runs-on ---
-        runner = job.get("runs-on")
-        if isinstance(runner, str):
-            if runner.lower() == keyword_lower:
-                job["runs-on"] = replacement
-        elif isinstance(runner, list):
-            for i, r in enumerate(runner):
-                if str(r).lower() == keyword_lower:
-                    runner[i] = replacement
-
-        # --- Replace in strategy.matrix.os ---
-        strategy = job.get("strategy")
-        if isinstance(strategy, dict):
-            matrix = strategy.get("matrix")
-            if isinstance(matrix, dict) and "os" in matrix:
-                os_list = matrix["os"]
-                if isinstance(os_list, list):
-                    for i, os_val in enumerate(os_list):
-                        if str(os_val).lower() == keyword_lower:
-                            os_list[i] = replacement
-
-    # --- Write the modified YAML back ---
-    with open(workflow_file, "w", encoding="utf-8") as f:
-        yaml.dump(yaml_data, f)
-
 def copy_and_edit_workflow_file(datapoint, repo):
     """
     Copies and minimally edits a workflow file:
@@ -188,13 +143,6 @@ def copy_and_edit_workflow_file(datapoint, repo):
     reference_files.add(os.path.basename(target_file))
 
     delete_unreferenced_workflows(workflow_dir, reference_files)
-        # --- 1. Normalize deprecated runners only if found
-    # deprecated_found, deprecated_keyword = has_deprecated_runner(target_file) 
-    # if deprecated_found:
-    #     print("[INFO] Deprecated runner detected. Normalizing...")
-    #     detect_and_normalize_runners(target_file, deprecated_keyword)
-    # else:
-    #     print("[INFO] No deprecated runners found. Skipping normalization.")
 
     print(f"[INFO] Workflow updated: {target_file}")
 
@@ -456,4 +404,3 @@ def fix_apply_generated_patch(datapoint, repo_path, repo, out_folder):
     finally:
         if os.path.exists(temp_diff_path):
             os.remove(temp_diff_path)
-

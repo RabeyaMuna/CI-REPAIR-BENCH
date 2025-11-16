@@ -112,7 +112,7 @@ class CIFixBenchmark:
         """
 
         WAIT_INTERVAL = 900       # 10 minutes between polling cycles
-        MAX_ATTEMPTS = 15         # total 2-hour window
+        MAX_ATTEMPTS = 12         # total 2-hour window
         REQ_DELAY = 0.8           # ~0.8s between requests → 4500 req/hour safe margin
 
         if result_filename is None:
@@ -218,8 +218,6 @@ class CIFixBenchmark:
             job_ids_file = os.path.join(
                 self.config.out_folder, f"jobs_ids_{self.model_name}.jsonl"
             )
-
-        self.eval_jobs(self, job_ids_file, result_filename)
         
         if result_filename is None:
             result_filename = f"jobs_results_{self.model_name}.jsonl"
