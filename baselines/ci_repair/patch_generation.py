@@ -19,13 +19,25 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 api_key = os.getenv("OPENAI_API_KEY")
 logger = logging.getLogger(__name__)
 
+if not logging.getLogger().handlers:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+logger.setLevel(logging.INFO)
+
 automated_commands_available = [
   {
     "tool": "ruff",
-    "purpose": "Unified linter and formatter for Python (replaces flake8, pyflakes, pycodestyle, etc.)",
+    "purpose": (
+      "Unified linter and formatter for Python. "
+      "Can replace flake8/pyflakes/pycodestyle, handle many import issues, "
+      "and format code (similar to black)."
+    ),
     "install_command": "pip install ruff",
     "check_command": "ruff check {{file_or_dir}}",
     "fix_command": "ruff check --fix {{file_or_dir}}",
+    "format_command": "ruff format {{file_or_dir}}",
     "file_pattern": "*.py"
   },
   {
@@ -49,7 +61,7 @@ automated_commands_available = [
     "purpose": "Linting tool for style and logical errors (PEP8, unused imports, etc.)",
     "install_command": "pip install flake8",
     "check_command": "flake8 {{file_or_dir}}",
-    "fix_command": "ruff check --fix {{file_or_dir}}",
+    "fix_command": "ruff check --fix {{file_or_dir}}",  # delegate fixes to Ruff
     "file_pattern": "*.py"
   },
   {
@@ -73,7 +85,7 @@ automated_commands_available = [
     "purpose": "Comprehensive linter for detecting code smells and logical issues",
     "install_command": "pip install pylint",
     "check_command": "pylint {{file_or_dir}}",
-    "fix_command": "ruff check --fix {{file_or_dir}}",  # fixes are delegated to Ruff
+    "fix_command": "ruff check --fix {{file_or_dir}}",  # fixes delegated to Ruff
     "file_pattern": "*.py"
   },
   {
@@ -119,7 +131,6 @@ automated_commands_available = [
 ]
 
 
-
 class DiffOutput(BaseModel):
     diff: str
 
@@ -140,6 +151,7 @@ class PatchGeneration:
         error_details: Optional[Dict] = None,
         workflow_path: str = "",
         workflow: str = "",
+        llm: ChatOpenAI = None,
     ):
         self.config = load_config()
         self.bug_report = bug_report
@@ -149,7 +161,7 @@ class PatchGeneration:
         self.sha_fail = bug_report.get("sha_fail")
         self.workflow_path = workflow_path
         self.workflow = workflow
-        self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
+        self.llm = llm
         self.parser = JsonOutputParser()
         self.patch_results: List[Dict[str, Any]] = []
         self.original_content = None
@@ -274,16 +286,41 @@ Select the most accurate automated fix strategy that:
 ---
 
 ### INSTRUCTIONS
-1. Identify which automated tools from the provided reference can fix the detected issues.
-2. Provide the **installation commands** for those tools (`pip install <tool>`).
-3. Provide the **automated fix commands**, each including the full file path.
-4. If multiple tools apply, order them logically (e.g., `isort` → `black` → `ruff` → `flake8`).
-5. Only return tools that are explicitly mentioned in the CI workflow or are compatible with it.
-6. If no tool can fix the issue automatically, return empty lists.
+
+1. First, infer which tools are available in this project by inspecting the workflow commands
+   in section 4. For example, if any command string contains "ruff", then Ruff is available.
+
+2. If **Ruff is available** and the issues are related to formatting, style, imports, or
+   other lintable errors (flake8-like, pycodestyle-like, isort-like), you MUST prefer a
+   **Ruff-only strategy**:
+   - Use: `ruff check --fix {full_path}` followed by `ruff format {full_path}`.
+   - In this case, DO NOT also use `black`, `isort`, `autopep8`, or `yapf` on this file.
+   - Ruff is treated as the unified linter/formatter for Python.
+
+3. Only when Ruff is NOT available or clearly does NOT cover the error type
+   (e.g., purely type-checking, complex logic bug, etc.), you may fall back to
+   other tools like:
+   - `black` / `isort` for formatting/imports,
+   - `flake8` / `pylint` for linting,
+   - or other tools from the reference.
+
+4. Provide the **installation commands** as a list of shell commands
+   (e.g., `["pip install ruff"]`).
+
+5. Provide the **automated fix commands** as a list of shell commands
+   (e.g., `["ruff check --fix {full_path}", "ruff format {full_path}"]`).
+
+6. Avoid redundant tools when a single tool is sufficient. If Ruff can fix it, use only Ruff.
+
+7. Only return tools that are explicitly mentioned in the CI workflow or are clearly compatible with it.
+
+8. If no tool can fix the issue automatically (e.g., logical errors, missing return statements),
+   return empty lists for both `installation_commands` and `fix_commands`.
 
 ---
 
 ### RESPONSE FORMAT (MUST BE STRICTLY VALID JSON)
+
 {{
   "installation_commands": [
     "pip install <tool1>",
@@ -300,38 +337,40 @@ Select the most accurate automated fix strategy that:
 
 ### EXAMPLES
 
-#### Example 1: Import Sorting Error
+#### Example 1: Import / Formatting Errors with Ruff Available
 Error: "Import block is un-sorted or un-formatted"
-Workflow uses: `ruff`, `black`, `isort`
-Output:
-{{
-  "installation_commands": ["pip install ruff black isort"],
-  "fix_commands": [
-    "isort {full_path}",
-    "black {full_path}",
-    "ruff check --fix {full_path}"
-  ],
-  "tool_explanation": "The workflow uses ruff and black. The issue is an unsorted import block, so isort + black + ruff --fix will correct and reformat the imports."
-}}
-
-#### Example 2: Line-Length Violation
-Error: "line too long (E501)"
-Workflow uses: `ruff`, `flake8`
+Workflow uses: a command containing "ruff"
 Output:
 {{
   "installation_commands": ["pip install ruff"],
-  "fix_commands": ["ruff check --fix {full_path}"],
-  "tool_explanation": "Ruff is part of the CI workflow and can automatically fix E501 violations via --fix."
+  "fix_commands": [
+    "ruff check --fix {full_path}",
+    "ruff format {full_path}"
+  ],
+  "tool_explanation": "Ruff is part of the CI workflow and can handle import sorting, linting, and formatting. We use only Ruff (check --fix + format) to avoid redundant tools like black or isort."
 }}
 
-#### Example 3: Logical or Type Error
+#### Example 2: Line-Length Violation (E501) with Ruff Available
+Error: "line too long (E501)"
+Workflow uses: a command containing "ruff"
+Output:
+{{
+  "installation_commands": ["pip install ruff"],
+  "fix_commands": [
+    "ruff check --fix {full_path}",
+    "ruff format {full_path}"
+  ],
+  "tool_explanation": "Ruff can automatically fix E501 and other style violations. We rely solely on Ruff since it is included in the workflow."
+}}
+
+#### Example 3: Logical or Type Error (Not Auto-fixable)
 Error: "Function missing a return statement"
 Workflow uses: `pytest`, `mypy`
 Output:
 {{
   "installation_commands": [],
   "fix_commands": [],
-  "tool_explanation": "This is a logical or semantic error that cannot be fixed automatically."
+  "tool_explanation": "This is a logical or semantic error that cannot be safely fixed automatically by the available tools."
 }}
 """.strip()
 
@@ -344,7 +383,7 @@ Output:
 
             install_cmds = result.get("installation_commands", [])
             fix_cmds = result.get("fix_commands", [])
-            import pdb; pdb.set_trace()
+
             explanation = result.get("tool_explanation", "")
 
             logger.info(f"Tool explanation: {explanation}")
@@ -354,9 +393,14 @@ Output:
                 try:
                     cmd_parts = cmd.split()
                     logger.info(f"Installing tool: {cmd}")
-                    subprocess.run(
+                    result = subprocess.run(
                         cmd_parts, cwd=self.repo_path, capture_output=True, text=True, timeout=120
                     )
+                    
+                    if result.returncode == 0:
+                        logger.info(f"Tool installed successfully: {cmd}")
+                    else:
+                        logger.warning(f"Tool installation failed: {cmd}\n{result.stderr}")
                 except Exception as e:
                     logger.error(f"Tool installation failed ({cmd}): {e}")
 
@@ -369,6 +413,7 @@ Output:
                     fix_proc = subprocess.run(
                         cmd_parts, cwd=self.repo_path, capture_output=True, text=True, timeout=120
                     )
+
                     if fix_proc.returncode == 0:
                         logger.info(f"Automated fix succeeded: {cmd}")
                         success = True

@@ -1,37 +1,7 @@
 [
     {
-        "id": 73,
-        "sha_fail": "c27ea5332c1d979ad2fc0c2b09ff571c9538f423",
-        "diff": ""
-    },
-    {
-        "id": 74,
-        "sha_fail": "c434e89bee35d93f4e741c32dc36c5a9a68404df",
-        "diff": ""
-    },
-    {
-        "id": 75,
-        "sha_fail": "ca75b3dc2cfaf4d6a9409109f10b285bdf6a8097",
-        "diff": ""
-    },
-    {
-        "id": 76,
-        "sha_fail": "d1e88b8766d152d7d4e7911a0072591db1eb4bcd",
-        "diff": ""
-    },
-    {
-        "id": 77,
-        "sha_fail": "d340b3a337398d539f38101282d09dd5e9966354",
-        "diff": ""
-    },
-    {
-        "id": 78,
-        "sha_fail": "d78ebf9508e112a8d2526ec26bcc37d8e8a2bfa2",
-        "diff": ""
-    },
-    {
-        "id": 79,
-        "sha_fail": "da9d2e853bd3c3111d4d8864906975c75f7e9888",
-        "diff": ""
+        "id": 27,
+        "sha_fail": "0b08b8e82f8e67d89dd4335e63ecd95ab6f5f048",
+        "diff": "diff --git a/optuna/study/_optimize.py b/optuna/study/_optimize.py\nindex 059c681..f3f4ce3 100644\n--- a/optuna/study/_optimize.py\n+++ b/optuna/study/_optimize.py\n@@ -47,14 +47,20 @@ def _optimize(\n ) -> None:\n     if not isinstance(catch, tuple):\n         raise TypeError(\n-            \"The catch argument is of type '{}' but must be a tuple.\".format(type(catch).__name__)\n+            \"The catch argument is of type '{}' but must be a tuple.\".format(\n+                type(catch).__name__\n+            )\n         )\n \n     if study._thread_local.in_optimize_loop:\n-        raise RuntimeError(\"Nested invocation of `Study.optimize` method isn't allowed.\")\n+        raise RuntimeError(\n+            \"Nested invocation of `Study.optimize` method isn't allowed.\"\n+        )\n \n     if show_progress_bar and n_trials is None and timeout is not None and n_jobs != 1:\n-        warnings.warn(\"The timeout-based progress bar is not supported with n_jobs != 1.\")\n+        warnings.warn(\n+            \"The timeout-based progress bar is not supported with n_jobs != 1.\"\n+        )\n         show_progress_bar = False\n \n     progress_bar = pbar_module._ProgressBar(show_progress_bar, n_trials, timeout)\n@@ -89,7 +95,8 @@ def _optimize(\n \n                     if (\n                         timeout is not None\n-                        and (datetime.datetime.now() - time_start).total_seconds() > timeout\n+                        and (datetime.datetime.now() - time_start).total_seconds()\n+                        > timeout\n                     ):\n                         break\n \n@@ -223,7 +230,9 @@ def _run_trial(\n         if frozen_trial.state == TrialState.COMPLETE:\n             study._log_completed_trial(frozen_trial)\n         elif frozen_trial.state == TrialState.PRUNED:\n-            _logger.info(\"Trial {} pruned. {}\".format(frozen_trial.number, str(func_err)))\n+            _logger.info(\n+                \"Trial {} pruned. {}\".format(frozen_trial.number, str(func_err))\n+            )\n         elif frozen_trial.state == TrialState.FAIL:\n             if func_err is not None:\n                 _log_failed_trial(\n@@ -265,4 +274,6 @@ def _log_failed_trial(\n         exc_info=exc_info,\n     )\n \n-    _logger.warning(\"Trial {} failed with value {}.\".format(trial.number, repr(value_or_values)))\n+    _logger.warning(\n+        \"Trial {} failed with value {}.\".format(trial.number, repr(value_or_values))\n+    )\ndiff --git a/tutorial/20_recipes/004_cli.py b/tutorial/20_recipes/004_cli.py\nindex 41ab02a..2c76ef0 100644\n--- a/tutorial/20_recipes/004_cli.py\n+++ b/tutorial/20_recipes/004_cli.py\n@@ -27,7 +27,6 @@ Let us assume you are not in IPython shell and writing Python script files inste\n It is totally fine to write scripts like the following:\n \"\"\"\n \n-\n import optuna\n \n \n"
     }
 ]

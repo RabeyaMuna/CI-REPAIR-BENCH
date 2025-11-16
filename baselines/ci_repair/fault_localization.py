@@ -26,7 +26,7 @@ api_key = os.getenv("OPENAI_API_KEY")
 
 
 class FaultLocalization:
-    def __init__(self, sha_fail: str, repo_path: str, error_logs: dict, workflow: str):
+    def __init__(self, sha_fail: str, repo_path: str, error_logs: dict, workflow: str, llm: ChatOpenAI):
         # Unpack OmegaConf + project root if your loader returns a tuple
         cfg_result = load_config()
         if isinstance(cfg_result, tuple) and len(cfg_result) == 2:
@@ -49,7 +49,7 @@ class FaultLocalization:
         self.failed_commit = sha_fail
 
         # Make sure api_key is defined/imported where this runs
-        self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3, api_key=api_key)
+        self.llm = llm
 
         self.parser = JsonOutputParser()
 
@@ -89,6 +89,7 @@ class FaultLocalization:
 
         fault_localization = []
         for item in self.relevant_files:
+            
             file_path = (item.get("file") or item.get("path") or "").strip()
             if not file_path:
                 continue
@@ -290,7 +291,12 @@ CHECKLIST BEFORE RETURNING
                 raw_response = raw_response.strip("` \n")
 
             # Must be pure JSON
-            parsed_result = json.loads(raw_response)
+            try:
+        # Try strict JSON parsing
+                parsed_result = json.loads(raw_response)
+            except json.JSONDecodeError:
+                # Fallback to demjson3 for messy JSON
+                parsed_result = demjson3.decode(raw_response)
 
             if not isinstance(parsed_result, list) or not parsed_result:
                 print(f"[Chunk {chunk_idx}] No faults found.")

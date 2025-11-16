@@ -1,196 +1,88 @@
 [
     {
-        "sha_fail": "2c06ffa4c9d2c37846c60ad75899b4d72f214ff9",
+        "sha_fail": "0b08b8e82f8e67d89dd4335e63ecd95ab6f5f048",
         "fault_localization_data": [
             {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/tests_fetcher.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/tests_fetcher.py",
+                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/10_key_features/004_distributed.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/10_key_features/004_distributed.py",
                 "faults": [
                     {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/tests_fetcher.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/tests_fetcher.py",
-                        "line_range": [
-                            52,
-                            59
-                        ],
-                        "reason": "Code quality check failed due to un-sorted or un-formatted import block. The import statements from lines 52 to 59 are not sorted correctly as per PEP 8 guidelines.",
-                        "issue_type": "linting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "import argparse\nimport collections\nimport json\nimport os\nimport re\nfrom contextlib import contextmanager\nfrom pathlib import Path\nfrom typing import Dict, List, Optional, Tuple, Union"
-                    },
-                    {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/tests_fetcher.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/tests_fetcher.py",
-                        "line_range": [
-                            801,
-                            1023
-                        ],
-                        "reason": "Code quality check failed due to un-sorted or un-formatted import block. The import statements from lines 801 to 1023 are not sorted correctly as per PEP 8 guidelines. This includes the imports used in the functions defined in this range, which may affect the overall code quality and readability.",
-                        "issue_type": "linting",
-                        "fault_localization_level": "file",
-                        "code_snippet": "            return True\n        if fname.startswith(\"examples\") and fname.split(os.path.sep)[-1].startswith(\"test\"):\n            return True\n        return False\n\n    # Build the test map\n    test_map = {module: [f for f in deps if is_test(f)] for module, deps in reverse_map.items()}\n\n    return test_map\n\n\ndef check_imports_all_exist():\n    \"\"\"\n    Isn't used per se by the test fetcher but might be used later as a quality check. Putting this here for now so the\n    code is not lost. This checks all imports in a given file do exist.\n    \"\"\"\n    cache = {}\n    all_modules = list(PATH_TO_DIFFUSERS.glob(\"**/*.py\")) + list(PATH_TO_TESTS.glob(\"**/*.py\"))\n    all_modules = [str(mod.relative_to(PATH_TO_REPO)) for mod in all_modules]\n    direct_deps = {m: get_module_dependencies(m, cache=cache) for m in all_modules}\n\n    for module, deps in direct_deps.items():\n        for dep in deps:\n            if not (PATH_TO_REPO / dep).is_file():\n                print(f\"{module} has dependency on {dep} which does not exist.\")\n\n\ndef _print_list(l) -> str:\n    \"\"\"\n    Pretty print a list of elements with one line per element and a - starting each line.\n    \"\"\"\n    return \"\\n\".join([f\"- {f}\" for f in l])\n\n\ndef update_test_map_with_core_pipelines(json_output_file: str):\n    print(f\"\\n### ADD CORE PIPELINE TESTS ###\\n{_print_list(IMPORTANT_PIPELINES)}\")\n    with open(json_output_file, \"rb\") as fp:\n        test_map = json.load(fp)\n\n    # Add core pipelines as their own test group\n    test_map[\"core_pipelines\"] = \" \".join(\n        sorted([str(PATH_TO_TESTS / f\"pipelines/{pipe}\") for pipe in IMPORTANT_PIPELINES])\n    )\n\n    # If there are no existing pipeline tests save the map\n    if \"pipelines\" not in test_map:\n        with open(json_output_file, \"w\", encoding=\"UTF-8\") as fp:\n            json.dump(test_map, fp, ensure_ascii=False)\n\n    pipeline_tests = test_map.pop(\"pipelines\")\n    pipeline_tests = pipeline_tests.split(\" \")\n\n    # Remove core pipeline tests from the fetched pipeline tests\n    updated_pipeline_tests = []\n    for pipe in pipeline_tests:\n        if pipe == \"tests/pipelines\" or Path(pipe).parts[2] in IMPORTANT_PIPELINES:\n            continue\n        updated_pipeline_tests.append(pipe)\n\n    if len(updated_pipeline_tests) > 0:\n        test_map[\"pipelines\"] = \" \".join(sorted(updated_pipeline_tests))\n\n    with open(json_output_file, \"w\", encoding=\"UTF-8\") as fp:\n        json.dump(test_map, fp, ensure_ascii=False)\n\n\ndef create_json_map(test_files_to_run: List[str], json_output_file: Optional[str] = None):\n    \"\"\"\n    Creates a map from a list of tests to run to easily split them by category, when running parallelism of slow tests.\n\n    Args:\n        test_files_to_run (`List[str]`): The list of tests to run.\n        json_output_file (`str`): The path where to store the built json map.\n    \"\"\"\n    if json_output_file is None:\n        return\n\n    test_map = {}\n    for test_file in test_files_to_run:\n        # `test_file` is a path to a test folder/file, starting with `tests/`. For example,\n        #   - `tests/models/bert/test_modeling_bert.py` or `tests/models/bert`\n        #   - `tests/trainer/test_trainer.py` or `tests/trainer`\n        #   - `tests/test_modeling_common.py`\n        names = test_file.split(os.path.sep)\n        module = names[1]\n        if module in MODULES_TO_IGNORE:\n            continue\n\n        if len(names) > 2 or not test_file.endswith(\".py\"):\n            # test folders under `tests` or python files under them\n            # take the part like tokenization, `pipeline`, etc. for other test categories\n            key = os.path.sep.join(names[1:2])\n        else:\n            # common test files directly under `tests/`\n            key = \"common\"\n\n        if key not in test_map:\n            test_map[key] = []\n        test_map[key].append(test_file)\n\n    # sort the keys & values\n    keys = sorted(test_map.keys())\n    test_map = {k: \" \".join(sorted(test_map[k])) for k in keys}\n\n    with open(json_output_file, \"w\", encoding=\"UTF-8\") as fp:\n        json.dump(test_map, fp, ensure_ascii=False)\n\n\ndef infer_tests_to_run(\n    output_file: str,\n    diff_with_last_commit: bool = False,\n    json_output_file: Optional[str] = None,\n):\n    \"\"\"\n    The main function called by the test fetcher. Determines the tests to run from the diff.\n\n    Args:\n        output_file (`str`):\n            The path where to store the summary of the test fetcher analysis. Other files will be stored in the same\n            folder:\n\n            - examples_test_list.txt: The list of examples tests to run.\n            - test_repo_utils.txt: Will indicate if the repo utils tests should be run or not.\n            - doctest_list.txt: The list of doctests to run.\n\n        diff_with_last_commit (`bool`, *optional*, defaults to `False`):\n            Whether to analyze the diff with the last commit (for use on the main branch after a PR is merged) or with\n            the branching point from main (for use on each PR).\n        filter_models (`bool`, *optional*, defaults to `True`):\n            Whether or not to filter the tests to core models only, when a file modified results in a lot of model\n            tests.\n        json_output_file (`str`, *optional*):\n            The path where to store the json file mapping categories of tests to tests to run (used for parallelism or\n            the slow tests).\n    \"\"\"\n    modified_files = get_modified_python_files(diff_with_last_commit=diff_with_last_commit)\n    print(f\"\\n### MODIFIED FILES ###\\n{_print_list(modified_files)}\")\n    # Create the map that will give us all impacted modules.\n    reverse_map = create_reverse_dependency_map()\n    impacted_files = modified_files.copy()\n    for f in modified_files:\n        if f in reverse_map:\n            impacted_files.extend(reverse_map[f])\n\n    # Remove duplicates\n    impacted_files = sorted(set(impacted_files))\n    print(f\"\\n### IMPACTED FILES ###\\n{_print_list(impacted_files)}\")\n\n    # Grab the corresponding test files:\n    if any(x in modified_files for x in [\"setup.py\"]):\n        test_files_to_run = [\"tests\", \"examples\"]\n\n    # in order to trigger pipeline tests even if no code change at all\n    if \"tests/utils/tiny_model_summary.json\" in modified_files:\n        test_files_to_run = [\"tests\"]\n        any(f.split(os.path.sep)[0] == \"utils\" for f in modified_files)\n    else:\n        # All modified tests need to be run.\n        test_files_to_run = [\n            f for f in modified_files if f.startswith(\"tests\") and f.split(os.path.sep)[-1].startswith(\"test\")\n        ]\n        # Then we grab the corresponding test files.\n        test_map = create_module_to_test_map(reverse_map=reverse_map)\n        for f in modified_files:\n            if f in test_map:\n                test_files_to_run.extend(test_map[f])\n        test_files_to_run = sorted(set(test_files_to_run))\n        # Make sure we did not end up with a test file that was removed\n        test_files_to_run = [f for f in test_files_to_run if (PATH_TO_REPO / f).exists()]\n\n        any(f.split(os.path.sep)[0] == \"utils\" for f in modified_files)\n\n    examples_tests_to_run = [f for f in test_files_to_run if f.startswith(\"examples\")]\n    test_files_to_run = [f for f in test_files_to_run if not f.startswith(\"examples\")]\n    print(f\"\\n### TEST TO RUN ###\\n{_print_list(test_files_to_run)}\")\n    if len(test_files_to_run) > 0:\n        with open(output_file, \"w\", encoding=\"utf-8\") as f:\n            f.write(\" \".join(test_files_to_run))\n\n        # Create a map that maps test categories to test files, i.e. `models/bert` -> [...test_modeling_bert.py, ...]\n\n        # Get all test directories (and some common test files) under `tests` and `tests/models` if `test_files_to_run`\n        # contains `tests` (i.e. when `setup.py` is changed).\n        if \"tests\" in test_files_to_run:\n            test_files_to_run = get_all_tests()\n\n        create_json_map(test_files_to_run, json_output_file)\n\n    print(f\"\\n### EXAMPLES TEST TO RUN ###\\n{_print_list(examples_tests_to_run)}\")\n    if len(examples_tests_to_run) > 0:\n        # We use `all` in the case `commit_flags[\"test_all\"]` as well as in `create_circleci_config.py` for processing\n        if examples_tests_to_run == [\"examples\"]:\n            examples_tests_to_run = [\"all\"]\n        example_file = Path(output_file).parent / \"examples_test_list.txt\"\n        with open(example_file, \"w\", encoding=\"utf-8\") as f:\n            f.write(\" \".join(examples_tests_to_run))\n\n\ndef filter_tests(output_file: str, filters: List[str]):\n    \"\"\"\n    Reads the content of the output file and filters out all the tests in a list of given folders.\n\n    Args:\n        output_file (`str` or `os.PathLike`): The path to the output file of the tests fetcher.\n        filters (`List[str]`): A list of folders to filter.\n    \"\"\"\n    if not os.path.isfile(output_file):\n        print(\"No test file found.\")\n        return\n    with open(output_file, \"r\", encoding=\"utf-8\") as f:\n        test_files = f.read().split(\" \")\n\n    if len(test_files) == 0 or test_files == [\"\"]:\n        print(\"No tests to filter.\")\n        return\n\n    if test_files == [\"tests\"]:\n        test_files = [os.path.join(\"tests\", f) for f in os.listdir(\"tests\") if f not in [\"__init__.py\"] + filters]\n    else:\n        test_files = [f for f in test_files if f.split(os.path.sep)[1] not in filters]\n\n    with open(output_file, \"w\", encoding=\"utf-8\") as f:\n        f.write(\" \".join(test_files))"
-                    }
-                ]
-            },
-            {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/get_modified_files.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/get_modified_files.py",
-                "faults": [
-                    {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/get_modified_files.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/get_modified_files.py",
-                        "line_range": [
-                            22,
-                            24
-                        ],
-                        "reason": "The import block is un-sorted or un-formatted as indicated by the CI error context. Imports should be organized according to PEP 8 guidelines, typically grouped by standard library, third-party, and local application/library imports. The current order does not comply with these standards.",
-                        "issue_type": "formatting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "import re\nimport subprocess\nimport sys"
-                    }
-                ]
-            },
-            {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/check_copies.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/check_copies.py",
-                "faults": [
-                    {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/check_copies.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/check_copies.py",
-                        "line_range": [
-                            16,
-                            20
-                        ],
-                        "reason": "Import block is un-sorted or un-formatted as indicated by the CI error context. Imports should be organized according to PEP 8 guidelines.",
-                        "issue_type": "formatting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "import argparse\nimport glob\nimport os\nimport re\nimport subprocess"
-                    }
-                ]
-            },
-            {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/utils/testing_utils.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/utils/testing_utils.py",
-                "faults": [
-                    {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/utils/testing_utils.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/utils/testing_utils.py",
+                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/10_key_features/004_distributed.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/10_key_features/004_distributed.py",
                         "line_range": [
                             1,
-                            41
+                            91
                         ],
-                        "reason": "The import block is un-sorted or un-formatted, which violates code quality standards. Imports should be organized alphabetically and grouped appropriately.",
-                        "issue_type": "formatting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "import functools\nimport importlib\nimport inspect\nimport io\nimport logging\nimport multiprocessing\nimport os\nimport random\nimport re\nimport struct\nimport sys\nimport tempfile\nimport time\nimport unittest\nimport urllib.parse\nfrom contextlib import contextmanager\nfrom distutils.util import strtobool\nfrom io import BytesIO, StringIO\nfrom pathlib import Path\nfrom typing import Callable, Dict, List, Optional, Union\n\nimport numpy as np\nimport PIL.Image\nimport PIL.ImageOps\nimport requests\nfrom numpy.linalg import norm\nfrom packaging import version\n\nfrom .import_utils import (\n    BACKENDS_MAPPING,\n    is_compel_available,\n    is_flax_available,\n    is_note_seq_available,\n    is_onnx_available,\n    is_opencv_available,\n    is_peft_available,\n    is_torch_available,\n    is_torch_version,\n    is_torchsde_available,\n    is_transformers_available,\n)"
+                        "reason": "The CI run failed during the doctest step due to multiple trials finishing with unexpected values, indicating potential issues in the test cases or the underlying code. Additionally, a ValueError was encountered during the execution of the objective function. This suggests that the objective function may not be handling input values correctly, leading to runtime errors during trial execution.",
+                        "issue_type": "runtime_error",
+                        "fault_localization_level": "file",
+                        "code_snippet": "\"\"\"\n.. _distributed:\n\nEasy Parallelization\n====================\n\nIt's straightforward to parallelize :func:`optuna.study.Study.optimize`.\n\nIf you want to manually execute Optuna optimization:\n\n    1. start an RDB server (this example uses MySQL)\n    2. create a study with ``--storage`` argument\n    3. share the study among multiple nodes and processes\n\nOf course, you can use Kubernetes as in `the kubernetes examples <https://github.com/optuna/optuna-examples/tree/main/kubernetes>`_.\n\nTo just see how parallel optimization works in Optuna, check the below video.\n\n.. raw:: html\n\n    <iframe width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/J_aymk4YXhg?start=427\" frameborder=\"0\" allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>\n\n\nCreate a Study\n--------------\n\nYou can create a study using ``optuna create-study`` command.\nAlternatively, in Python script you can use :func:`optuna.create_study`.\n\n\n.. code-block:: bash\n\n    $ mysql -u root -e \"CREATE DATABASE IF NOT EXISTS example\"\n    $ optuna create-study --study-name \"distributed-example\" --storage \"mysql://root@localhost/example\"\n    [I 2020-07-21 13:43:39,642] A new study created with name: distributed-example\n\n\nThen, write an optimization script. Let's assume that ``foo.py`` contains the following code.\n\n.. code-block:: python\n\n    import optuna\n\n\n    def objective(trial):\n        x = trial.suggest_float(\"x\", -10, 10)\n        return (x - 2) ** 2\n\n\n    if __name__ == \"__main__\":\n        study = optuna.load_study(\n            study_name=\"distributed-example\", storage=\"mysql://root@localhost/example\"\n        )\n        study.optimize(objective, n_trials=100)\n\n\nShare the Study among Multiple Nodes and Processes\n--------------------------------------------------\n\nFinally, run the shared study from multiple processes.\nFor example, run ``Process 1`` in a terminal, and do ``Process 2`` in another one.\nThey get parameter suggestions based on shared trials' history.\n\nProcess 1:\n\n.. code-block:: bash\n\n    $ python foo.py\n    [I 2020-07-21 13:45:02,973] Trial 0 finished with value: 45.35553104173011 and parameters: {'x': 8.73465151598285}. Best is trial 0 with value: 45.35553104173011.\n    [I 2020-07-21 13:45:04,013] Trial 2 finished with value: 4.6002397305938905 and parameters: {'x': 4.144816945707463}. Best is trial 1 with value: 0.028194513284051464.\n    ...\n\nProcess 2 (the same command as process 1):\n\n.. code-block:: bash\n\n    $ python foo.py\n    [I 2020-07-21 13:45:03,748] Trial 1 finished with value: 0.028194513284051464 and parameters: {'x': 1.8320877810162361}. Best is trial 1 with value: 0.028194513284051464.\n    [I 2020-07-21 13:45:05,783] Trial 3 finished with value: 24.45966755098074 and parameters: {'x': 6.945671597566982}. Best is trial 1 with value: 0.028194513284051464.\n    ...\n\n.. note::\n    ``n_trials`` is the number of trials each process will run, not the total number of trials across all processes. For example, the script given above runs 100 trials for each process, 100 trials * 2 processes = 200 trials. :class:`optuna.study.MaxTrialsCallback` can ensure how many times trials will be performed across all processes.\n\n.. note::\n    We do not recommend SQLite for distributed optimizations at scale because it may cause deadlocks and serious performance issues. Please consider to use another database engine like PostgreSQL or MySQL.\n\n.. note::\n    Please avoid putting the SQLite database on NFS when running distributed optimizations. See also: https://www.sqlite.org/faq.html#q5\n\n\"\"\""
                     }
                 ]
             },
             {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/scripts/convert_diffusers_sdxl_lora_to_webui.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/scripts/convert_diffusers_sdxl_lora_to_webui.py",
+                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/optuna/logging.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/optuna/logging.py",
                 "faults": [
                     {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/scripts/convert_diffusers_sdxl_lora_to_webui.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/scripts/convert_diffusers_sdxl_lora_to_webui.py",
+                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/optuna/logging.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/optuna/logging.py",
                         "line_range": [
-                            20,
-                            25
+                            1,
+                            306
                         ],
-                        "reason": "The import block is un-sorted or un-formatted, which violates code quality standards as indicated by the CI error context. Imports from 'safetensors.torch' and 'diffusers.utils' are not organized correctly according to PEP 8 guidelines.",
-                        "issue_type": "formatting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "import argparse\nimport os\n\nfrom safetensors.torch import load_file, save_file\n\nfrom diffusers.utils import convert_all_state_dict_to_peft, convert_state_dict_to_kohya"
+                        "reason": "The CI run failed during the doctest step due to multiple trials finishing with unexpected values, indicating potential issues in the test cases or the underlying code. Additionally, a ValueError was encountered during the execution of the objective function. This suggests that the logging configuration may not be correctly set up, leading to improper logging behavior during trial execution.",
+                        "issue_type": "test_failure",
+                        "fault_localization_level": "file",
+                        "code_snippet": "import logging\nfrom logging import CRITICAL\nfrom logging import DEBUG\nfrom logging import ERROR\nfrom logging import FATAL\nfrom logging import INFO\nfrom logging import WARN\nfrom logging import WARNING\nimport os\nimport sys\nimport threading\nfrom typing import Optional\n\nimport colorlog\n\n\n__all__ = [\n    \"CRITICAL\",\n    \"DEBUG\",\n    \"ERROR\",\n    \"FATAL\",\n    \"INFO\",\n    \"WARN\",\n    \"WARNING\",\n]\n\n_lock: threading.Lock = threading.Lock()\n_default_handler: Optional[logging.Handler] = None\n\n\ndef create_default_formatter() -> logging.Formatter:\n    \"\"\"Create a default formatter of log messages.\n\n    This function is not supposed to be directly accessed by library users.\n    \"\"\"\n    header = \"[%(levelname)1.1s %(asctime)s]\"\n    message = \"%(message)s\"\n    if _color_supported():\n        return colorlog.ColoredFormatter(\n            f\"%(log_color)s{header}%(reset)s {message}\",\n        )\n    return logging.Formatter(f\"{header} {message}\")\n\n\ndef _color_supported() -> bool:\n    \"\"\"Detection of color support.\"\"\"\n    # NO_COLOR environment variable:\n    if os.environ.get(\"NO_COLOR\", None):\n        return False\n\n    if not hasattr(sys.stderr, \"isatty\") or not sys.stderr.isatty():\n        return False\n    else:\n        return True\n\n\ndef _get_library_name() -> str:\n    return __name__.split(\".\")[0]\n\n\ndef _get_library_root_logger() -> logging.Logger:\n    return logging.getLogger(_get_library_name())\n\n\ndef _configure_library_root_logger() -> None:\n    global _default_handler\n\n    with _lock:\n        if _default_handler:\n            # This library has already configured the library root logger.\n            return\n        _default_handler = logging.StreamHandler()  # Set sys.stderr as stream.\n        _default_handler.setFormatter(create_default_formatter())\n\n        # Apply our default configuration to the library root logger.\n        library_root_logger: logging.Logger = _get_library_root_logger()\n        library_root_logger.addHandler(_default_handler)\n        library_root_logger.setLevel(logging.INFO)\n        library_root_logger.propagate = False\n\n\ndef _reset_library_root_logger() -> None:\n    global _default_handler\n\n    with _lock:\n        if not _default_handler:\n            return\n\n        library_root_logger: logging.Logger = _get_library_root_logger()\n        library_root_logger.removeHandler(_default_handler)\n        library_root_logger.setLevel(logging.NOTSET)\n        _default_handler = None\n\n\ndef get_logger(name: str) -> logging.Logger:\n    \"\"\"Return a logger with the specified name.\n\n    This function is not supposed to be directly accessed by library users.\n    \"\"\"\n\n    _configure_library_root_logger()\n    return logging.getLogger(name)\n\n\ndef get_verbosity() -> int:\n    \"\"\"Return the current level for the Optuna's root logger.\n\n    Example:\n\n        Get the default verbosity level.\n\n        .. testsetup::\n\n            def objective(trial):\n                x = trial.suggest_float(\"x\", -100, 100)\n                y = trial.suggest_categorical(\"y\", [-1, 0, 1])\n                return x**2 + y\n\n        .. testcode::\n\n            import optuna\n\n            # The default verbosity level of Optuna is `optuna.logging.INFO`.\n            print(optuna.logging.get_verbosity())\n            # 20\n            print(optuna.logging.INFO)\n            # 20\n\n            # There are logs of the INFO level.\n            study = optuna.create_study()\n            study.optimize(objective, n_trials=5)\n            # [I 2021-10-31 05:35:17,232] A new study created ...\n            # [I 2021-10-31 05:35:17,238] Trial 0 finished with value: ...\n            # [I 2021-10-31 05:35:17,245] Trial 1 finished with value: ...\n            # ...\n\n        .. testoutput::\n           :hide:\n\n           20\n           20\n    Returns:\n        Logging level, e.g., ``optuna.logging.DEBUG`` and ``optuna.logging.INFO``.\n\n    .. note::\n        Optuna has following logging levels:\n\n        - ``optuna.logging.CRITICAL``, ``optuna.logging.FATAL``\n        - ``optuna.logging.ERROR``\n        - ``optuna.logging.WARNING``, ``optuna.logging.WARN``\n        - ``optuna.logging.INFO``\n        - ``optuna.logging.DEBUG``\n    \"\"\"\n\n    _configure_library_root_logger()\n    return _get_library_root_logger().getEffectiveLevel()\n\n\ndef set_verbosity(verbosity: int) -> None:\n    \"\"\"Set the level for the Optuna's root logger.\n\n    Example:\n\n        Set the logging level ``optuna.logging.WARNING``.\n\n        .. testsetup::\n\n            def objective(trial):\n                x = trial.suggest_int(\"x\", -10, 10)\n                return x**2\n\n        .. testcode::\n\n            import optuna\n\n            # There are INFO level logs.\n            study = optuna.create_study()\n            study.optimize(objective, n_trials=10)\n            # [I 2021-10-31 02:59:35,088] Trial 0 finished with value: 16.0 ...\n            # [I 2021-10-31 02:59:35,091] Trial 1 finished with value: 1.0 ...\n            # [I 2021-10-31 02:59:35,096] Trial 2 finished with value: 1.0 ...\n\n            # Setting the logging level WARNING, the INFO logs are suppressed.\n            optuna.logging.set_verbosity(optuna.logging.WARNING)\n            study.optimize(objective, n_trials=10)\n\n        .. testcleanup::\n\n            optuna.logging.set_verbosity(optuna.logging.INFO)\n\n\n    Args:\n        verbosity:\n            Logging level, e.g., ``optuna.logging.DEBUG`` and ``optuna.logging.INFO``.\n\n    .. note::\n        Optuna has following logging levels:\n\n        - ``optuna.logging.CRITICAL``, ``optuna.logging.FATAL``\n        - ``optuna.logging.ERROR``\n        - ``optuna.logging.WARNING``, ``optuna.logging.WARN``\n        - ``optuna.logging.INFO``\n        - ``optuna.logging.DEBUG``\n    \"\"\"\n\n    _configure_library_root_logger()\n    _get_library_root_logger().setLevel(verbosity)\n\n\ndef disable_default_handler() -> None:\n    \"\"\"Disable the default handler of the Optuna's root logger.\n\n    Example:\n\n        Stop and then resume logging to :obj:`sys.stderr`.\n\n        .. testsetup::\n\n            def objective(trial):\n                x = trial.suggest_float(\"x\", -100, 100)\n                y = trial.suggest_categorical(\"y\", [-1, 0, 1])\n                return x**2 + y\n\n        .. testcode::\n\n            import optuna\n\n            study = optuna.create_study()\n\n            # There are no logs in sys.stderr.\n            optuna.logging.disable_default_handler()\n            study.optimize(objective, n_trials=10)\n\n            # There are logs in sys.stderr.\n            optuna.logging.enable_default_handler()\n            study.optimize(objective, n_trials=10)\n            # [I 2020-02-23 17:00:54,314] Trial 10 finished with value: ...\n            # [I 2020-02-23 17:00:54,356] Trial 11 finished with value: ...\n            # ...\n\n    \"\"\"\n\n    _configure_library_root_logger()\n\n    assert _default_handler is not None\n    _get_library_root_logger().removeHandler(_default_handler)\n\n\ndef enable_default_handler() -> None:\n    \"\"\"Enable the default handler of the Optuna's root logger.\n\n    Please refer to the example shown in :func:`~optuna.logging.disable_default_handler()`.\n    \"\"\"\n\n    _configure_library_root_logger()\n\n    assert _default_handler is not None\n    _get_library_root_logger().addHandler(_default_handler)\n\n\ndef disable_propagation() -> None:\n    \"\"\"Disable propagation of the library log outputs.\n\n    Note that log propagation is disabled by default. You only need to use this function\n    to stop log propagation when you use :func:`~optuna.logging.enable_propagation()`.\n\n    Example:\n\n        Stop propagating logs to the root logger on the second optimize call.\n\n        .. testsetup::\n\n            def objective(trial):\n                x = trial.suggest_float(\"x\", -100, 100)\n                y = trial.suggest_categorical(\"y\", [-1, 0, 1])\n                return x**2 + y\n\n        .. testcode::\n\n            import optuna\n            import logging\n\n            optuna.logging.disable_default_handler()  # Disable the default handler.\n            logger = logging.getLogger()\n\n            logger.setLevel(logging.INFO)  # Setup the root logger.\n            logger.addHandler(logging.FileHandler(\"foo.log\", mode=\"w\"))\n\n            optuna.logging.enable_propagation()  # Propagate logs to the root logger.\n\n            study = optuna.create_study()\n\n            logger.info(\"Logs from first optimize call\")  # The logs are saved in the logs file.\n            study.optimize(objective, n_trials=10)\n\n            optuna.logging.disable_propagation()  # Stop propogating logs to the root logger.\n\n            logger.info(\"Logs from second optimize call\")\n            # The new logs for second optimize call are not saved.\n            study.optimize(objective, n_trials=10)\n\n            with open(\"foo.log\") as f:\n                assert f.readline().startswith(\"A new study created\")\n                assert f.readline() == \"Logs from first optimize call\\\\n\"\n                # Check for logs after second optimize call.\n                assert f.read().split(\"Logs from second optimize call\\\\n\")[-1] == \"\""
                     }
                 ]
             },
             {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/test_examples_utils.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/test_examples_utils.py",
+                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/20_recipes/004_cli.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/20_recipes/004_cli.py",
                 "faults": [
                     {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/test_examples_utils.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/test_examples_utils.py",
+                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/20_recipes/004_cli.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/20_recipes/004_cli.py",
                         "line_range": [
-                            16,
-                            21
+                            34,
+                            36
                         ],
-                        "reason": "Import block is un-sorted or un-formatted as indicated by the CI error context. The imports should be organized alphabetically and grouped appropriately.",
-                        "issue_type": "formatting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "import os\nimport shutil\nimport subprocess\nimport tempfile\nimport unittest\nfrom typing import List"
+                        "reason": "The objective function may not handle all possible values of 'x' correctly, leading to ValueError during trial execution. This is indicated by the CI log stating 'ValueError encountered during the execution of the objective function.' Additionally, multiple trials finished with unexpected values, suggesting issues in the optimization process.",
+                        "issue_type": "runtime_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def objective(trial):\n    x = trial.suggest_float(\"x\", -10, 10)\n    return (x - 2) ** 2"
                     }
                 ]
             },
             {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/release.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/release.py",
+                "file_path": "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/optuna/study/_optimize.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/optuna/study/_optimize.py",
                 "faults": [
                     {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/release.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/release.py",
+                        "file_path": "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/optuna/study/_optimize.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/optuna/study/_optimize.py",
                         "line_range": [
-                            16,
-                            19
+                            183,
+                            252
                         ],
-                        "reason": "Import block is un-sorted or un-formatted. Imports should be organized according to PEP 8 guidelines.",
-                        "issue_type": "linting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "import argparse\nimport os\nimport re\n"
-                    }
-                ]
-            },
-            {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/dps_pipeline.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/dps_pipeline.py",
-                "faults": [
+                        "reason": "The CI run failed during the doctest step due to a ValueError encountered during the execution of the objective function. This indicates that the function passed to `_run_trial` may not be handling inputs correctly, leading to unexpected values. The error context suggests that multiple trials finished with unexpected values, which could be due to improper handling of exceptions or incorrect assumptions in the trial logic.",
+                        "issue_type": "runtime_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def _run_trial(\n    study: \"optuna.Study\",\n    func: \"optuna.study.study.ObjectiveFuncType\",\n    catch: Tuple[Type[Exception], ...],\n) -> trial_module.FrozenTrial:\n    if is_heartbeat_enabled(study._storage):\n        optuna.storages.fail_stale_trials(study)\n\n    trial = study.ask()\n\n    state: Optional[TrialState] = None\n    value_or_values: Optional[Union[float, Sequence[float]]] = None\n    func_err: Optional[Union[Exception, KeyboardInterrupt]] = None\n    func_err_fail_exc_info: Optional[Any] = None\n\n    with get_heartbeat_thread(trial._trial_id, study._storage):\n        try:\n            value_or_values = func(trial)\n        except exceptions.TrialPruned as e:\n            # TODO(mamu): Handle multi-objective cases.\n            state = TrialState.PRUNED\n            func_err = e\n        except (Exception, KeyboardInterrupt) as e:\n            state = TrialState.FAIL\n            func_err = e\n            func_err_fail_exc_info = sys.exc_info()\n\n    # `_tell_with_warning` may raise during trial post-processing.\n    try:\n        frozen_trial = _tell_with_warning(\n            study=study,\n            trial=trial,\n            value_or_values=value_or_values,\n            state=state,\n            suppress_warning=True,\n        )\n    except Exception:\n        frozen_trial = study._storage.get_trial(trial._trial_id)\n        raise\n    finally:\n        if frozen_trial.state == TrialState.COMPLETE:\n            study._log_completed_trial(frozen_trial)\n        elif frozen_trial.state == TrialState.PRUNED:\n            _logger.info(\"Trial {} pruned. {}\".format(frozen_trial.number, str(func_err)))\n        elif frozen_trial.state == TrialState.FAIL:\n            if func_err is not None:\n                _log_failed_trial(\n                    frozen_trial,\n                    repr(func_err),\n                    exc_info=func_err_fail_exc_info,\n                    value_or_values=value_or_values,\n                )\n            elif STUDY_TELL_WARNING_KEY in frozen_trial.system_attrs:\n                _log_failed_trial(\n                    frozen_trial,\n                    frozen_trial.system_attrs[STUDY_TELL_WARNING_KEY],\n                    value_or_values=value_or_values,\n                )\n            else:\n                assert False, \"Should not reach.\"\n        else:\n            assert False, \"Should not reach.\"\n\n    if (\n        frozen_trial.state == TrialState.FAIL\n        and func_err is not None\n        and not isinstance(func_err, catch)\n    ):\n        raise func_err\n    return frozen_trial"
+                    },
                     {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/dps_pipeline.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/dps_pipeline.py",
+                        "file_path": "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/optuna/study/_optimize.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/optuna/study/_optimize.py",
                         "line_range": [
-                            16,
-                            24
+                            255,
+                            268
                         ],
-                        "reason": "Import block is un-sorted or un-formatted. The imports from 'diffusers' are not in alphabetical order. This is indicated by the CI error context regarding import formatting errors.",
-                        "issue_type": "formatting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "from math import pi\nfrom typing import Callable, List, Optional, Tuple, Union\n\nimport numpy as np\nimport torch\nfrom PIL import Image\n\nfrom diffusers import DDPMScheduler, DiffusionPipeline, ImagePipelineOutput, UNet2DModel\nfrom diffusers.utils.torch_utils import randn_tensor"
-                    }
-                ]
-            },
-            {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/setup.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/setup.py",
-                "faults": [
-                    {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/setup.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/setup.py",
-                        "line_range": [
-                            81,
-                            134
-                        ],
-                        "reason": "Code quality check failed due to un-sorted or un-formatted import block. The imports from lines 81 to 134 are not sorted according to PEP 8 guidelines, which requires imports to be grouped and sorted alphabetically.",
-                        "issue_type": "linting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "import os\nimport re\nimport sys\nfrom distutils.core import Command\n\nfrom setuptools import find_packages, setup\n\n\n# IMPORTANT:\n# 1. all dependencies should be listed here with their version requirements if any\n# 2. once modified, run: `make deps_table_update` to update src/diffusers/dependency_versions_table.py\n_deps = [\n    \"Pillow\",  # keep the PIL.Image.Resampling deprecation away\n    \"accelerate>=0.11.0\",\n    \"compel==0.1.8\",\n    \"datasets\",\n    \"filelock\",\n    \"flax>=0.4.1\",\n    \"hf-doc-builder>=0.3.0\",\n    \"huggingface-hub>=0.20.2\",\n    \"requests-mock==1.10.0\",\n    \"importlib_metadata\",\n    \"invisible-watermark>=0.2.0\",\n    \"isort>=5.5.4\",\n    \"jax>=0.4.1\",\n    \"jaxlib>=0.4.1\",\n    \"Jinja2\",\n    \"k-diffusion>=0.0.12\",\n    \"torchsde\",\n    \"note_seq\",\n    \"librosa\",\n    \"numpy\",\n    \"omegaconf\",\n    \"parameterized\",\n    \"peft>=0.6.0\",\n    \"protobuf>=3.20.3,<4\",\n    \"pytest\",\n    \"pytest-timeout\",\n    \"pytest-xdist\",\n    \"python>=3.8.0\",\n    \"ruff==0.1.5\",\n    \"safetensors>=0.3.1\",\n    \"sentencepiece>=0.1.91,!=0.1.92\",\n    \"GitPython<3.1.19\",\n    \"scipy\",\n    \"onnx\",\n    \"regex!=2019.12.17\",\n    \"requests\",\n    \"tensorboard\",\n    \"torch>=1.4\",\n    \"torchvision\",\n    \"transformers>=4.25.1\",\n    \"urllib3<=2.0.0\",\n]"
-                    }
-                ]
-            },
-            {
-                "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/custom_init_isort.py",
-                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/custom_init_isort.py",
-                "faults": [
-                    {
-                        "file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/custom_init_isort.py",
-                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/utils/custom_init_isort.py",
-                        "line_range": [
-                            37,
-                            44
-                        ],
-                        "reason": "The import block is un-sorted or un-formatted, which violates code quality standards as indicated by the CI error context. The imports should be sorted according to PEP 8 guidelines.",
-                        "issue_type": "formatting",
-                        "fault_localization_level": "import_block",
-                        "code_snippet": "import argparse\nimport os\nimport re\nfrom typing import Any, Callable, List, Optional\n\n\n# Path is defined with the intent you should run this script from the root of the repo.\nPATH_TO_TRANSFORMERS = \"src/diffusers\""
+                        "reason": "The `_log_failed_trial` method is invoked when a trial fails, which is indicated by the CI logs showing a ValueError during trial execution. This suggests that the logging mechanism may not be capturing all relevant information about the failure, potentially leading to incomplete diagnostics. The method's implementation should ensure that all exceptions are logged appropriately.",
+                        "issue_type": "test_failure",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def _log_failed_trial(\n    trial: FrozenTrial,\n    message: Union[str, Warning],\n    exc_info: Any = None,\n    value_or_values: Any = None,\n) -> None:\n    _logger.warning(\n        \"Trial {} failed with parameters: {} because of the following error: {}.\".format(\n            trial.number, trial.params, message\n        ),\n        exc_info=exc_info,\n    )\n\n    _logger.warning(\"Trial {} failed with value {}.\".format(trial.number, repr(value_or_values)))"
                     }
                 ]
             }
