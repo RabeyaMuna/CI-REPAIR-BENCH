@@ -1,53 +1,39 @@
 [
     {
-        "sha_fail": "0b08b8e82f8e67d89dd4335e63ecd95ab6f5f048",
-        "error_context": [
-            "The CI run failed during the doctest step due to multiple trials finishing with unexpected values, indicating potential issues in the test cases or the underlying code. Additionally, a ValueError was encountered during the execution of the objective function."
-        ],
-        "relevant_files": [
+        "sha_fail": "9a4b52f8b927879003b60e688eedcb328cdb1998",
+        "error_types": [
             {
-                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/10_key_features/004_distributed.py",
-                "line_number": null,
-                "reason": "This file is linked to the failure due to its involvement in the doctest process."
-            },
-            {
-                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/optuna/logging.py",
-                "line_number": null,
-                "reason": "This file is linked to the failure due to its involvement in the logging of trial results during the doctest."
-            },
-            {
-                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/optuna/tutorial/20_recipes/004_cli.py",
-                "line_number": null,
-                "reason": "This file is linked to the failure due to its potential role in the command-line interface for running tests."
-            },
-            {
-                "file": "/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/optuna/study/_optimize.py",
-                "line_number": 200,
-                "reason": "The error traceback indicates that the ValueError occurred in the _optimize.py file during the trial execution."
+                "category": "Dependency Error",
+                "subcategory": "ImportError: No module named X",
+                "evidence": "Error: ImportError: No module named 'required_module_name'"
             }
+        ]
+    },
+    {
+        "sha_fail": "7fb5fd395695464d34fe0cf49d8b663529859fdf",
+        "error_context": [
+            "The workflow failed to add or remove labels due to an issue with the GitHub Actions configuration. The actions-cool/issues-helper@v2 may not have executed as expected."
         ],
         "error_types": [
             {
-                "category": "Test Failure",
-                "subcategory": "ValueError in trial execution",
-                "evidence": "The log shows 'ValueError' and a traceback indicating the error occurred during the trial execution."
-            },
-            {
-                "category": "UnknownError",
-                "subcategory": "General error during trial execution",
-                "evidence": "Multiple trials finished with unexpected values, indicating potential issues in the optimization process."
-            },
-            {
-                "category": "Runtime Error",
-                "subcategory": "ValueError",
-                "evidence": "ValueError encountered during the execution of the objective function."
+                "category": "Configuration Error",
+                "subcategory": "Action Execution Failure",
+                "evidence": "The actions-cool/issues-helper@v2 did not complete the expected label operations."
             }
-        ],
-        "failed_job": [
+        ]
+    },
+    {
+        "sha_fail": "238a409674f147334f43788013fdfa766fd8035c",
+        "error_types": [
             {
-                "job": "doctest",
-                "step": "Run Doctest",
-                "command": "cd docs && make doctest"
+                "category": "Code Formatting",
+                "subcategory": "Unused Variable",
+                "evidence": "Local variable `implemented_files_list` is assigned to but never used."
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Variable",
+                "evidence": "Local variable `unimplemented_files_list` is assigned to but never used."
             }
         ]
     }

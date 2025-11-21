@@ -443,7 +443,7 @@ Output:
         outline = get_outline_for_file(full_path) or "No outline available."
 
         prompt = f"""
-You are a Senior Software Engineer responsible for repairing code faults.
+You are a Senior Software Engineer responsible for repairing code faults by fixing any kind of issues in the code.
 Each fault entry describes a specific issue detected by CI validation tools.
 
 ---
@@ -506,15 +506,22 @@ Each fault entry describes a specific issue detected by CI validation tools.
                     logger.warning(f"Patch {idx}: snippet not found in {file_path}, skipping.")
                     continue
 
-                self._write_updated_file(full_path, replaced_content)
-                success = True
-                updated_content = replaced_content
-
+                success = self._write_updated_file(full_path, replaced_content)
+                if success:
+                    updated_content = replaced_content
+                    logger.info(f"Patch {idx} applied successfully to {file_path}: {explanation}")
+                else:
+                    logger.error(f"Patch {idx} failed to apply to {file_path}.")
+            
+                    return False
+            
             return success
-
+        
         except Exception as e:
             logger.error(f"LLM patch generation failed for {file_path}: {e}")
             return False
+        
+
 
     # =========================================================
     # ---------------------- REPLACEMENT ----------------------
@@ -537,15 +544,22 @@ Each fault entry describes a specific issue detected by CI validation tools.
         logger.debug("Snippet not found after normalization.")
         return code
 
-    def _write_updated_file(self, full_path: str, content: str) -> None:
-        """Write updated content to disk with newline normalization."""
+    def _write_updated_file(self, full_path: str, content: str) -> bool:
+        """Write updated content to disk with newline normalization.
+
+        Returns:
+            True if the file was written successfully, False otherwise.
+        """
         try:
             with open(full_path, "w", encoding="utf-8") as f:
                 for line in content.splitlines(keepends=True):
                     f.write(line if line.endswith("\n") else line + "\n")
             logger.info(f"Updated file written successfully: {full_path}")
+            return True
         except Exception as e:
             logger.error(f"Failed to write updated file {full_path}: {e}")
+            return False
+
 
     # =========================================================
     # -------------------- PATCH PROCESS ----------------------
@@ -569,9 +583,47 @@ Each fault entry describes a specific issue detected by CI validation tools.
 
             if not self._try_automated_fix(faults, full_path):
                 logger.info(f"Falling back to LLM patch for {file_path}")
-                self._generate_llm_patch(faults, file_path, full_path, original)
+                patched_applied = self._generate_llm_patch(faults, file_path, full_path, original)
             
-            
+                if patched_applied:
+                    try:
+                        logger.info("Installing ruff for this repo (if not already installed)...")
+                        install_proc = subprocess.run(
+                            [sys.executable, "-m", "pip", "install", "ruff"],
+                            cwd=self.repo_path,
+                            capture_output=True,
+                            text=True,
+                            timeout=300,
+                        )
+                        if install_proc.returncode != 0:
+                            logger.warning(
+                                "pip install ruff failed (continuing without formatting):\n"
+                                f"{install_proc.stderr}"
+                            )
+                    except Exception as e:
+                        logger.error(f"Error while installing ruff: {e}")
+
+                        # 2) Run Ruff on the *applied* file only
+                        #    We use full_path; ruff can handle absolute paths.
+                    for cmd in (
+                        ["ruff", "check", "--fix", full_path],
+                        ["ruff", "format", full_path],
+                    ):
+                        try:
+                            logger.info(f"Running Ruff command: {' '.join(cmd)}")
+                            ruff_proc = subprocess.run(
+                                cmd,
+                                cwd=self.repo_path,
+                                capture_output=True,
+                                text=True,
+                                timeout=300,
+                            )
+                            if ruff_proc.returncode != 0:
+                                logger.warning(
+                                    f"Ruff command failed: {' '.join(cmd)}\n{ruff_proc.stderr}"
+                                )
+                        except Exception as e:
+                            logger.error(f"Failed to run Ruff command {' '.join(cmd)}: {e}")
             modified_content = self._read_file(full_path)
                 
             if modified_content != original:

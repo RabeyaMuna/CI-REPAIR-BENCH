@@ -6,3 +6,5 @@ venv/
 baselines/exceptions
 baselines/repo_cloned
 baselines/.venv/
+scripts/
+generated_patches_list/

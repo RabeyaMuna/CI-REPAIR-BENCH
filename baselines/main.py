@@ -22,8 +22,9 @@ def process_entire_dataset(dataset, config, llm):
     generated_patches = []
     results = []
     
-    subset = dataset[26:27]
-    
+    # subset = dataset[240:241]
+    target_ids = {241, 243, 281, 323}
+    subset = [dp for dp in dataset if dp.get("id") in target_ids]
     for datapoint in subset:
         task_id = datapoint["id"]
         repo_name = datapoint["repo_name"]
@@ -54,40 +55,40 @@ def process_entire_dataset(dataset, config, llm):
             print(f" Failed processing {sha_fail} during error extraction: {e}")
             continue
         
-        try:
-            fault_localizer = FaultLocalization(
-                                                sha_fail=sha_fail,
-                                                repo_path=repo_path,
-                                                error_logs=log_analysis_result,
-                                                workflow=workflow,
-                                                llm=llm
-                                            ).run()
+        # try:
+        #     fault_localizer = FaultLocalization(
+        #                                         sha_fail=sha_fail,
+        #                                         repo_path=repo_path,
+        #                                         error_logs=log_analysis_result,
+        #                                         workflow=workflow,
+        #                                         llm=llm
+        #                                     ).run()
             
-            fault_localization.append(fault_localizer)
+        #     fault_localization.append(fault_localizer)
 
-            with open(os.path.join(config.project_result_dir, "fault_localization.json"), "w") as f:
-                json.dump(fault_localization, f, indent=4)
+        #     with open(os.path.join(config.project_result_dir, "fault_localization.json"), "w") as f:
+        #         json.dump(fault_localization, f, indent=4)
 
-        except Exception as e:
-            print(f" Failed processing {sha_fail} during error extraction: {e}")
-            continue
+        # except Exception as e:
+        #     print(f" Failed processing {sha_fail} during error extraction: {e}")
+        #     continue
         
-        try:
-            patch_generator = PatchGeneration(bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
-            error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow, llm=llm).run()
+        # try:
+        #     patch_generator = PatchGeneration(bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
+        #     error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow, llm=llm).run()
             
-            if patch_generator["diff"] =="":
-                print(f" No patch generated for {sha_fail}")
-                continue
+        #     if patch_generator["diff"] =="":
+        #         print(f" No patch generated for {sha_fail}")
+        #         continue
 
-            generated_patches.append(patch_generator)
+        #     generated_patches.append(patch_generator)
 
-            with open(os.path.join(config.project_result_dir, "generated_patches.json"), "w") as f:
-                json.dump(generated_patches, f, indent=4)
+        #     with open(os.path.join(config.project_result_dir, "generated_patches.json"), "w") as f:
+        #         json.dump(generated_patches, f, indent=4)
 
-        except Exception as e:
-            print(f" Failed processing {sha_fail} during error extraction: {e}")
-            continue
+        # except Exception as e:
+        #     print(f" Failed processing {sha_fail} during error extraction: {e}")
+        #     continue
         
     results = generated_patches
     return results
@@ -107,8 +108,8 @@ if __name__ == "__main__":
 
     results = process_entire_dataset(dataset, config, llm)
 
-    output_file = os.path.join(config.project_result_dir, "generated_patches.json")
-    with open(output_file, "w") as f:
-        json.dump(results, f, indent=4)
+    # output_file = os.path.join(config.project_result_dir, "generated_patches.json")
+    # with open(output_file, "w") as f:
+    #     json.dump(results, f, indent=4)
 
-    print(f"Results saved in {output_file}")
+    # print(f"Results saved in {output_file}")

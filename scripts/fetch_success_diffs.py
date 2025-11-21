@@ -1,21 +1,3 @@
-#!/usr/bin/env python3
-# fetch_success_diffs_to_generated_patches.py
-#
-# Output 1:
-#   /Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/dataset/generated_patches.json
-#   [
-#     {"id": 27, "sha_fail": "...", "diff": "diff --git ..."},
-#     ...
-#   ]
-#
-# Output 2:
-#   /Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/dataset/missing_success_diffs.json
-#   [
-#     {"id": 325, "repo": "kovidgoyal/kitty", "sha_fail": "...", "sha_success": "...",
-#      "fail_commit_url": "...", "success_commit_url": "...", "reason": "fetch_failed"},
-#     ...
-#   ]
-
 import json
 import logging
 import os

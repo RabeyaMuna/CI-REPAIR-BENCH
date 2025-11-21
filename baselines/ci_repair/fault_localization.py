@@ -93,7 +93,12 @@ class FaultLocalization:
             file_path = (item.get("file") or item.get("path") or "").strip()
             if not file_path:
                 continue
-
+            
+            ext = Path(file_path).suffix.lower()
+            
+            if ext not in {".py", ".toml", ".txt"}:
+                continue
+            
             resolved = self.find_full_file_path(file_path)
             if resolved["status"] != "found":
                 continue

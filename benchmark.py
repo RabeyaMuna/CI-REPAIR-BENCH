@@ -112,7 +112,7 @@ class CIFixBenchmark:
         """
 
         WAIT_INTERVAL = 900       # 10 minutes between polling cycles
-        MAX_ATTEMPTS = 12         # total 2-hour window
+        MAX_ATTEMPTS = 15        # total 2-hour window
         REQ_DELAY = 0.8           # ~0.8s between requests → 4500 req/hour safe margin
 
         if result_filename is None:
@@ -125,8 +125,13 @@ class CIFixBenchmark:
         jobs_invalid_file_path = os.path.join(
             self.config.out_folder, f"jobs_invalid_{self.model_name}.jsonl"
         )
-
+        
+        jobs_success_file_path = os.path.join(
+        self.config.out_folder, f"jobs_success_{self.model_name}.jsonl"
+       )
+        
         result_file = open(jobs_results_file_path, "w")
+        success_file = open(jobs_success_file_path, "w")
 
         # Load job IDs
         if job_ids_file is not None:
@@ -175,6 +180,9 @@ class CIFixBenchmark:
                     jobs_results.append(job_id)
                     json.dump(job_id, result_file)
                     result_file.write("\n")
+                    if conclusion == "success":
+                        json.dump(job_id, success_file)
+                        success_file.write("\n")
 
                 # Delay between requests to avoid hitting limit
                 time.sleep(REQ_DELAY)
@@ -196,6 +204,7 @@ class CIFixBenchmark:
                 time.sleep(WAIT_INTERVAL)
 
         result_file.close()
+        success_file.close()
         
         finalize_after_last_poll(
             self,
@@ -282,7 +291,11 @@ class CIFixBenchmark:
         )
 
         if ids_list is not None:
-            self.dataset = self.dataset.filter(lambda example: filter_by_id(example, ids_list))
+            # self.dataset = self.dataset.filter(lambda example: filter_by_id(example, ids_list))
+            self.dataset = [
+                ex for ex in self.dataset
+                if filter_by_id(ex, ids_list)
+            ]
 
         print(f"Got {len(self.dataset)} datapoints to evaluate")
         print("---------------- Running datapoints -------------------")
@@ -290,6 +303,7 @@ class CIFixBenchmark:
 
         print("---------------- Getting results -------------------")
         self.eval_jobs(result_filename=result_filename)
+        
         self.analyze_results()
 
     def run_datapoint(self, datapoint, fix_repo_function):
