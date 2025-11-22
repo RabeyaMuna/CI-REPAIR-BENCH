@@ -27,7 +27,7 @@ class LLMInfo:
 # Here you list *all* models you want to use in your system
 LLM_REGISTRY: Dict[str, LLMInfo] = {
     # OpenAI models
-    "gpt4o-mini": LLMInfo(
+    "gpt-4o-mini": LLMInfo(
         provider="openai",
         model_name="gpt-4o-mini",
         temperature=0.0,

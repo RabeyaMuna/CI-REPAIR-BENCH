@@ -17,7 +17,7 @@ load_dotenv()
 MAX_TOKENS_SUMMARY = 90_000
 
 
-class CILogAnalyzer:
+class CILogAnalyzerBM25:
     def __init__(
         self,
         repo_path: str,
@@ -25,7 +25,8 @@ class CILogAnalyzer:
         sha_fail: str,
         workflow: Any,
         workflow_path: str,
-        llm: ChatOpenAI
+        llm: ChatOpenAI,
+        model_name: str
     ):
         self.config = load_config()
         self.repo_path = repo_path
@@ -35,6 +36,7 @@ class CILogAnalyzer:
         self.workflow_path = workflow_path
 
         self.llm = llm
+        self.model_name = model_name
         self._encoder = self._get_encoder()
 
         self.error_details: List[Dict[str, Any]] = []

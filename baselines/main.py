@@ -9,14 +9,15 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, END
 from utilities.llm_provider import get_llm
-from ci_repair.ci_log_analyzer import CILogAnalyzer
+from ci_repair.ci_log_analyzer_bm25 import CILogAnalyzerBM25
+from ci_repair.ci_log_analyzer_llm import CILogAnalyzerLLM
 from ci_repair.fault_localization import FaultLocalization
 from ci_repair.patch_generation import PatchGeneration
 from utilities.ensure_repo import ensure_repo_at_commit
 
 load_dotenv()
 
-def process_entire_dataset(dataset, config, llm):
+def process_entire_dataset(dataset, config, llm, model_key):
     error_details = []
     fault_localization = []
     generated_patches = []
@@ -44,7 +45,8 @@ def process_entire_dataset(dataset, config, llm):
         ensure_repo_at_commit(repo_url, repo_path, sha_fail)
 
         try:
-            log_analysis_result = CILogAnalyzer(repo_path, logs, sha_fail, workflow, workflow_path, llm=llm).run()
+            log_analysis_result = CILogAnalyzerLLM(repo_path, logs, sha_fail, workflow, workflow_path, llm=llm, model_name=model_key).run()
+            # log_analysis_result = CILogAnalyzerBM25(repo_path, logs, sha_fail, workflow, workflow_path, llm=llm, model_name=model_key).run()
             
             error_details.append(log_analysis_result)
 
@@ -100,16 +102,16 @@ if __name__ == "__main__":
     # Construct dataset path dynamically
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # one level up from ci-build-repair-project
     dataset_path = os.path.join(base_dir, "dataset", "lca_dataset.parquet")
-    model_key = "gpt4o-mini"   # or "gpt4o", "deepseek-chat", etc.
+    model_key = "gpt-4o-mini"   # or "gpt4o", "deepseek-chat", etc.
     llm = get_llm(model_key)
     # Load dataset
     dataset_df = pd.read_parquet(dataset_path)
     dataset = dataset_df.to_dict(orient="records")
 
-    results = process_entire_dataset(dataset, config, llm)
+    results = process_entire_dataset(dataset, config, llm, model_key)
 
-    # output_file = os.path.join(config.project_result_dir, "generated_patches.json")
-    # with open(output_file, "w") as f:
-    #     json.dump(results, f, indent=4)
+    output_file = os.path.join(config.project_result_dir, "generated_patches.json")
+    with open(output_file, "w") as f:
+        json.dump(results, f, indent=4)
 
-    # print(f"Results saved in {output_file}")
+    print(f"Results saved in {output_file}")
