@@ -76,12 +76,19 @@ class CILogAnalyzerLLM:
 Analyze the following CI log chunk and extract comprehensive information with a focus on capturing all error context.
 
 ## INSTRUCTIONS:
-1. Create an extremely detailed natural language summary that includes EVERY piece of information from the log chunk
-   - Mention ALL commands, operations, and outcomes
-   - Mention ALL test results
-   - Mention ALL files (with repo-relative paths) and why they appear
-   - Mention ALL warnings and errors
-2. Extract ALL file paths mentioned in the log (normalized to repo-relative format)
+1. Create an extremely detailed natural language summary that includes EVERY important piece of information from the log chunk:
+   - Mention all commands, operations, and outcomes.
+   - Mention all test results.
+   - Mention files involved in errors, failing tests, or critical warnings (you may mention other files only briefly in the narrative).
+   - Mention all errors and critical warnings.
+
+2. Extract ONLY file paths that are directly related to failures, assertions, runtime errors, or critical warnings.
+   - A file is related if it appears in:
+     * a stack trace,
+     * a failing test message,
+     * an error or exception message,
+     * or a critical warning that may cause the CI run to fail.
+   - Ignore files that are only mentioned in generic setup or installation steps (e.g., installing requirements, caching).
 3. Identify ALL failures, errors, and issues with their complete context
 4. Extract the exact error blocks with their complete surrounding context
 
@@ -222,14 +229,15 @@ of the CI failure for this step using the following STRICT JSON schema
   - If nothing meaningful appears, use an empty list [].
 
 - "relevant_files":
-  - Start from the union of all "relevant_files" across all chunks.
-  - You may use file paths explicitly mentioned in "relevant_failures" or summaries that is the reason of CI failure.
-  - A file is "relevant" ONLY if:
-      * it is clearly linked to an error, failure, or critical warning in this step, OR
-      * the log explicitly connects the failure or failing tests to that file.
-  - If you are not sure a file is truly related to the failure in THIS STEP, DO NOT include it.
-  - Deduplicate by "file" path. If the same file appears with different reasons, merge them
-    into one concise, evidence-based "reason".
+  - Consider all chunk-level data ("relevant_files", "relevant_failures", and summaries),
+    but INCLUDE a file ONLY if:
+      * it is clearly linked to a failing test, assertion error, runtime exception,
+        dependency error, configuration error, or critical warning in THIS STEP, OR
+      * the log explicitly states that the failure occurs in that file.
+  - It is OK to discard files that appear in chunk-level "relevant_files" if they were only
+    mentioned in setup/installation and are not clearly tied to the failure.
+  - Deduplicate by "file" path. If the same file appears with different reasons, merge
+    them into one concise, evidence-based "reason".
   - "line_number":
       * Use the failing line number if it is clearly shown in the logs,
       * otherwise null.
@@ -274,7 +282,6 @@ of the CI failure for this step using the following STRICT JSON schema
                 )
 
         return log_details
-
 
     # ------------------------------------------------------------------
     def full_content_summary(
@@ -326,7 +333,7 @@ Return a SINGLE aggregated summary for the entire failed run using this exact st
 {{
   "sha_fail": "{self.sha_fail}",
   "error_context": [
-    "Plain-English explanation(s) of the root cause(s), supported by log evidence."
+    "Plain-English explanation(s) of the root cause(s), supported by log evidence. Mention all the steps involved in the failure and how and why it failed."
   ],
   "relevant_files": [
     {{

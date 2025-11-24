@@ -139,6 +139,7 @@ class FaultLocalization:
                     chunk_idx=idx,
                     num_chunks=num_chunks,
                     faults=all_faults,
+                    outline=outline
                 )
                 
                 if faults:
@@ -169,6 +170,7 @@ class FaultLocalization:
     chunk_idx: int,
     num_chunks: int,
     faults: list,
+    outline: List[Dict[str, Any]],
 ) -> list:
         """
         Runs the strict FL prompt for a single chunk and returns a list of fault objects.
@@ -176,7 +178,6 @@ class FaultLocalization:
         """
 
         fault_locations = []
-        
         prompt = f"""
 You are a **Strict Fault Localization Agent**.
 
@@ -239,6 +240,7 @@ R3. Outline-Based Scope Expansion
 R4. Reason–Snippet Consistency
   - Each "reason" must cite concrete CI evidence (messages or rule codes such as F401, E1101, I001, etc.).
   - Reference actual code or confirm omission explicitly. Avoid vague speculation.
+  -  If unable to find code evidence for a claimed fault, do NOT include it.
 
 R5. Line Range Integrity
   - "line_range" must match **exact first and last lines** of the chosen scope according to the outline.
@@ -269,7 +271,7 @@ OUTPUT SCHEMA (JSON array)
     "file_path": "{file_path}",
     "full_file_path": "{full_file_path}",
     "line_range": [start_line, end_line],
-    "reason": "Comprehensive explanation citing CI log messages and rule codes. If merged, include concise bullet-like sub-fault summaries.",
+    "reason": "Comprehensive explanation citing CI log messages and rule codes. If merged, include concise bullet-like sub-fault summaries. Mention lines or absence of code as needed if required and also mention line numbers which contains the issues.",
     "issue_type": "formatting | linting | type_error | runtime_error | test_failure | dependency_error | docstring | complexity | other",
     "fault_localization_level": "line | method | class | import_block | file"
   }},
@@ -312,25 +314,33 @@ CHECKLIST BEFORE RETURNING
             # -------------------------------------------------------
             for fault in parsed_result:
                 line_range = fault.get("line_range")
+                fault_level = fault.get("fault_localization_level")
                 
                 if not line_range:
                     continue  # Skip if no snippet present
 
                 start, end = line_range
                 if valid_start <= start and end <= valid_end:
+                    extended_range = self._expand_line_range_with_outline(
+                                            line_range=line_range,
+                                            outline=outline,
+                                            fault_level=fault_level,
+                                        )
+                    fault["line_range"] = extended_range
+                    print("\n--- After Extended Line range ---", extended_range)
                     # Normal case: attach found range
-                    snippet = extract_snippet_from_line_range(original_file_content=original_content, line_range=line_range)
+                    snippet = extract_snippet_from_line_range(original_file_content=original_content, line_range=extended_range)
                     
                     fault["code_snippet"] = snippet
                     
                     fault_locations.append(fault)
                     print("\n--- Fault Detected ---")
                     print("Code Snippet:\n", snippet)
-                    print("Line Range:", line_range)
+                    print("Line Range:", extended_range)
                     print("---------------------\n")
-                else:
-                    # Skip fault outside this chunk
-                    print(f"[Chunk {chunk_idx+1}] Skipping fault outside chunk range {valid_start}-{valid_end}: {line_range}")
+            else:
+                # Skip fault outside this chunk
+                print(f"[Chunk {chunk_idx+1}] Skipping fault outside chunk range {valid_start}-{valid_end}: {line_range}")
 
 
         except json.JSONDecodeError as e:
@@ -528,3 +538,71 @@ CHECKLIST BEFORE RETURNING
 
         return error_info
     
+    def _expand_line_range_with_outline(
+        self,
+        line_range: list[int],
+        outline: list[dict],
+        fault_level: str | None = None,
+    ) -> list[int]:
+        """
+        Expand the given [start, end] line_range using the file outline.
+
+        - If the range falls inside a function/method → return the full function range.
+        - If inside a class → return the full class range.
+        - If inside a const/import-like element → return that full range.
+        - If nothing matches, return the original line_range.
+        """
+
+        if not outline or not line_range:
+            return line_range
+
+        start, end = line_range
+
+        # Flatten outline: handle children recursively
+        flat: list[dict] = []
+
+        def visit(node: dict):
+            flat.append(node)
+            for child in node.get("children") or []:
+                visit(child)
+
+        for node in outline:
+            visit(node)
+
+        # All elements that contain the start line
+        candidates = [
+            n for n in flat
+            if isinstance(n.get("start"), int)
+            and isinstance(n.get("end"), int)
+            and n["start"] <= start <= n["end"]
+        ]
+
+        if not candidates:
+            return line_range
+
+        # Map localization level to preferred kinds (if LLM gave a level)
+        preferred_kinds_by_level = {
+            "method": {"func", "method"},
+            "class": {"class"},
+            "import_block": {"import_block", "const"},  # treat const as import-like
+        }
+        preferred_kinds = preferred_kinds_by_level.get(fault_level or "", set())
+
+        if preferred_kinds:
+            preferred = [c for c in candidates if c.get("kind") in preferred_kinds]
+        else:
+            preferred = []
+
+        if preferred:
+            chosen = min(
+                preferred,
+                key=lambda n: (n["end"] - n["start"], n["start"]),
+            )
+        else:
+            # fallback: smallest enclosing element of any kind
+            chosen = min(
+                candidates,
+                key=lambda n: (n["end"] - n["start"], n["start"]),
+            )
+
+        return [chosen["start"], chosen["end"]]

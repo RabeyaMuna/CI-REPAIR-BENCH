@@ -23,9 +23,9 @@ def process_entire_dataset(dataset, config, llm, model_key):
     generated_patches = []
     results = []
     
-    # subset = dataset[240:241]
-    target_ids = {241, 243, 281, 323}
-    subset = [dp for dp in dataset if dp.get("id") in target_ids]
+    subset = dataset[152:]
+    # target_ids = {241, 243, 281, 323}
+    # subset = [dp for dp in dataset if dp.get("id") in target_ids]
     for datapoint in subset:
         task_id = datapoint["id"]
         repo_name = datapoint["repo_name"]
@@ -40,6 +40,10 @@ def process_entire_dataset(dataset, config, llm, model_key):
         workflow_path = datapoint["workflow_path"]
         sha_success = datapoint["sha_success"]
         
+        result_dir = os.path.join(config.project_result_dir, model_key)
+        if not os.path.exists(result_dir):
+          os.makedirs(result_dir, exist_ok=True)
+        
         print(f" Proceed with the commit: {sha_fail}")
         
         ensure_repo_at_commit(repo_url, repo_path, sha_fail)
@@ -50,51 +54,50 @@ def process_entire_dataset(dataset, config, llm, model_key):
             
             error_details.append(log_analysis_result)
 
-            with open(os.path.join(config.project_result_dir, "log_details.json"), "w") as f:
+            with open(os.path.join(result_dir, "log_details.json"), "w") as f:
                 json.dump(error_details, f, indent=4)
 
         except Exception as e:
             print(f" Failed processing {sha_fail} during error extraction: {e}")
             continue
         
-        # try:
-        #     fault_localizer = FaultLocalization(
-        #                                         sha_fail=sha_fail,
-        #                                         repo_path=repo_path,
-        #                                         error_logs=log_analysis_result,
-        #                                         workflow=workflow,
-        #                                         llm=llm
-        #                                     ).run()
+        try:
+            fault_localizer = FaultLocalization(
+                                                sha_fail=sha_fail,
+                                                repo_path=repo_path,
+                                                error_logs=log_analysis_result,
+                                                workflow=workflow,
+                                                llm=llm
+                                            ).run()
             
-        #     fault_localization.append(fault_localizer)
+            fault_localization.append(fault_localizer)
 
-        #     with open(os.path.join(config.project_result_dir, "fault_localization.json"), "w") as f:
-        #         json.dump(fault_localization, f, indent=4)
+            with open(os.path.join(result_dir, "fault_localization.json"), "w") as f:
+                json.dump(fault_localization, f, indent=4)
 
-        # except Exception as e:
-        #     print(f" Failed processing {sha_fail} during error extraction: {e}")
-        #     continue
+        except Exception as e:
+            print(f" Failed processing {sha_fail} during error extraction: {e}")
+            continue
         
-        # try:
-        #     patch_generator = PatchGeneration(bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
-        #     error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow, llm=llm).run()
+        try:
+            patch_generator = PatchGeneration(bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
+            error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow, llm=llm).run()
             
-        #     if patch_generator["diff"] =="":
-        #         print(f" No patch generated for {sha_fail}")
-        #         continue
+            if patch_generator["diff"] =="":
+                print(f" No patch generated for {sha_fail}")
+                continue
 
-        #     generated_patches.append(patch_generator)
+            generated_patches.append(patch_generator)
 
-        #     with open(os.path.join(config.project_result_dir, "generated_patches.json"), "w") as f:
-        #         json.dump(generated_patches, f, indent=4)
+            with open(os.path.join(result_dir, "generated_patches.json"), "w") as f:
+                json.dump(generated_patches, f, indent=4)
 
-        # except Exception as e:
-        #     print(f" Failed processing {sha_fail} during error extraction: {e}")
-        #     continue
+        except Exception as e:
+            print(f" Failed processing {sha_fail} during error extraction: {e}")
+            continue
         
     results = generated_patches
     return results
-
 
 if __name__ == "__main__":
     config_path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")

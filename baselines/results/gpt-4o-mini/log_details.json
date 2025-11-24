@@ -1,0 +1,1472 @@
+[
+    {
+        "sha_fail": "16c6139ab089f3cd774175cc7a5bc2e0cbd52699",
+        "error_context": [
+            "The CI run failed during the 'style-check (3.9)' step due to multiple type checking errors reported by 'mypy'. Specifically, the file 'agno/app/agui/utils.py' encountered 100 errors indicating that various event classes do not have the expected attribute 'tools'. This suggests that the code does not adhere to the expected structure or definitions for these event classes, leading to a failure in the type checking process."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/app/agui/utils.py",
+                "line_number": 148,
+                "reason": "Encountered 100 errors related to the attribute 'tools' not being present in various event classes."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "The 'mypy' check reported multiple errors indicating that items in a union type have no attribute 'tools'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "18f4596992d6c36ccf9da84ae30083ef65878130",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step of the 'style-check' job. The failure was due to a code formatting issue identified by the ruff tool, which reported an error in the file 'tests/integration/embedder/test_jina_embedder.py'. Specifically, an equality comparison to 'False' was made, which is discouraged. The error message suggested replacing the comparison with 'not embedder.late_chunking'. This resulted in the CI process failing with an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/integration/embedder/test_jina_embedder.py",
+                "line_number": 17,
+                "reason": "Error found during ruff check: 'E712 Avoid equality comparisons to `False`; use `not embedder.late_chunking:` for false checks'"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Equality Comparison to False",
+                "evidence": "Ruff reported: 'E712 Avoid equality comparisons to `False`; use `not embedder.late_chunking:` for false checks'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "1a41bfdce3fbdd13b1269f0acc04885762c39dd1",
+        "error_context": [
+            "The CI run failed during the 'style-check (3.9)' step due to type checking errors reported by mypy. Specifically, the 'ruff check .' command identified three errors in two files, indicating that an item of type 'Optional[str]' was 'None' and did not have the attribute 'lower'. This resulted in an exit code of 1, indicating failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/memory/agent.py",
+                "line_number": 276,
+                "reason": "Type checking error: 'Item \"None\" of \"Optional[str]\" has no attribute \"lower\"' at lines 276 and 289."
+            },
+            {
+                "file": "agno/memory/team.py",
+                "line_number": 329,
+                "reason": "Type checking error: 'Item \"None\" of \"Optional[str]\" has no attribute \"lower\"' at line 329."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Error reported: 'Item \"None\" of \"Optional[str]\" has no attribute \"lower\"'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "1a6efefa726610d7ca262beb8e6adf1607829dbb",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step due to type checking errors in the file 'agno/knowledge/agent.py'. Specifically, three errors were detected indicating that coroutines were not being awaited at lines 192, 276, and 610. This resulted in the CI process failing with an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/knowledge/agent.py",
+                "line_number": 192,
+                "reason": "Errors were found during the mypy check indicating missing await statements for coroutines at lines 192, 276, and 610."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Value of type 'Coroutine[Any, Any, None]' must be used [unused-coroutine] at lines 192, 276, and 610."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "1c533e0065df6fa2c1c75c23125cdc5e8c12ce3c",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to a code quality issue. Specifically, the tool reported that 'unittest.mock.AsyncMock' was imported but not used in the file 'tests/unit/reader/test_url_reader.py', leading to an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/unit/reader/test_url_reader.py",
+                "line_number": 1,
+                "reason": "The file contains an unused import of 'unittest.mock.AsyncMock', which caused the CI failure during the 'Ruff check' step."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "'unittest.mock.AsyncMock' imported but unused. Found 1 error."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "1d0fff71ae9ea258fad3d54257be9ca9b3eb499e",
+        "error_context": [
+            "The CI run failed during the 'style-check (3.9)' step due to a code quality issue identified by the 'ruff' tool. Specifically, an unused import of 'Message' from 'agno.models.message' was detected in the file 'tests/unit/tools/models/test_gemini.py' at line 11, resulting in a F401 error. This error caused the step to exit with code 1, indicating a failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/unit/tools/models/test_gemini.py",
+                "line_number": 11,
+                "reason": "The file contains an unused import that triggered a F401 error during the style check."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "F401 [*] `agno.models.message.Message` imported but unused"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "1da36493c0905f61ee6fa58ebf792f993d3579dc",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to type errors detected in the file 'agno/knowledge/csv_url.py'. Specifically, the mypy type checker reported that the argument types for the functions 'prepare_load' and 'aprepare_load' were incompatible, expecting a 'Path' type but receiving a 'str'. This resulted in the CI process exiting with code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/knowledge/csv_url.py",
+                "line_number": 77,
+                "reason": "Type errors were reported for incompatible argument types in the functions 'prepare_load' and 'aprepare_load', which were expected to receive a 'Path' but received a 'str'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Errors reported: 'Argument 1 to \"prepare_load\" of \"AgentKnowledge\" has incompatible type \"str\"; expected \"Path\"' at line 77 and 'Argument 1 to \"aprepare_load\" of \"AgentKnowledge\" has incompatible type \"str\"; expected \"Path\"' at line 107."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "233c76da6b91def1e9d09a3fe170578c0bded0aa",
+        "error_context": [
+            "The CI run failed during the 'style-check (3.9)' step due to a code style violation. Specifically, the 'ruff check .' command reported an F401 error in the file 'agno/utils/models/claude.py', indicating that 'agno.utils.log.log_info' was imported but not used. This resulted in the step exiting with code 1, causing the overall CI run to fail."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/utils/models/claude.py",
+                "line_number": 6,
+                "reason": "The file contains an unused import of 'agno.utils.log.log_info', which triggered an F401 error during the style check."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "F401 error: 'agno.utils.log.log_info' imported but unused."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "235e19d6998790dd527e8a43710990aef29359b1",
+        "error_context": [
+            "In the 'Run tests for Agno' step, pytest reported a failing test 'test_async_read_multi_page_csv' due to an AssertionError, where the expected document ID was 'multi_page_page1_1', but the actual received ID was '5fde5c88-8d6a-4139-88bb-0850c934a08e_1'. Additionally, warnings were generated during the test execution related to image and mask size mismatches in the PDF reader tests, indicating potential issues with the functionality of the PDF reading capabilities."
+        ],
+        "relevant_files": [
+            {
+                "file": "libs/agno/tests/unit/reader/test_csv_reader.py",
+                "line_number": 150,
+                "reason": "The test 'test_async_read_multi_page_csv' failed due to an AssertionError when comparing expected and actual document IDs."
+            },
+            {
+                "file": "libs/agno/tests/unit/reader/test_pdf_reader.py",
+                "line_number": null,
+                "reason": "Warnings about image and mask size mismatches were generated during the execution of tests related to PDF reading."
+            },
+            {
+                "file": "libs/agno/libs/agno/agno/storage/postgres.py",
+                "line_number": null,
+                "reason": "SADeprecationWarning regarding the deprecated Column.copy() method, which may lead to future issues."
+            },
+            {
+                "file": "libs/agno/libs/agno/agno/storage/sqlite.py",
+                "line_number": null,
+                "reason": "SADeprecationWarning regarding the deprecated Column.copy() method, which may lead to future issues."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/pydub/utils.py",
+                "line_number": null,
+                "reason": "SyntaxWarning about invalid escape sequences, indicating potential issues in the code."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/pydantic/fields.py",
+                "line_number": null,
+                "reason": "PydanticDeprecatedSince20 warning about the deprecated min_items parameter, which may lead to future issues."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/youtube_transcript_api/_api.py",
+                "line_number": null,
+                "reason": "DeprecationWarning about the deprecated get_transcript method, which may lead to future issues."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "AssertionError: assert '5fde5c88-8d6...850c934a08e_1' == 'multi_page_page1_1'"
+            },
+            {
+                "category": "Warning",
+                "subcategory": "Image Processing",
+                "evidence": "WARNING  pypdf.filters:_utils.py:435 image and mask size not matching"
+            },
+            {
+                "category": "Deprecation Warning",
+                "subcategory": "Deprecated Method",
+                "evidence": "SADeprecationWarning: The Column.copy() method is deprecated and will be removed in a future release."
+            },
+            {
+                "category": "Syntax Warning",
+                "subcategory": "Invalid Escape Sequence",
+                "evidence": "SyntaxWarning: invalid escape sequence '\\(' at multiple lines."
+            },
+            {
+                "category": "Deprecation Warning",
+                "subcategory": "Deprecated Parameter",
+                "evidence": "PydanticDeprecatedSince20: `min_items` is deprecated and will be removed, use `min_length` instead."
+            },
+            {
+                "category": "Deprecation Warning",
+                "subcategory": "Deprecated Method",
+                "evidence": "DeprecationWarning: `get_transcript` is deprecated and will be removed in a future version."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "3045ad82fb7ebc1182bf5d0a1d64713bec621512",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to a style violation. Specifically, the file 'agno/app/playground/async_router.py' contained an unused import of 'pydantic.BaseModel' at line 10, which triggered a F401 error. This error caused the style check to exit with code 1, indicating a failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/app/playground/async_router.py",
+                "line_number": 10,
+                "reason": "Error found: 'pydantic.BaseModel' imported but unused, resulting in F401."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "'pydantic.BaseModel' imported but unused at line 10, resulting in F401."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "31d6eba6f9be2ea8fc3bf80efc498075f6241cb5",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step, where the tool identified an unused import in 'agno/tools/nebius.py'. This resulted in an exit code of 1, indicating a failure in the style check process. The error specifically pointed out that 'agno.utils.log.log_debug' was imported but not used, which is classified as a F401 error."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/tools/nebius.py",
+                "line_number": 9,
+                "reason": "The file contains an unused import, specifically 'agno.utils.log.log_debug', which caused the style check to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "'agno.utils.log.log_debug' imported but unused"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "33ed019c7f623b9fb89b1430b38c7e7a7aefa57c",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The type checker reported two errors in the file 'agno/agent/agent.py'. The first error was due to an incompatible type assignment at line 378, where an expression of type 'Optional[bool]' was assigned to a variable of type 'bool'. The second error occurred at line 2083, where an argument of type 'Optional[int]' was passed to a function expecting an 'int'. These type mismatches caused the step to exit with code 1, leading to the overall failure of the CI run."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/agent/agent.py",
+                "line_number": 378,
+                "reason": "Type checking errors were found in this file, specifically incompatible type assignments and argument types."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy reported incompatible types in 'agno/agent/agent.py' at lines 378 and 2083."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "344c0994f4fce22a64ad9c57270679e51b8e66e6",
+        "error_context": [
+            "In the 'Run tests for Agno' step, pytest reported a failure in the test 'test_scrape_with_api_key_and_formats_params' due to an AssertionError. The test expected the 'scrape_url' method to be called with a 'params' dictionary containing 'formats' and 'waitUntil' keys, but the actual call was made with 'waitUntil' and 'formats' as separate keyword arguments. This discrepancy led to the failure. Additionally, there were multiple warnings related to deprecation and syntax issues in various files, indicating areas that require attention."
+        ],
+        "relevant_files": [
+            {
+                "file": "libs/agno/tests/unit/reader/test_firecrawl_reader.py",
+                "line_number": 99,
+                "reason": "The test 'test_scrape_with_api_key_and_formats_params' failed due to an AssertionError indicating that the expected call to 'scrape_url' was not found."
+            },
+            {
+                "file": "libs/agno/tests/unit/reader/test_pdf_reader.py",
+                "line_number": null,
+                "reason": "Warnings were generated regarding image and mask size mismatches during tests."
+            },
+            {
+                "file": "libs/agno/tests/unit/reader/test_youtube_reader.py",
+                "line_number": null,
+                "reason": "Contains deprecation warnings related to the 'get_transcript' and 'list_transcripts' methods from the 'youtube_transcript_api' library."
+            },
+            {
+                "file": "libs/agno/libs/agno/agno/storage/postgres.py",
+                "line_number": null,
+                "reason": "Contains a SADeprecationWarning regarding the 'Column.copy()' method, which is deprecated."
+            },
+            {
+                "file": "libs/agno/libs/agno/agno/storage/sqlite.py",
+                "line_number": null,
+                "reason": "Contains a SADeprecationWarning regarding the 'Column.copy()' method, which is deprecated."
+            },
+            {
+                "file": "libs/agno/libs/agno/agno/utils.py",
+                "line_number": null,
+                "reason": "Contains multiple warnings related to invalid escape sequences in regex patterns and deprecated features."
+            },
+            {
+                "file": "libs/agno/tests/unit/vectordb/test_pineconedb.py",
+                "line_number": null,
+                "reason": "Contains a RuntimeWarning indicating that a coroutine was never awaited."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "The expected call to 'scrape_url' was not found, leading to an AssertionError."
+            },
+            {
+                "category": "Warning",
+                "subcategory": "Deprecation Warning",
+                "evidence": "Multiple deprecation warnings were logged during the test execution."
+            },
+            {
+                "category": "Warning",
+                "subcategory": "Syntax Warning",
+                "evidence": "Warnings related to invalid escape sequences in regex patterns were generated."
+            },
+            {
+                "category": "Warning",
+                "subcategory": "Runtime Warning",
+                "evidence": "A RuntimeWarning indicating that a coroutine was never awaited was logged."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "37c595ac6f390dbccbcfa20f742faa36f34b194a",
+        "error_context": [
+            "The CI run failed during the 'Run tests for Agno' step due to multiple test failures and warnings. Specifically, tests in the 'libs/agno/tests/unit/tools/test_google_calendar.py' file failed because of an AttributeError related to a missing 'logger' attribute and a TypeError due to an unexpected keyword argument 'list_events' in the 'Toolkit.__init__()' method. Additionally, there were warnings in the PDF reader tests regarding image and mask size mismatches, which were logged multiple times, indicating potential issues with image processing. Furthermore, telemetry event failures were reported in the 'chromadb' module, where the 'capture()' function was called with an incorrect number of arguments."
+        ],
+        "relevant_files": [
+            {
+                "file": "libs/agno/tests/unit/reader/test_pdf_reader.py",
+                "line_number": null,
+                "reason": "Warnings were generated during tests indicating 'image and mask size not matching' and 'EOF marker not found'."
+            },
+            {
+                "file": "libs/agno/tests/unit/tools/test_google_calendar.py",
+                "line_number": null,
+                "reason": "Contains failing tests: 'test_init_with_default_token' raised an AttributeError due to missing 'logger' attribute, and 'test_init_with_tool_flags' raised a TypeError for an unexpected keyword argument 'list_events'."
+            },
+            {
+                "file": "chromadb/telemetry/product/posthog.py",
+                "line_number": 59,
+                "reason": "Multiple errors logged indicating failure to send telemetry events due to 'capture()' function taking 1 positional argument but 3 were given."
+            },
+            {
+                "file": "libs/agno/agno/tools/googlecalendar.py",
+                "line_number": null,
+                "reason": "The error in 'test_init_with_default_token_path' references this file, indicating that the 'logger' attribute is not present."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "Tests 'test_init_with_default_token' and 'test_init_with_tool_flags' failed due to AttributeError and TypeError."
+            },
+            {
+                "category": "Runtime Error",
+                "subcategory": "ArgumentError",
+                "evidence": "Failed to send telemetry event: 'capture() takes 1 positional argument but 3 were given'."
+            },
+            {
+                "category": "Warning",
+                "subcategory": "Image Processing",
+                "evidence": "Warnings indicating 'image and mask size not matching' were logged during PDF reader tests."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "39d992d415c335b61f670c31a68c0edc578e5062",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step due to a type checking error in the file 'agno/agent/agent.py'. The error indicated that the argument type for the function 'get_json_output_prompt' was incompatible, expecting a type of 'Union[str, list[Any], BaseModel]' but receiving 'type[BaseModel]'. This resulted in the CI process exiting with code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/agent/agent.py",
+                "line_number": 4810,
+                "reason": "Type checking error found in mypy check: 'Argument 1 to \"get_json_output_prompt\" has incompatible type \"type[BaseModel]\"; expected \"Union[str, list[Any], BaseModel]\"  [arg-type]'"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Argument 1 to \"get_json_output_prompt\" has incompatible type \"type[BaseModel]\"; expected \"Union[str, list[Any], BaseModel]\""
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "3a9a0b4124d28c2f4735ffad30b83bf4b1c82477",
+        "error_context": [
+            "In the 'Ruff check' step, the code analysis tool 'ruff' identified an error in the file 'agno/storage/singlestore.py' at line 299, where the variable 'num_history_sessions' was referenced but not defined, leading to an F821 error. This caused the CI process to exit with code 1, indicating a failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/storage/singlestore.py",
+                "line_number": 299,
+                "reason": "Error found during ruff check: 'Undefined name `num_history_sessions`'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Undefined Name",
+                "evidence": "ruff reported 'F821 Undefined name `num_history_sessions`'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "3ab735577ed448887a8f1f463c73a611a4ca253e",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step of the 'style-check' job. The ruff tool detected three undefined names: 'AccuracyResult', 'PerformanceResult', and 'ReliabilityResult' in the file 'agno/eval/utils.py'. This resulted in an exit code of 1, indicating a failure due to these errors."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/eval/utils.py",
+                "line_number": 12,
+                "reason": "Errors were found in this file during the ruff check: 'Undefined name `AccuracyResult`', 'Undefined name `PerformanceResult`', and 'Undefined name `ReliabilityResult`'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Undefined Name",
+                "evidence": "Ruff reported 'Undefined name `AccuracyResult`', 'Undefined name `PerformanceResult`', and 'Undefined name `ReliabilityResult`'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "4b5113e905468a8710137ff717685e5728e9cadf",
+        "error_context": [
+            "In the step 'Run tests for Agno', the test execution failed due to a syntax error in the code, specifically a string literal that was not terminated. This error prevented the tests from running successfully."
+        ],
+        "relevant_files": [
+            {
+                "file": "path/to/file.py",
+                "line_number": null,
+                "reason": "The file contains a syntax error where a string literal is not properly terminated, causing the test execution to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Syntax Error",
+                "evidence": "The log indicates that a string literal is not terminated, which is a syntax error."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "557f5305cd8dc547495ea9bbfec35bee632b63be",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to an undefined name 'tool' in the file 'agno/team/team.py' at line 5637. This error was detected after the previous steps, including setting up the environment and installing dependencies, were completed successfully."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/team/team.py",
+                "line_number": 5637,
+                "reason": "Error found during 'ruff check .': 'F821 Undefined name `tool`' at line 5637."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Undefined Name",
+                "evidence": "The error 'F821 Undefined name `tool`' was reported during the 'Ruff check' step."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "55c8c01643e65d53cf29664e5d5dc6d7307272d6",
+        "error_context": [
+            "In the step 'Run tests for Agno', the test execution failed due to a syntax error in the code, specifically a string literal that was not terminated properly."
+        ],
+        "relevant_files": [
+            {
+                "file": "path/to/file.py",
+                "line_number": null,
+                "reason": "The file contains a syntax error where a string literal is not terminated, causing the test to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Syntax Error",
+                "evidence": "The error log indicates 'String literal is not terminated'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "5f24cca27fe01045314ee6ddb7619e164ada0c91",
+        "error_context": [
+            "In the step 'Run tests for Agno', the test execution failed due to a syntax error in the code, specifically a string literal that was not terminated properly."
+        ],
+        "relevant_files": [
+            {
+                "file": "path/to/file.py",
+                "line_number": null,
+                "reason": "The file contains a syntax error where a string literal is not terminated, causing the test to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Syntax Error",
+                "evidence": "The error log indicates that a string literal is not terminated."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "601a9c6986f1659f3051449238c0c0c5d2ef4124",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step due to a type error in the file 'agno/models/langdb/langdb.py'. The mypy tool reported an incompatible type assignment at line 30, where a variable expected a string but received None. This type mismatch caused the CI process to exit with code 1, indicating that the checks did not pass."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/models/langdb/langdb.py",
+                "line_number": 30,
+                "reason": "Mypy reported an error: 'Incompatible types in assignment (expression has type \"None\", variable has type \"str\")' at line 30."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Incompatible types in assignment (expression has type \"None\", variable has type \"str\")"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "67b1780b01f5d7461dc9b3d189d25acecbdb171d",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step due to type checking errors. Specifically, the mypy type checker identified 8 type errors across 2 files, indicating type mismatches and issues with optional attributes. The errors included incompatible types in function arguments and assignments, which led to an error exit code of 1, preventing the job from completing successfully."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/agent/agent.py",
+                "line_number": 4533,
+                "reason": "Type mismatch in function argument; expected a list of dictionaries but received a list of mixed types."
+            },
+            {
+                "file": "agno/team/team.py",
+                "line_number": 4813,
+                "reason": "Incompatible types in assignment; expression type does not match variable type."
+            },
+            {
+                "file": "agno/team/team.py",
+                "line_number": 4834,
+                "reason": "Attempted to access an attribute on a None type, indicating a potential issue with optional types."
+            },
+            {
+                "file": "agno/team/team.py",
+                "line_number": 4869,
+                "reason": "Type mismatch in function argument; expected a list of dictionaries but received a list of mixed types."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy reported 8 errors across 2 files, including incompatible types in function arguments and assignments."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "6865351833c002710b5e861a4ff6bc05b74afd4b",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to a code formatting issue. Specifically, the 'json' module was imported in 'agno/embedder/huggingface.py' but was not used, resulting in a F401 error. This caused the step to exit with code 1, indicating a failure in the CI process."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/embedder/huggingface.py",
+                "line_number": 1,
+                "reason": "The file contains an unused import of the 'json' module, which triggered a F401 error during the Ruff check."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "Found 1 error: F401 [*] `json` imported but unused."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "69a56c3a1a48f96da4e8c6f71b19dfd71f3f2b8c",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to a style error in the file 'agno/tools/toolkit.py'. Specifically, the error indicated that 'typing.Union' was imported but not used, resulting in a F401 error. This caused the style check to exit with code 1, indicating a failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/tools/toolkit.py",
+                "line_number": 2,
+                "reason": "The file contains an unused import of 'typing.Union', which triggered a F401 error during the style check."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "'typing.Union' imported but unused, leading to F401 error."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "6ad4e8d6bb1ea167fa88d68f5396968b713dd7ba",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step, where the tool reported an error in the file 'agno/tools/mcp.py'. The specific error was that 'None' has no attribute '__aenter__' at line 185, indicating a potential issue with an asynchronous context manager. This failure occurred after the environment was set up and dependencies were installed successfully, but it resulted in the CI process terminating with an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/tools/mcp.py",
+                "line_number": 185,
+                "reason": "'None' has no attribute '__aenter__' as reported by the Ruff check command."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "AttributeError",
+                "evidence": "'None' has no attribute '__aenter__' at line 185."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "6e5f3fc6534025b5711d84f144d3071f1ff403d2",
+        "error_context": [
+            "In the 'Mypy' step, type checking failed due to three errors in the file 'agno/tools/daytona.py'. The errors included missing implementations for the 'daytona_sdk' module and its submodule 'daytona_sdk.common.process', as well as a redefinition of the attribute 'result'. This resulted in the CI process concluding with an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/tools/daytona.py",
+                "line_number": 5,
+                "reason": "Errors reported by mypy: 'Cannot find implementation or library stub for module named \"daytona_sdk\"' and 'Cannot find implementation or library stub for module named \"daytona_sdk.common.process\"'. Additionally, 'Attribute \"result\" already defined on line 120'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy reported errors: 'Cannot find implementation or library stub for module named \"daytona_sdk\"' and 'Attribute \"result\" already defined on line 120'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "6f19da809ef086cec3d81173f2c1b849e81c896d",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The mypy type checker reported three errors in the file 'agno/models/cerebras/cerebras.py', indicating issues with type handling, specifically that an 'Optional[Any]' type was not indexable and that there was an unsupported right operand type for the 'in' operator. This resulted in an exit code of 1, indicating failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/models/cerebras/cerebras.py",
+                "line_number": 163,
+                "reason": "Mypy reported errors related to type handling: 'Value of type \"Optional[Any]\" is not indexable' and 'Unsupported right operand type for in (\"Optional[Any]\")' at lines 163 and 165."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy reported errors: 'Value of type \"Optional[Any]\" is not indexable' and 'Unsupported right operand type for in (\"Optional[Any]\")'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "6fe4e00e8863c8da28d241cb65632725de6db64b",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to two errors in the file 'agno/workflow/v2/workflow.py'. Specifically, the local variable 'task' was assigned but never used at lines 1238 and 1339. This resulted in an exit code of 1, indicating a failure in the style check process."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/workflow/v2/workflow.py",
+                "line_number": 1238,
+                "reason": "Found 2 errors: Local variable 'task' is assigned to but never used at lines 1238 and 1339."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Variable",
+                "evidence": "Local variable 'task' is assigned but never used at lines 1238 and 1339."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "754f4d3afe097bd3d360bb8a186acd95cc2542ea",
+        "error_context": [
+            "The CI run failed during the 'Run tests for Agno' step due to multiple issues. Warnings were logged regarding image and mask size mismatches in the PDF reader tests, which could lead to rendering issues. Additionally, there were failures in the 'test_run_python_code' and 'test_error_handling' tests from 'libs/agno/tests/unit/tools/test_daytona.py', both attributed to an AttributeError indicating that the 'DaytonaTools' object does not have a method named 'run_python_code'. Furthermore, multiple telemetry events failed to send due to an argument mismatch in the capture function, which was invoked with three arguments instead of the expected one."
+        ],
+        "relevant_files": [
+            {
+                "file": "libs/agno/tests/unit/reader/test_pdf_reader.py",
+                "line_number": null,
+                "reason": "Warnings about image and mask size mismatches and EOF marker not found during PDF processing tests."
+            },
+            {
+                "file": "pypdf/filters/_utils.py",
+                "line_number": null,
+                "reason": "Warnings logged about image and mask size not matching during test execution."
+            },
+            {
+                "file": "pypdf/_reader/_utils.py",
+                "line_number": null,
+                "reason": "Warning logged: 'EOF marker not found' during the execution of 'test_pdf_reader_empty_pdf'."
+            },
+            {
+                "file": "libs/agno/tests/unit/tools/test_daytona.py",
+                "line_number": null,
+                "reason": "Failures in tests 'test_run_python_code' and 'test_error_handling' due to AttributeError."
+            },
+            {
+                "file": "chromadb/telemetry/product/posthog.py",
+                "line_number": 59,
+                "reason": "Multiple errors occurred while sending telemetry events due to incorrect argument count in 'capture()' function."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AttributeError",
+                "evidence": "AttributeError: 'DaytonaTools' object has no attribute 'run_python_code'"
+            },
+            {
+                "category": "Test Failure",
+                "subcategory": "Warning",
+                "evidence": "Warnings indicating image and mask size do not match during tests."
+            },
+            {
+                "category": "Runtime Error",
+                "subcategory": "Telemetry Error",
+                "evidence": "Failed to send telemetry event: capture() takes 1 positional argument but 3 were given."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "78c5d662bf2145c91356e5185db05a17950b3dc4",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The type checker encountered errors in two files, 'sync_router.py' and 'async_router.py', indicating that the method signatures for 'run' and 'arun' in the 'Team' class did not match the argument types provided. This resulted in an exit code of 1, indicating a failure in type checking."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/app/agui/sync_router.py",
+                "line_number": 63,
+                "reason": "The method 'run' of the 'Team' class does not accept the argument types 'list[Message]', 'Any', 'bool', 'bool' as indicated by the mypy error."
+            },
+            {
+                "file": "agno/app/agui/async_router.py",
+                "line_number": 63,
+                "reason": "The method 'arun' of the 'Team' class does not accept the argument types 'list[Message]', 'Any', 'bool', 'bool' as indicated by the mypy error."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy reported errors indicating that no overload variant of 'run' and 'arun' matches the provided argument types."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "7b8834b321a97bc57d7a5ac82680c24aff793b91",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job due to type errors detected in the file 'agno/agent/agent.py'. Specifically, two incompatible type assignments were found at lines 6940 and 7389, where a variable expected to be of type 'str' was assigned a value of type 'Union[str, JSON, Markdown]'. This caused the 'Mypy' check to exit with a failure code."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/agent/agent.py",
+                "line_number": 6940,
+                "reason": "Type errors detected during 'Mypy' check: incompatible types in assignment at lines 6940 and 7389."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Incompatible types in assignment (expression has type 'Union[str, JSON, Markdown]', variable has type 'str')"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "7d51d48b09bbc5e6311becec1c1a4150fde89b4e",
+        "error_context": [
+            "In the 'Run tests for Agno' step, pytest reported a failure due to an assertion error in the test 'test_generate_image_missing_credentials'. This test failed because the function returned an unexpected error message indicating access denial due to invalid subscription key or wrong API endpoint, rather than the expected message of 'not properly initialized'. Additionally, there were multiple warnings related to image and mask size mismatches during PDF processing, which were noted in the test logs but did not directly cause the test failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "libs/agno/tests/unit/tools/test_azure_openai_tools.py",
+                "line_number": 192,
+                "reason": "The test 'test_generate_image_missing_credentials' failed due to an assertion error when the function returned an unexpected error message instead of the expected 'not properly initialized'."
+            },
+            {
+                "file": "libs/agno/tests/unit/reader/test_pdf_reader.py",
+                "line_number": null,
+                "reason": "Warnings were generated during the tests indicating 'image and mask size not matching' for multiple tests related to PDF image processing."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/pydub/utils.py",
+                "line_number": null,
+                "reason": "Multiple SyntaxWarnings were raised regarding invalid escape sequences in this file."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/pydantic/fields.py",
+                "line_number": null,
+                "reason": "DeprecationWarnings were issued for using deprecated parameters in field definitions."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/youtube_transcript_api/_api.py",
+                "line_number": null,
+                "reason": "DeprecationWarnings were raised for using deprecated methods in the YouTube transcript API."
+            },
+            {
+                "file": "libs/agno/agno/storage/postgres.py",
+                "line_number": null,
+                "reason": "SADeprecationWarnings were raised regarding the use of the Column.copy() method, which is deprecated."
+            },
+            {
+                "file": "libs/agno/agno/storage/sqlite.py",
+                "line_number": null,
+                "reason": "SADeprecationWarnings were raised regarding the use of the Column.copy() method, which is deprecated."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/qdrant_client/http/models/models.py",
+                "line_number": null,
+                "reason": "SyntaxWarnings were raised regarding invalid escape sequences in this file."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "The test 'test_generate_image_missing_credentials' failed due to an assertion error when the function returned an unexpected error message."
+            },
+            {
+                "category": "Warning",
+                "subcategory": "Image Processing",
+                "evidence": "Warnings were generated indicating 'image and mask size not matching' during PDF processing."
+            },
+            {
+                "category": "Warning",
+                "subcategory": "SyntaxWarning",
+                "evidence": "Multiple SyntaxWarnings were raised regarding invalid escape sequences in various files."
+            },
+            {
+                "category": "Warning",
+                "subcategory": "DeprecationWarning",
+                "evidence": "DeprecationWarnings were issued for using deprecated parameters in field definitions and methods."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "7da71b58b1eb9b56ac1b4423afd9da61679a706e",
+        "error_context": [
+            "The CI run failed during the 'style-check' job, specifically in the 'Ruff check' step. The linting tool 'ruff' detected an unused import in the file 'agno/workflow/v2/types.py', which resulted in a F401 error. This error caused the step to exit with code 1, indicating a failure in the style check process."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/workflow/v2/types.py",
+                "line_number": 2,
+                "reason": "Linting error detected: 'typing.TYPE_CHECKING' imported but unused (F401)."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "'typing.TYPE_CHECKING' imported but unused (F401)."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "7efb1f09096dd41ea09b30ceb17746686931d1cf",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to two unused imports found in the file 'agno/app/discord/client.py'. The errors indicated that 'typing.List' and 'agno.tools.function.UserInputField' were imported but not used, leading to a failure with an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/app/discord/client.py",
+                "line_number": 11,
+                "reason": "The file contains unused imports as reported by 'ruff check .': 'typing.List' and 'agno.tools.function.UserInputField' were imported but not used."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "Errors found during 'ruff check .': 'typing.List' imported but unused and 'agno.tools.function.UserInputField' imported but unused."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "7f4d750eaf81c6f8384ed8246180c29bb45ea7bf",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step due to a type checking error in the file 'agno/eval/accuracy.py'. Specifically, mypy reported that an item of type 'Optional[Agent]' has no attribute 'run' at line 307. This error indicates a type mismatch that prevented the CI process from completing successfully."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/eval/accuracy.py",
+                "line_number": 307,
+                "reason": "Mypy reported a type error: 'Item \"None\" of \"Optional[Agent]\" has no attribute \"run\" at line 307.'"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy error: 'Item \"None\" of \"Optional[Agent]\" has no attribute \"run\"  [union-attr]'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "82609349d7098fd5ad1c71f0e057f50cd0074404",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to a code style issue in the file 'agno/workflow/workflow.py'. Specifically, the import of 'typing.AsyncGenerator' at line 8 was found to be unused, which triggered an error from the 'ruff' linter. The error message indicated that this issue was fixable with the '--fix' option, but it ultimately caused the CI process to exit with code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/workflow/workflow.py",
+                "line_number": 8,
+                "reason": "Error found: `typing.AsyncGenerator` imported but unused at line 8, causing the CI process to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "`typing.AsyncGenerator` imported but unused"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "82bdfed0cf9ff57528d78ac9ad9f1179c8e117e3",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The mypy type checker reported an error in the file 'agno/vectordb/mongodb/cosmos_mongodb.py' at line 87, indicating that 'None' has no attribute 'get_collection'. This type error caused the CI process to exit with code 1, leading to the overall failure of the job."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/vectordb/mongodb/cosmos_mongodb.py",
+                "line_number": 87,
+                "reason": "'None' has no attribute 'get_collection' as reported by mypy type checking."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "'None' has no attribute 'get_collection' at line 87 during mypy type checking."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "840ad511b904f43678ec438464deb893fda58c8b",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to a code quality issue. Specifically, a local variable 'mock_file' was assigned but never used in the file 'tests/unit/tools/models/test_morph.py' at line 200. This resulted in an error classified as 'F841 Local variable assigned to but never used', causing the CI process to exit with code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/unit/tools/models/test_morph.py",
+                "line_number": 200,
+                "reason": "Error found: 'F841 Local variable `mock_file` is assigned to but never used' at line 200."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Variable",
+                "evidence": "Error found: 'F841 Local variable `mock_file` is assigned to but never used'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "8474427eeab92e28766b8051d92e6b46379581e9",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to two unused import errors detected in the file 'agno/models/anthropic/claude.py'. Specifically, 'pathlib.Path' imported at line 6 and 'agno.media.File' imported at line 16 were reported as unused, leading to an exit code of 1 and causing the style-check job to fail."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/models/anthropic/claude.py",
+                "line_number": 6,
+                "reason": "The file contains unused imports, specifically 'pathlib.Path' and 'agno.media.File', which caused the style-check to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "'pathlib.Path' imported but unused at line 6 and 'agno.media.File' imported but unused at line 16."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "84d26c4b6b5881367cdabfc56d29b50389f1ba92",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The mypy type checker reported an error in the file 'agno/team/team.py', indicating that the item 'Team' of the union type 'Union[Agent, Team]' has no attribute 'agent_id'. This resulted in a total of 1 error found in 1 file out of 520 checked source files, leading to the CI process concluding with an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/team/team.py",
+                "line_number": 6173,
+                "reason": "Error found in mypy check: 'Item \"Team\" of \"Union[Agent, Team]\" has no attribute \"agent_id\"  [union-attr]'"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Error: 'Item \"Team\" of \"Union[Agent, Team]\" has no attribute \"agent_id\"  [union-attr]'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "8c8e822266755d103faa9166aaa4ab3f2aa3e578",
+        "error_context": [
+            "The CI run failed during the 'Run tests for Agno' step due to two main errors. The first error occurred in 'libs/agno/tests/unit/vectordb/test_chromadb.py' where an import of 'ChromaDb' led to a TypeError indicating that descriptors cannot be created directly, suggesting that the generated code is out of date and needs to be regenerated with protoc version 3.19.0 or higher. The second error was in 'libs/agno/tests/unit/vectordb/test_milvusdb.py', where an ImportError occurred while trying to import 'AsyncMilvusClient' from 'pymilvus', indicating that this class may not exist in the current version of the package. These errors interrupted the testing process, leading to a failure to complete the test run."
+        ],
+        "relevant_files": [
+            {
+                "file": "libs/agno/tests/unit/vectordb/test_chromadb.py",
+                "line_number": 8,
+                "reason": "Failed to collect tests due to a TypeError related to outdated generated code."
+            },
+            {
+                "file": "libs/agno/tests/unit/vectordb/test_milvusdb.py",
+                "line_number": null,
+                "reason": "Failed to import 'AsyncMilvusClient' from 'pymilvus', indicating it may not exist in the current version."
+            },
+            {
+                "file": ".venv/lib/python3.12/site-packages/chromadb/__init__.py",
+                "line_number": null,
+                "reason": "Part of the import error chain leading to the TypeError in test_chromadb.py."
+            },
+            {
+                "file": ".venv/lib/python3.12/site-packages/pymilvus/__init__.py",
+                "line_number": null,
+                "reason": "Part of the import error chain leading to the ImportError in test_milvusdb.py."
+            },
+            {
+                "file": ".venv/lib/python3.12/site-packages/google/protobuf/descriptor.py",
+                "line_number": null,
+                "reason": "Related to the TypeError in test_chromadb.py regarding protobuf handling."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "ImportError",
+                "subcategory": "ImportError: No module named X",
+                "evidence": "ImportError while importing test module 'test_milvusdb.py': cannot import name 'AsyncMilvusClient' from 'pymilvus'."
+            },
+            {
+                "category": "Runtime Error",
+                "subcategory": "TypeError",
+                "evidence": "TypeError: Descriptors cannot be created directly. If this call came from a _pb2.py file, your generated code is out of date."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "96cab6eebb5bd0c37a60a93f3e3495fdb08793f9",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The mypy type checker reported an error in the file 'agno/models/anthropic/claude.py', indicating that an item of type 'None' does not have the attribute 'append'. This error caused the CI process to exit with code 1, indicating a failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/models/anthropic/claude.py",
+                "line_number": 519,
+                "reason": "Mypy check failed due to an attempt to call 'append' on a None type, indicating a type mismatch."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Error found in mypy check: 'Item \"None\" of \"Optional[list[DocumentCitation]]\" has no attribute \"append\"  [union-attr]'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "978b0f29982c558b12d775a884ebeea1869c16da",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to style violations in the file 'tests/unit/tools/models/test_gemini.py'. Specifically, two instances of f-strings were found without placeholders, which caused the step to exit with code 1. The errors were detected while executing the command 'ruff check .', indicating that the code did not adhere to the specified style guidelines."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/unit/tools/models/test_gemini.py",
+                "line_number": 125,
+                "reason": "The file contains style violations related to f-strings without placeholders, specifically at lines 125 and 211, which caused the style check to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "f-string without placeholders",
+                "evidence": "Errors found during 'ruff check .': 'tests/unit/tools/models/test_gemini.py:125:26: F541 [*] f-string without any placeholders' and 'tests/unit/tools/models/test_gemini.py:211:26: F541 [*] f-string without any placeholders'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "98c0877ed94c574c7a6eae2f2eb662bfcef1ba87",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The mypy type checker detected two errors in the file 'agno/agent/agent.py', indicating that an item of type 'None' was being accessed for an attribute 'valid_metadata_filters', which is not valid. This resulted in the CI process failing with an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/agent/agent.py",
+                "line_number": 1105,
+                "reason": "Detected errors during mypy check: 'Item \"None\" of \"Optional[AgentKnowledge]\" has no attribute \"valid_metadata_filters\"' at lines 1105 and 1739."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "error: Item \"None\" of \"Optional[AgentKnowledge]\" has no attribute \"valid_metadata_filters\""
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    }
+]

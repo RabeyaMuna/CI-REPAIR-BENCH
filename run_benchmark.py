@@ -11,7 +11,8 @@ from benhmark_functions import fix_apply_generated_patch
 #  Configuration
 # ============================================================
 model_name = "diff"
-config_path = "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/config.yaml"
+current_dir = os.getcwd()
+config_path = os.path.join(current_dir, "config.yaml")
 
 config = OmegaConf.load(config_path)
 

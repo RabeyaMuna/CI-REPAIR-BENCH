@@ -69,7 +69,7 @@ class CILogAnalyzerBM25:
             "flake8",
             "mypy",
             "coverage",
-            "unittest",
+            "unittest"
         ]
 
     # ------------------------------------------------------------------
@@ -356,30 +356,36 @@ You receive pre-processed CI log information for a FAILED CI RUN, which contains
     - "score"
     - "reason"
 
+IMPORTANT: The `relevant_files` list contains **BM25 candidate files only**.
+You MUST NOT automatically treat them as truly related to the failure. You must cross-check
+every candidate file against the log evidence in THIS CHUNK. Only files with clear, direct
+evidence in THIS CHUNK may appear in the final `relevant_files` output. If no file has
+strong evidence, you MUST return an empty list for `relevant_files`.
+
 For THIS CHUNK ONLY, extract a **partial summary** of the CI failure using
 the following STRICT JSON schema (do not add or remove keys):
 
 {{
-  "step_name": {step_name_json},
-  "chunk_index": {idx},
-  "sha_fail": "{self.sha_fail}",
-  "error_context": [
+"step_name": {step_name_json},
+"chunk_index": {idx},
+"sha_fail": "{self.sha_fail}",
+"error_context": [
     "English explanation(s) of the root cause(s) visible in THIS CHUNK, supported by log evidence."
-  ],
-  "relevant_files": [
+],
+"relevant_files": [
     {{
-      "file": "path/to/file.py",
-      "line_number": 123,
-      "reason": "Short explanation of why this file is tied to the failure in THIS CHUNK."
+    "file": "path/to/file.py",
+    "line_number": 123,
+    "reason": "Short explanation of why this file is tied to the failure in THIS CHUNK."
     }}
-  ],
-  "error_types": [
+],
+"error_types": [
     {{
-      "category": "High-level category, e.g. 'Test Failure', 'Runtime Error', 'Dependency Error', 'Configuration Error', 'Code Formatting', 'Type Checking'",
-      "subcategory": "More specific description, e.g. 'Runtime Error – ValueError in Optuna objective', 'Test Failure – AssertionError in unit test', 'Dependency Error – missing package x'",
-      "evidence": 'Short quote or paraphrase from THIS CHUNK that justifies this classification.'
+    "category": "High-level category, e.g. 'Test Failure', 'Runtime Error', 'Dependency Error', 'Configuration Error', 'Code Formatting', 'Type Checking'",
+    "subcategory": "More specific description, e.g. 'Runtime Error – ValueError in Optuna objective', 'Test Failure – AssertionError in unit test', 'Dependency Error – missing package x'",
+    "evidence": "Short quote or paraphrase from THIS CHUNK that justifies this classification."
     }}
-  ]
+]
 }}
 
 ### Rules (IMPORTANT)
@@ -387,28 +393,31 @@ the following STRICT JSON schema (do not add or remove keys):
 1. Use ONLY the information from the chunk shown below.
 
 2. **error_context**:
-   - Summarize the root cause(s) found in THIS CHUNK.
-   - If nothing meaningful appears, use an empty list [].
+- Summarize the root cause(s) found in THIS CHUNK.
+- If nothing meaningful appears, use an empty list [].
 
 3. **relevant_files**:
-   - You MUST start from the `relevant_files` list provided in this chunk. Do not invent any new file paths.
-   - Additionally, you may use file paths that are explicitly mentioned in the failure text in THIS CHUNK (for example, in stack traces or error messages).
-   - Return ONLY those files that are clearly tied to the CI failure in THIS CHUNK.
-     A file is "relevant" ONLY if:
-       - it is explicitly mentioned in the failure messages or context in THIS CHUNK, OR
-       - the errors in THIS CHUNK clearly occur in, or are described as coming from, that file.
-   - If you are not sure that a file is truly related to the failure in THIS CHUNK, DO NOT include it.
-   - Only select files that have STRONG evidence linking them to the failure in THIS CHUNK.
-   - If no file clearly meets these conditions, return "relevant_files": [].
-   - For each returned file:
-       - use the exact path from the input or from the failure text,
-       - set "line_number" to the failing line if visible; otherwise null,
-       - provide a short, evidence-based "reason" explaining how THIS CHUNK links the failure to that file.
-    - Do not include all the files from the input list unless they are all clearly relevant to give the failure in the log chunk or mentioned in the log chunk and reason of Ci workflow failure.
+- Treat the `relevant_files` list provided in this chunk as **BM25 candidate files only**.
+- You MUST NOT assume a file is relevant just because it appears in this list.
+- A file may appear in the final `relevant_files` array ONLY if:
+    - it is explicitly mentioned in the failure messages, stack traces, or context in THIS CHUNK, OR
+    - the errors in THIS CHUNK clearly occur in, or are described as coming from, that file.
+- You may also use file paths that are explicitly mentioned in the failure text in THIS CHUNK
+    (for example, in stack traces or error messages), even if they were not in the candidate list.
+- If you are not sure that a file is truly related to the failure in THIS CHUNK, DO NOT include it.
+- Only select files that have STRONG evidence linking them to the failure in THIS CHUNK.
+- If no file clearly meets these conditions, return `"relevant_files": []`.
+- For each returned file:
+    - use the exact path from the input or from the failure text,
+    - set `"line_number"` to the failing line if visible; otherwise null,
+    - provide a short, evidence-based `"reason"` explaining how THIS CHUNK links the failure to that file.
+- Do NOT include all the candidate files unless they are all clearly and explicitly tied to the failure
+    in THIS CHUNK.
 
 4. **error_types**:
-   - Provide entries that best describe the errors visible in THIS CHUNK.
-   - Choose categories/subcategories that match the actual errors (exceptions, test failures, dependency errors, configuration errors, formatting, etc.).
+- Provide entries that best describe the errors visible in THIS CHUNK.
+- Choose categories/subcategories that match the actual errors (exceptions, test failures, dependency errors, configuration errors, formatting, etc.).
+- Each `evidence` must be supported by text from THIS CHUNK.
 
 5. Use null for any unknown scalar values.
 
@@ -454,7 +463,6 @@ the following STRICT JSON schema (do not add or remove keys):
 
         return log_chunk_summaries
 
-            
             
     # ------------------------------------------------------------------
     def _summarize_workflow_if_large(self) -> Any:
@@ -602,6 +610,12 @@ You are a CI failure summarization agent.
 
 Your task:
 Read CI job logs and workflow details, then produce a **structured, evidence-based JSON summary** that classifies the errors clearly by category and subcategory.
+
+IMPORTANT: The Python files you see inside `log_details` (under `relevant_files`) are
+**BM25 candidate files only**. You MUST NOT automatically treat them as truly related.
+You must cross-check every file against the CI log evidence. Only files that are clearly
+supported by the logs/stack traces as being involved in the failure may appear in the
+final `relevant_files` output. If no file has strong evidence, output an empty list.
 
 ---
 

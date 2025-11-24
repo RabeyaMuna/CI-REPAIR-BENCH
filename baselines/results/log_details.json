@@ -1,144 +1,55 @@
 [
     {
-        "sha_fail": "ed370d805e4d5d1ec14a136f5b2516751277059f",
+        "sha_fail": "2c06ffa4c9d2c37846c60ad75899b4d72f214ff9",
         "error_context": [
-            "In step 'Run lints', the linting process failed due to type mismatches in the function 'append' found in two files: '_responses.py' and 'responses.py'. The errors indicated that complex union types could not be assigned to the expected parameter types, leading to the CI process being marked as failed."
+            "The CI run failed during the 'Check quality' step of the 'check_code_quality' job. The 'ruff' tool reported an error in the file 'examples/community/ip_adapter_face_id.py', indicating that the import block is un-sorted or un-formatted. This resulted in a failure with an exit code of 1, as the tool found 1 error that is fixable using the '--fix' option."
         ],
         "relevant_files": [
             {
-                "file": "src/openai/lib/streaming/responses/_responses.py",
-                "line_number": 321,
-                "reason": "Error encountered during linting: Argument of type 'ResponseAudioDeltaEvent | ResponseAudioDoneEvent | ...' cannot be assigned to parameter 'object' of type 'ResponseStreamEvent[TextFormatT@ResponseStreamState]' in function 'append'."
-            },
-            {
-                "file": "src/openai/resources/responses/responses.py",
-                "line_number": 2922,
-                "reason": "Error encountered during linting: Argument of type 'FileSearchToolParam | WebSearchToolParam | ...' cannot be assigned to parameter 'object' of type 'ToolParam' in function 'append'."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Type Checking",
-                "subcategory": "Mypy type mismatch",
-                "evidence": "Linting errors indicated that complex union types could not be assigned to the expected parameter types in function 'append'."
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "lint",
-                "step": "Run lints",
-                "command": "./scripts/lint"
-            }
-        ]
-    },
-    {
-        "sha_fail": "4f79881e6cd35592692c7a7c1cb1d639eb70a009",
-        "error_context": [
-            "In step 'Smoke Test', pytest reported failing tests due to an AssertionError in the 'test_fixture[min-csv]' test, indicating that a query failed with a return code of 1. The error message also included an AttributeError stating that a 'NoneType' object has no attribute 'search'. This suggests issues in the query execution or data handling within the test."
-        ],
-        "relevant_files": [
-            {
-                "file": "tests/smoke/test_fixtures.py",
-                "line_number": 267,
-                "reason": "Contains the failing test case that raised an AssertionError due to a failed query."
-            },
-            {
-                "file": "tests/fixtures/min-csv/output/lancedb/entity-description.lance",
-                "line_number": null,
-                "reason": "Warning issued indicating that no existing dataset was found at this path, and it would be created."
-            },
-            {
-                "file": "tests/fixtures/min-csv/output/lancedb/community-full_content.lance",
-                "line_number": null,
-                "reason": "Warning issued indicating that no existing dataset was found at this path, and it would be created."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Test Failure",
-                "subcategory": "AssertionError",
-                "evidence": "AssertionError: Query failed, assert 1 == 0"
-            },
-            {
-                "category": "Runtime Error",
-                "subcategory": "AttributeError",
-                "evidence": "AttributeError: 'NoneType' object has no attribute 'search'"
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "python-ci",
-                "step": "Smoke Test",
-                "command": "uv run poe test_smoke"
-            }
-        ]
-    },
-    {
-        "sha_fail": "219bc58c7f1bfe425ddc1d628ff5cda9639afc1e",
-        "error_context": [
-            "In step 'Run pre-commit', the process failed due to issues with code formatting. The 'trailing-whitespace' hook failed because files were modified to remove trailing whitespace, and the 'ruff-format' hook also failed as it reformatted several files."
-        ],
-        "relevant_files": [
-            {
-                "file": "workflows/agent_orchestration_engine.py",
-                "line_number": null,
-                "reason": "Modified by the 'trailing-whitespace' hook for trailing whitespace and reformatted by the 'ruff-format' hook."
-            },
-            {
-                "file": "tools/pdf_downloader.py",
-                "line_number": null,
-                "reason": "Modified by the 'trailing-whitespace' hook for trailing whitespace and reformatted by the 'ruff-format' hook."
-            },
-            {
-                "file": "utils/file_processor.py",
-                "line_number": null,
-                "reason": "Reformatted by the 'ruff-format' hook."
+                "file": "examples/community/ip_adapter_face_id.py",
+                "line_number": 15,
+                "reason": "The file contains an un-sorted or un-formatted import block, which caused the code quality check to fail."
             }
         ],
         "error_types": [
             {
                 "category": "Code Formatting",
-                "subcategory": "Trailing Whitespace",
-                "evidence": "The 'trailing-whitespace' hook failed, indicating that files were modified to remove trailing whitespace."
-            },
-            {
-                "category": "Code Formatting",
-                "subcategory": "Reformatting",
-                "evidence": "The 'ruff-format' hook failed, indicating that several files were reformatted."
+                "subcategory": "Import Block Formatting",
+                "evidence": "Found 1 error: 'Import block is un-sorted or un-formatted' at line 15."
             }
         ],
         "failed_job": [
             {
-                "job": "lint-and-format",
-                "step": "Run pre-commit",
-                "command": "pre-commit run --all-files --show-diff-on-failure"
+                "job": "check_code_quality",
+                "step": "Check quality",
+                "command": "ruff check examples tests src utils scripts\nruff format examples tests src utils scripts --check"
             }
         ]
     },
     {
-        "sha_fail": "d01a6ec49f1aac932816c81c0354de64c0183373",
+        "sha_fail": "db6550a228941b538f340fb5b65ed16c43a21b88",
         "error_context": [
-            "In step 'Smoke test', the test failed due to an ImportError when trying to import the module 'lib.core.ncgui' from 'sqlmap/lib/core/ncgui.py'. The error message indicated that the module '_curses' could not be found, leading to the failure of the smoke test."
+            "The CI run failed during the 'Check quality' step of the 'check_code_quality' job. The 'ruff' tool detected a code quality issue in the file 'src/diffusers/loaders/ip_adapter.py', specifically an unused import of 'typing.Optional' at line 15, which resulted in a F401 error. The process completed with an exit code of 1, indicating a failure due to this detected error."
         ],
         "relevant_files": [
             {
-                "file": "sqlmap/lib/core/ncgui.py",
-                "line_number": null,
-                "reason": "The file was referenced during the smoke test where it failed to import due to the missing module '_curses'."
+                "file": "src/diffusers/loaders/ip_adapter.py",
+                "line_number": 15,
+                "reason": "'typing.Optional' was imported but not used, leading to a F401 error."
             }
         ],
         "error_types": [
             {
-                "category": "Runtime Error",
-                "subcategory": "ImportError: No module named _curses",
-                "evidence": "The smoke test failed at importing module 'lib.core.ncgui': No module named '_curses'."
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "'typing.Optional' imported but unused, resulting in a F401 error."
             }
         ],
         "failed_job": [
             {
-                "job": "build",
-                "step": "Smoke test",
-                "command": "python sqlmap.py --smoke"
+                "job": "check_code_quality",
+                "step": "Check quality",
+                "command": "ruff format examples tests src utils scripts --check"
             }
         ]
     }

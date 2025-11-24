@@ -35,9 +35,12 @@ def _method_info(fn: ast.AST) -> Dict[str, Any]:
     start, end = _node_span(fn)
     decos = [_name_of_decorator(d) for d in getattr(fn, "decorator_list", [])]
     tags: List[str] = []
-    if any(d.endswith("property") for d in decos): tags.append("property")
-    if any(d.endswith("classmethod") for d in decos): tags.append("classmethod")
-    if any(d.endswith("staticmethod") for d in decos): tags.append("staticmethod")
+    if any(d.endswith("property") for d in decos):
+        tags.append("property")
+    if any(d.endswith("classmethod") for d in decos):
+        tags.append("classmethod")
+    if any(d.endswith("staticmethod") for d in decos):
+        tags.append("staticmethod")
     return {
         "kind": "func",
         "name": fn.name,
@@ -48,16 +51,76 @@ def _method_info(fn: ast.AST) -> Dict[str, Any]:
         "children": [],
     }
 
+def _merge_import_blocks_in_list(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Merge consecutive items with kind == 'import_block' into a single block.
+
+    We assume `items` are in source order. We merge runs of adjacent import_block
+    entries, regardless of small gaps from blank lines/comments (they don't
+    appear in the outline).
+    """
+    merged: List[Dict[str, Any]] = []
+    i = 0
+    n = len(items)
+
+    while i < n:
+        node = items[i]
+        if node.get("kind") != "import_block":
+            merged.append(node)
+            i += 1
+            continue
+
+        # Start of an import run
+        start = node["start"]
+        end = node["end"]
+        j = i + 1
+
+        # Merge all immediately following import_block nodes
+        while j < n and items[j].get("kind") == "import_block":
+            end = max(end, items[j]["end"])
+            j += 1
+
+        merged.append({
+            "kind": "import_block",
+            "name": "import",
+            "start": start,
+            "end": end,
+            "children": [],
+        })
+        i = j
+
+    return merged
+
 def _class_children(c: ast.ClassDef) -> List[Dict[str, Any]]:
     items: List[Dict[str, Any]] = []
+    # Build children in source order
     for n in c.body:
         if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)):
             items.append(_method_info(n))
         elif isinstance(n, (ast.Assign, ast.AnnAssign)):
             for nm in _var_targets(n):
                 s, e = _node_span(n)
-                items.append({"kind": "const", "name": nm, "start": s, "end": e, "children": []})
-        # (Inner classes/imports omitted for GitHub-like parity)
+                items.append({
+                    "kind": "const",
+                    "name": nm,
+                    "start": s,
+                    "end": e,
+                    "children": [],
+                })
+        elif isinstance(n, (ast.Import, ast.ImportFrom)):
+            # Imports inside classes → treat as import_block as well
+            s, e = _node_span(n)
+            items.append({
+                "kind": "import_block",
+                "name": "import",
+                "start": s,
+                "end": e,
+                "children": [],
+            })
+        # (Inner classes/other statements omitted for GitHub-like parity)
+
+    # Merge consecutive import_blocks within the class
+    items = _merge_import_blocks_in_list(items)
     items.sort(key=lambda d: d["start"])
     return items
 
@@ -66,7 +129,7 @@ def _class_children(c: ast.ClassDef) -> List[Dict[str, Any]]:
 def build_outline(src: str) -> List[Dict[str, Any]]:
     """
     GitHub-style symbols outline (JSON-friendly list).
-    Each item: {kind:'const'|'func'|'class', name, start, end, children:[...]}
+    Each item: {kind:'const'|'func'|'class'|'import_block', name, start, end, children:[...]}
     """
     try:
         tree = ast.parse(src)
@@ -74,6 +137,7 @@ def build_outline(src: str) -> List[Dict[str, Any]]:
         return []
 
     outline: List[Dict[str, Any]] = []
+    # Build in source order
     for node in tree.body:
         if isinstance(node, ast.ClassDef):
             s, e = _node_span(node)
@@ -89,8 +153,27 @@ def build_outline(src: str) -> List[Dict[str, Any]]:
         elif isinstance(node, (ast.Assign, ast.AnnAssign)):
             for nm in _var_targets(node):
                 s, e = _node_span(node)
-                outline.append({"kind": "const", "name": nm, "start": s, "end": e, "children": []})
-        # imports and others are ignored to match the sidebar
+                outline.append({
+                    "kind": "const",
+                    "name": nm,
+                    "start": s,
+                    "end": e,
+                    "children": [],
+                })
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            # Top-level imports → treat as import_block
+            s, e = _node_span(node)
+            outline.append({
+                "kind": "import_block",
+                "name": "import",
+                "start": s,
+                "end": e,
+                "children": [],
+            })
+        # others are ignored to match the sidebar
+
+    # 🔹 Merge consecutive top-level import blocks into one big block.
+    outline = _merge_import_blocks_in_list(outline)
     outline.sort(key=lambda d: d["start"])
     return outline
 
@@ -98,8 +181,14 @@ def format_outline(outline: List[Dict[str, Any]], *, max_lines: int = 2000) -> s
     """
     Pretty text block for prompts/logs. Truncates to ~max_lines chars.
     """
-    ICON = {"class": "class", "func": "func", "const": "const"}
+    ICON = {
+        "class": "class",
+        "func": "func",
+        "const": "const",
+        "import_block": "import",
+    }
     lines: List[str] = ["Symbols"]
+
     def emit(items: List[Dict[str, Any]], indent: int = 0):
         pad = "  " * indent
         for it in items:
@@ -107,6 +196,7 @@ def format_outline(outline: List[Dict[str, Any]], *, max_lines: int = 2000) -> s
             lines.append(f"{pad}{tag} {it['name']}  [{it['start']}–{it['end']}]")
             if it.get("children"):
                 emit(it["children"], indent + 1)
+
     emit(outline, 0)
     text = "\n".join(lines)
     return text if len(text) <= max_lines else text[: max_lines - 3] + "..."
@@ -117,6 +207,7 @@ def filter_outline_to_range(outline: List[Dict[str, Any]], start: int, end: int)
     but drop child items outside the range.
     """
     filt: List[Dict[str, Any]] = []
+
     def overlaps(a: int, b: int) -> bool:
         return not (b < start or a > end)
 
