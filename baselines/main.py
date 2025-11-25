@@ -23,7 +23,7 @@ def process_entire_dataset(dataset, config, llm, model_key):
     generated_patches = []
     results = []
     
-    subset = dataset[152:]
+    subset = dataset[237:]
     # target_ids = {241, 243, 281, 323}
     # subset = [dp for dp in dataset if dp.get("id") in target_ids]
     for datapoint in subset:

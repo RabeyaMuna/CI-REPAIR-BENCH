@@ -1468,5 +1468,1513 @@
                 "command": "mypy ."
             }
         ]
+    },
+    {
+        "sha_fail": "9b52669238946cd01f9cc5e99a4b6babf0942cdf",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to multiple instances of unused imports detected in the code. Specifically, the tool identified four unused imports across different test files, leading to an exit code of 1, which indicates a failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/integration/models/cerebras/test_tool_use.py",
+                "line_number": 1,
+                "reason": "Contains unused imports: `typing.Optional` and `agno.tools.duckduckgo.DuckDuckGoTools`."
+            },
+            {
+                "file": "tests/integration/models/cerebras_openai/test_basic.py",
+                "line_number": 6,
+                "reason": "Contains unused import: `agno.storage.sqlite.SqliteStorage`."
+            },
+            {
+                "file": "tests/integration/models/cerebras_openai/test_tool_use.py",
+                "line_number": 5,
+                "reason": "Contains unused import: `agno.tools.duckduckgo.DuckDuckGoTools`."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "Ruff reported multiple unused imports, leading to an exit code of 1."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "9ebc254bb14ed052a0ac459d8c109ae8e0c12233",
+        "error_context": [
+            "The CI run failed during the 'Ruff check' step due to style violations detected by the 'ruff' tool. Specifically, two files, 'agno/app/playground/async_router.py' and 'agno/app/playground/sync_router.py', contained unused imports of 'agno.run.team.TeamRunResponseEvent', which caused the step to exit with code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/app/playground/async_router.py",
+                "line_number": 42,
+                "reason": "Error: 'agno.run.team.TeamRunResponseEvent' imported but unused."
+            },
+            {
+                "file": "agno/app/playground/sync_router.py",
+                "line_number": 42,
+                "reason": "Error: 'agno.run.team.TeamRunResponseEvent' imported but unused."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "Errors detected: 'agno.run.team.TeamRunResponseEvent' imported but unused."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "a19827aa499277f65d5314ace68e2ddee7a25f4c",
+        "error_context": [
+            "In the 'Run tests for Agno' step, the CI run failed due to a syntax error in the code, specifically a string literal that was not terminated. This error caused the test execution to halt, leading to the overall failure of the CI job."
+        ],
+        "relevant_files": [
+            {
+                "file": "path/to/file.py",
+                "line_number": null,
+                "reason": "The file contains a syntax error where a string literal is not properly terminated, which is critical for the execution of tests."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Syntax Error",
+                "evidence": "The log indicates that a string literal is not terminated, which is a syntax error preventing the code from running."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "a4f765fa10f5588775b757a3b3bafb3194f8ac86",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The mypy type checking reported three errors in the file 'agno/vectordb/qdrant/qdrant.py'. The first error was due to the module 'fastembed' not being found, while the second and third errors indicated incompatible types in assignments. These issues led to the CI process concluding with an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/vectordb/qdrant/qdrant.py",
+                "line_number": 128,
+                "reason": "Detected errors during mypy type checking: 'Cannot find implementation or library stub for module named \"fastembed\"' and 'Incompatible types in assignment (expression has type \"Optional[list[float]]\", variable has type \"dict[str, Optional[list[float]]]\"')"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "ImportError: No module named X",
+                "evidence": "error: Cannot find implementation or library stub for module named \"fastembed\""
+            },
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "error: Incompatible types in assignment (expression has type \"Optional[list[float]]\", variable has type \"dict[str, Optional[list[float]]]\" )"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "a52d22193b0ad09104ad4afdc6adddffeb5b8894",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step due to type checking errors in the file 'agno/agent/agent.py'. Specifically, Mypy reported two incompatible type assignments where the expression had type 'None' while the variable was expected to be of type 'Union[str, JSON, Markdown'. This resulted in an exit code of 1, indicating a failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/agent/agent.py",
+                "line_number": 6947,
+                "reason": "Mypy reported incompatible types in assignments at lines 6947 and 7397, indicating that the expression had type 'None' while the variable was expected to be of type 'Union[str, JSON, Markdown'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy reported errors: 'Incompatible types in assignment (expression has type \"None\", variable has type \"Union[str, JSON, Markdown]\")' at lines 6947 and 7397."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "ac2b8825370e010e3875415296d16506d231bb90",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The type checker 'mypy' reported two errors in the file 'agno/app/fastapi/async_router.py', indicating that the argument after '**' must be a mapping, not 'Union[str, dict[Never, Never]]', at lines 355 and 389. This resulted in the step exiting with code 1, indicating a failure in type checking."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/app/fastapi/async_router.py",
+                "line_number": 355,
+                "reason": "Mypy reported errors in this file: 'Argument after ** must be a mapping, not \"Union[str, dict[Never, Never]]\"' at lines 355 and 389."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy reported: 'Argument after ** must be a mapping, not \"Union[str, dict[Never, Never]]\"' at lines 355 and 389."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "acdbed3f7aacf32067b3353d653825efd06caeac",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step due to type checking errors in the file 'agno/team/team.py'. Specifically, two errors were reported indicating unsupported target types for indexed assignment on lines 1916 and 1919. This failure occurred after the successful completion of previous steps, including environment setup and code formatting checks."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/team/team.py",
+                "line_number": 1916,
+                "reason": "Type checking failed due to unsupported target types for indexed assignment on lines 1916 and 1919, as indicated by the mypy errors."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Found 2 errors in 1 file: 'Unsupported target for indexed assignment (\"Optional[dict[str, Any]]\")' on lines 1916 and 1919."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "ae364459a503a2867eeef3ede75f24ad3b5d5839",
+        "error_context": [
+            "The CI run failed during the 'Run tests for Agno' step due to multiple test failures in the 'test_mcp.py' file, which encountered issues with empty command strings and invalid command executables. Additionally, there were warnings related to image and mask size mismatches in 'test_pdf_reader.py', but these did not directly cause the failure. The telemetry events in 'posthog.py' also failed due to incorrect argument counts, contributing to the overall instability of the tests."
+        ],
+        "relevant_files": [
+            {
+                "file": "libs/agno/tests/unit/tools/test_mcp.py",
+                "line_number": null,
+                "reason": "Multiple test failures due to empty command strings and bad values for include/exclude tools, specifically in functions like 'test_empty_command_string' and 'test_mcp_include_exclude_tools_bad_values'."
+            },
+            {
+                "file": "libs/agno/tests/unit/reader/test_pdf_reader.py",
+                "line_number": 435,
+                "reason": "Warnings about image and mask size mismatches during tests indicate potential issues in PDF processing."
+            },
+            {
+                "file": "libs/agno/tests/unit/vectordb/test_chromadb.py",
+                "line_number": null,
+                "reason": "Telemetry errors logged during tests indicate that the capture function was called with incorrect arguments."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "Tests in 'test_mcp.py' failed due to empty command strings and invalid command executables."
+            },
+            {
+                "category": "Runtime Error",
+                "subcategory": "ArgumentError",
+                "evidence": "Telemetry events failed to send due to a mismatch in the expected number of arguments for the 'capture()' function."
+            },
+            {
+                "category": "Warning",
+                "subcategory": "Image Processing",
+                "evidence": "Warnings about image and mask size mismatches were logged multiple times during tests."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "aef89d7979ff37db1e5e5a75265767e0c460b0ba",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step due to a type checking error in the file 'agno/agent/agent.py'. Specifically, mypy reported an incompatible types error at line 1323, indicating that an expression had type 'RunResponse' while the variable was expected to be of type 'Iterator[RunResponse]'. This type mismatch caused the CI process to exit with code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/agent/agent.py",
+                "line_number": 1323,
+                "reason": "Type checking failed during mypy check due to incompatible types in assignment."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Incompatible types in assignment (expression has type 'RunResponse', variable has type 'Iterator[RunResponse]')"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "b55b03d12d1c33d6fb57e3c36aad243bb089b41c",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The type checker reported two errors in the file 'agno/agent/agent.py', indicating that the name 'reasoning_steps' was already defined on two separate lines. This resulted in the CI process failing with an exit code of 1, indicating that the checks did not pass due to the errors found in the type checking step."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/agent/agent.py",
+                "line_number": 5740,
+                "reason": "The file contains multiple definitions of the variable 'reasoning_steps', leading to type checking errors reported by Mypy."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy reported errors: 'Name \"reasoning_steps\" already defined on line 5724' and 'Name \"reasoning_steps\" already defined on line 5958'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "b71bbb2badf2b10a82cbf28201187592972c377d",
+        "error_context": [
+            "The CI run failed during the 'Mypy' step of the 'style-check' job. The type checker reported two errors in the file 'agno/agent/agent.py', indicating that the 'AgentKnowledge' class has no attribute 'retriever'. This failure was critical as it caused the CI process to exit with code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/agent/agent.py",
+                "line_number": 3570,
+                "reason": "The file contains type checking errors reported by mypy, specifically that 'AgentKnowledge' has no attribute 'retriever' at lines 3570 and 3634."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Mypy reported: 'AgentKnowledge' has no attribute 'retriever' at lines 3570 and 3634."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Mypy",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "b9a749745c9e91ee446a6ebdda7640d49cac8027",
+        "error_context": [
+            "The CI run failed during the 'Run tests for Agno' step due to a test failure in 'test_async_read_multi_page_csv'. This test raised an AssertionError because the actual document ID '954b76ac-dcdf-4410-bcaa-daf9a55833bf_1' did not match the expected ID 'multi_page_page1_1'. Additionally, multiple warnings were generated related to image and mask size mismatches in the 'pypdf' library, although these warnings did not directly cause the test failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "libs/agno/tests/unit/reader/test_csv_reader.py",
+                "line_number": 150,
+                "reason": "The test 'test_async_read_multi_page_csv' failed due to an AssertionError caused by a mismatch in expected and actual document IDs."
+            },
+            {
+                "file": "pypdf/filters/_utils.py",
+                "line_number": null,
+                "reason": "Warnings about image and mask size mismatches were generated during the execution of tests involving PDF processing."
+            },
+            {
+                "file": "libs/agno/tests/unit/reader/test_youtube_reader.py",
+                "line_number": null,
+                "reason": "Contains warnings about deprecated methods from the 'youtube_transcript_api' library."
+            },
+            {
+                "file": "libs/agno/libs/agno/agno/storage/postgres.py",
+                "line_number": null,
+                "reason": "Contains a SADeprecationWarning regarding the deprecated 'Column.copy()' method."
+            },
+            {
+                "file": "libs/agno/libs/agno/agno/storage/sqlite.py",
+                "line_number": null,
+                "reason": "Contains a SADeprecationWarning regarding the deprecated 'Column.copy()' method."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/pydub/utils.py",
+                "line_number": null,
+                "reason": "Contains multiple SyntaxWarnings about invalid escape sequences."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/pydantic/fields.py",
+                "line_number": null,
+                "reason": "Contains multiple PydanticDeprecatedSince20 warnings about deprecated parameters and methods."
+            },
+            {
+                "file": "venv/lib/python3.12/site-packages/qdrant_client/http/models/models.py",
+                "line_number": null,
+                "reason": "Contains SyntaxWarnings about invalid escape sequences."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "AssertionError: assert '954b76ac-dcdf-4410-bcaa-daf9a55833bf_1' == 'multi_page_page1_1'"
+            },
+            {
+                "category": "Warning",
+                "subcategory": "Image Processing",
+                "evidence": "WARNING  pypdf.filters:_utils.py:435 image and mask size not matching"
+            },
+            {
+                "category": "Deprecation Warning",
+                "subcategory": "Deprecated Method",
+                "evidence": "SADeprecationWarning regarding the deprecated 'Column.copy()' method."
+            },
+            {
+                "category": "Syntax Warning",
+                "subcategory": "Invalid Escape Sequence",
+                "evidence": "SyntaxWarnings about invalid escape sequences."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "f4e4c63e0b2c623663f0970e9532273fd22c9a20",
+        "error_context": [
+            "The CI run failed during the 'flake8' step due to a linting error. Specifically, flake8 reported a warning about a line in the file './tests/asgi/tests.py' exceeding the maximum allowed length of 79 characters at line 802, column 80. This warning resulted in the flake8 process failing with exit code 1, indicating that the linting did not pass."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/asgi/tests.py",
+                "line_number": 802,
+                "reason": "Linting error reported: './tests/asgi/tests.py:802:80: W505 doc line too long (81 > 79 characters)'"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Line Length Exceeded",
+                "evidence": "The process '/opt/hostedtoolcache/Python/3.13.7/x64/bin/flake8' failed with exit code 1 due to a line exceeding the maximum length."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "flake8",
+                "step": "flake8",
+                "command": "flake8"
+            }
+        ]
+    },
+    {
+        "sha_fail": "7d4f15d5b669904fa89334b6ac3785a751ea7c86",
+        "error_context": [
+            "The CI run failed during the 'isort' step due to incorrectly sorted and/or formatted imports in the file 'tests/messages_tests/test_fallback.py'. The command 'isort --check --diff django tests scripts' was executed, which revealed that the import statement for 'gc' was incorrectly placed, leading to an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/messages_tests/test_fallback.py",
+                "line_number": null,
+                "reason": "Imports are incorrectly sorted and/or formatted, specifically the import statement for 'gc' was misplaced."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Incorrect Import Order",
+                "evidence": "ERROR: /home/runner/work/django/django/tests/messages_tests/test_fallback.py Imports are incorrectly sorted and/or formatted."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "isort",
+                "step": "isort",
+                "command": "isort --check --diff django tests scripts"
+            }
+        ]
+    },
+    {
+        "sha_fail": "69fefa3d94db6fa8b5aad63efe968e8053ee463c",
+        "error_context": [
+            "The CI run failed during the 'Run tests with coverage' step due to insufficient test coverage in the 'llama-index-vector-store-paradedb' package. The coverage was reported at only 33%, which is below the required threshold of 50%. This was evidenced by specific files showing low coverage percentages and missing lines. Additionally, there was a warning in the earlier 'Install uv and set the python version' step regarding a missing 'uv.toml' file, but this did not directly cause the test failures."
+        ],
+        "relevant_files": [
+            {
+                "file": "llama-index-integrations/vector_stores/llama-index-vector-store-paradedb/__init__.py",
+                "line_number": null,
+                "reason": "Coverage is 100%, indicating all lines are covered."
+            },
+            {
+                "file": "llama-index-integrations/vector_stores/llama-index-vector-store-paradedb/base.py",
+                "line_number": null,
+                "reason": "Coverage is 29.4%: Missing numerous lines, indicating insufficient testing."
+            },
+            {
+                "file": "llama-index-integrations/vector_stores/llama-index-vector-store-paradedb/tests/conftest.py",
+                "line_number": null,
+                "reason": "Coverage is 100%, indicating all lines are covered."
+            },
+            {
+                "file": "llama-index-integrations/vector_stores/llama-index-vector-store-paradedb/tests/test_paradedb.py",
+                "line_number": null,
+                "reason": "Coverage is 32.9%: Missing numerous lines, indicating insufficient testing."
+            },
+            {
+                "file": "llama_index/uv.toml",
+                "line_number": null,
+                "reason": "Could not find file: /home/runner/work/llama_index/llama_index/uv.toml"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "Coverage Failure",
+                "evidence": "Coverage is below 50%."
+            },
+            {
+                "category": "Configuration Error",
+                "subcategory": "Missing File",
+                "evidence": "Could not find file: /home/runner/work/llama_index/llama_index/uv.toml"
+            },
+            {
+                "category": "Deprecation Warning",
+                "subcategory": "Deprecated Module",
+                "evidence": "The `punycode` module is deprecated. Please use a userland alternative instead."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Unit Testing",
+                "step": "Run tests with coverage",
+                "command": "uv run -- llama-dev --repo-root '..' test --workers 8 --base-ref=main --cov --cov-fail-under=50"
+            }
+        ]
+    },
+    {
+        "sha_fail": "7ab76a8fcbc8388a54cc0ca3caaaac5a56bbe680",
+        "error_context": [
+            "The CI run failed primarily during the test execution phase in the 'Test tier two interpreter' step. Although the build process completed successfully, a critical error occurred in the test 'test_guard_type_version_removed_invalidation', which raised a TypeError indicating that a 'NoneType' object is not iterable. This error was traced back to the file 'test/test_capi/test_opt.py' at line 1244. Additionally, there were warnings about missing optional modules during the build process, which could affect functionality, but these did not directly cause the test failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "test/test_capi/test_opt.py",
+                "line_number": 1244,
+                "reason": "Error occurred in 'test_guard_type_version_removed_invalidation' where a 'NoneType' object was found instead of an iterable."
+            },
+            {
+                "file": "Python/optimizer_cases.c.h",
+                "line_number": 2632,
+                "reason": "Warning about unused variable 'co' which may indicate potential issues in the code."
+            },
+            {
+                "file": "Python/optimizer.c",
+                "line_number": 511,
+                "reason": "Warning about 'target' possibly being used uninitialized, which could lead to runtime errors."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "TypeError",
+                "evidence": "TypeError: 'NoneType' object is not iterable in test_guard_type_version_removed_invalidation."
+            },
+            {
+                "category": "Compilation Warning",
+                "subcategory": "Unused Variable",
+                "evidence": "Warning: unused variable 'co' in Python/optimizer_cases.c.h."
+            },
+            {
+                "category": "Compilation Warning",
+                "subcategory": "Potential Uninitialized Variable",
+                "evidence": "'target' may be used uninitialized in Python/optimizer.c."
+            },
+            {
+                "category": "Dependency Error",
+                "subcategory": "Missing optional modules",
+                "evidence": "The necessary bits to build these optional modules were not found: _bz2 _dbm _decimal _gdbm _lzma _tkinter _uuid readline."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Interpreter (Debug)",
+                "step": "Test tier two interpreter",
+                "command": "./python -m test --multiprocess 0 --timeout 4500 --verbose2 --verbose3"
+            }
+        ]
+    },
+    {
+        "sha_fail": "d76dc85f4b7ccf18eb28510f36e2b8fcd7ce2bff",
+        "error_context": [
+            "The CI run failed during the 'Run mypy on Tools/cases_generator' step. The mypy type checker reported an error in the file 'Tools/cases_generator/tier2_generator.py', indicating an unused 'type: ignore' comment at line 96. This error caused the mypy check to exit with a failure code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "Tools/cases_generator/tier2_generator.py",
+                "line_number": 96,
+                "reason": "Mypy reported an error: 'Unused \"type: ignore\" comment [unused-ignore]' at line 96."
+            },
+            {
+                "file": "Tools/cases_generator/mypy.ini",
+                "reason": "Configuration file used for running mypy."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Unused Ignore Comment",
+                "evidence": "Mypy reported: 'error: Unused \"type: ignore\" comment [unused-ignore]'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Run mypy on Tools/cases_generator",
+                "step": "Run mypy on Tools/cases_generator",
+                "command": "mypy --config-file ${{ matrix.target }}/mypy.ini"
+            }
+        ]
+    },
+    {
+        "sha_fail": "6045a677ac736652e43bacb313f2fa2ab56c7cda",
+        "error_context": [
+            "The CI run failed during the 'Run mypy on Tools/cases_generator' step. The mypy type checker encountered an error in the file 'Tools/cases_generator/tracer_generator.py', specifically indicating that the item 'Label' of 'Uop | Label' has no attribute 'annotations'. This error was found at line 92, leading to a total of 1 error detected in 1 file after checking 19 source files, which caused the step to complete with an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "Tools/cases_generator/tracer_generator.py",
+                "line_number": 92,
+                "reason": "Error found: 'Item \"Label\" of \"Uop | Label\" has no attribute \"annotations\"'."
+            },
+            {
+                "file": "Tools/cases_generator/mypy.ini",
+                "line_number": null,
+                "reason": "Configuration file used for running mypy."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Error: 'Item \"Label\" of \"Uop | Label\" has no attribute \"annotations\"'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Run mypy on Tools/cases_generator",
+                "step": "Run mypy on Tools/cases_generator",
+                "command": "mypy --config-file ${{ matrix.target }}/mypy.ini"
+            }
+        ]
+    },
+    {
+        "sha_fail": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+        "error_context": [
+            "The CI run failed primarily due to multiple test failures across different Python versions. In the 'Run tests' step, pytest reported that the test 'test_download_with_proxy_https_timeout' failed to raise the expected 'twisted.internet.error.TimeoutError' in several instances. Additionally, tests such as 'test_https_connect_tunnel', 'test_https_tunnel_auth_error', and 'test_https_tunnel_without_leak_proxy_authorization_header' failed due to assertion errors where expected log messages or response codes were not found. These failures were consistent across multiple Python versions (3.9, 3.10, 3.11, 3.12, and 3.13) and were accompanied by various warnings related to deprecated features."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/test_downloader_handler_twisted_http11.py",
+                "line_number": 630,
+                "reason": "The test 'test_download_with_proxy_https_timeout' failed because it did not raise the expected TimeoutError."
+            },
+            {
+                "file": "tests/test_proxy_connect.py",
+                "line_number": 96,
+                "reason": "Multiple assertion errors occurred in tests related to expected log messages and response codes not being found."
+            },
+            {
+                "file": "w3lib/encoding.py",
+                "line_number": null,
+                "reason": "Deprecation warnings were raised regarding the use of flags not at the start of the regex pattern."
+            },
+            {
+                "file": "scrapy/contracts/__init__.py",
+                "line_number": null,
+                "reason": "RuntimeWarning indicating that a coroutine was never awaited."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "Failed: DID NOT RAISE <class 'twisted.internet.error.TimeoutError'>"
+            },
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "assert str(log).count(f'Crawled (200)') == 1 failed."
+            },
+            {
+                "category": "Deprecation Warning",
+                "subcategory": "Deprecated Feature",
+                "evidence": "DeprecationWarning: Flags not at the start of the expression."
+            },
+            {
+                "category": "Runtime Warning",
+                "subcategory": "Coroutine Not Awaited",
+                "evidence": "RuntimeWarning: coroutine 'DemoSpider.returns_request_async' was never awaited."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests",
+                "command": "pip install -U tox\n        tox -e py"
+            }
+        ]
+    },
+    {
+        "sha_fail": "7a4b27be84c300a67cc8dea17a3b3d4e75688dd8",
+        "error_context": [
+            "The CI run failed during the 'checks (3.9, typing)' step, where type checking was performed using 'mypy'. Two type errors were encountered in the file 'tests/test_proxy_connect.py', specifically at lines 49 and 50. The errors indicated that 'Item \"None\" of \"Optional[IO[bytes]]\" has no attribute \"readline\"' and 'Item \"None\" of \"Optional[Match[str]]\" has no attribute \"group\"'. This resulted in the typing step failing with exit code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/test_proxy_connect.py",
+                "line_number": 49,
+                "reason": "Type checking failed due to errors indicating that 'None' was being treated as a type that should have attributes 'readline' and 'group'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "Errors reported: 'Item \"None\" of \"Optional[IO[bytes]]\" has no attribute \"readline\"' and 'Item \"None\" of \"Optional[Match[str]]\" has no attribute \"group\"'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "checks",
+                "step": "checks (3.9, typing)",
+                "command": "tox"
+            }
+        ]
+    },
+    {
+        "sha_fail": "b2f5e2a29d323066e68b3d7a05446078fb00b7c1",
+        "error_context": [
+            "The CI run failed during the 'Run pre-commit hooks' step due to multiple formatting issues detected by the pre-commit hooks. The 'black' hook reformatted 15 files, while the 'isort' and 'autoflake' hooks also indicated that files were modified but did not provide specific details. The overall exit code of 1 indicates that the pre-commit checks did not pass successfully."
+        ],
+        "relevant_files": [
+            {
+                "file": "app/agent/data_analysis.py",
+                "line_number": null,
+                "reason": "Modified by the 'isort' hook and reformatted by the 'black' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/add_insights.py",
+                "line_number": null,
+                "reason": "Modified by the 'black' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/chart_prepare.py",
+                "line_number": null,
+                "reason": "Reformatted by the 'black' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/select_insights.py",
+                "line_number": null,
+                "reason": "Reformatted by the 'black' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/chart_demo.py",
+                "line_number": null,
+                "reason": "Modified by the 'black' hook and 'isort' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/education_report.py",
+                "line_number": null,
+                "reason": "Modified by the 'black' hook and 'isort' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/health_report.py",
+                "line_number": null,
+                "reason": "Modified by the 'black' hook and 'isort' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/production_report.py",
+                "line_number": null,
+                "reason": "Modified by the 'black' hook and 'isort' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/report_demo.py",
+                "line_number": null,
+                "reason": "Modified by the 'black' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/final_report_generation.py",
+                "line_number": null,
+                "reason": "Reformatted by the 'black' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/initial_report_generation.py",
+                "line_number": null,
+                "reason": "Reformatted by the 'black' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/report_beautify.py",
+                "line_number": null,
+                "reason": "Reformatted by the 'black' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/report_template_generation.py",
+                "line_number": null,
+                "reason": "Reformatted by the 'black' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/search_html_library.py",
+                "line_number": null,
+                "reason": "Modified by the 'isort' hook."
+            },
+            {
+                "file": "app/tool/chart_visualization/data_visualization.py",
+                "line_number": null,
+                "reason": "Reformatted by the 'black' hook."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Files Modified",
+                "evidence": "The 'black' hook reported that files were reformatted and the 'isort' hook indicated that files were modified."
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Autoflake Issues",
+                "evidence": "The 'autoflake' hook failed, indicating that files were modified by this hook."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "pre-commit-check",
+                "step": "Run pre-commit hooks",
+                "command": "pre-commit run --all-files"
+            }
+        ]
+    },
+    {
+        "sha_fail": "a058b974002c2b92745c244932e162670feab256",
+        "error_context": [
+            "The CI run failed during the 'Run pre-commit hooks' step due to multiple formatting issues identified by the pre-commit checks. Specifically, the black formatter modified 15 files, and both autoflake and isort hooks reported that files were modified, leading to an overall failure of the pre-commit checks."
+        ],
+        "relevant_files": [
+            {
+                "file": "app/agent/data_analysis.py",
+                "line_number": null,
+                "reason": "Modified by the black hook and isort hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/chart_prepare.py",
+                "line_number": null,
+                "reason": "Modified by the black hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/select_insights.py",
+                "line_number": null,
+                "reason": "Modified by the black hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/chart_demo.py",
+                "line_number": null,
+                "reason": "Modified by the black hook and isort hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/education_report.py",
+                "line_number": null,
+                "reason": "Modified by the black hook and isort hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/health_report.py",
+                "line_number": null,
+                "reason": "Modified by the black hook and isort hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/production_report.py",
+                "line_number": null,
+                "reason": "Modified by the black hook and isort hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/test/report_demo.py",
+                "line_number": null,
+                "reason": "Modified by the black hook and isort hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/final_report_generation.py",
+                "line_number": null,
+                "reason": "Modified by the black hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/initial_report_generation.py",
+                "line_number": null,
+                "reason": "Modified by the black hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/report_beautify.py",
+                "line_number": null,
+                "reason": "Modified by the black hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/report_template_generation.py",
+                "line_number": null,
+                "reason": "Modified by the black hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/add_insights.py",
+                "line_number": null,
+                "reason": "Modified by the isort hook during pre-commit checks."
+            },
+            {
+                "file": "app/tool/chart_visualization/v2/search_html_library.py",
+                "line_number": null,
+                "reason": "Modified by the isort hook during pre-commit checks."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Black Formatting Error",
+                "evidence": "Files were modified by the black hook."
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Autoflake Error",
+                "evidence": "Files were modified by the autoflake hook."
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Isort Error",
+                "evidence": "Files were modified by the isort hook."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "pre-commit-check",
+                "step": "Run pre-commit hooks",
+                "command": "pre-commit run --all-files"
+            }
+        ]
+    },
+    {
+        "sha_fail": "2f7e3239c2a33806331b1741a52cb07ad8c2cc85",
+        "error_context": [
+            "The CI run failed during the 'Run fuzz tests' step due to an 'ASTSafetyError' raised by the test 'test_idempotent_any_syntactically_valid_python'. This error indicated that the code produced by Black was not equivalent to the source code, suggesting a critical issue in the code generation process. The failure was traced back to the file 'black/scripts/fuzz.py' at line 57, where the test was executed, and also involved 'black/__init__.py' at line 1603."
+        ],
+        "relevant_files": [
+            {
+                "file": "black/scripts/fuzz.py",
+                "line_number": 57,
+                "reason": "The test 'test_idempotent_any_syntactically_valid_python' raised an 'ASTSafetyError' indicating that Black produced code that is not equivalent to the source."
+            },
+            {
+                "file": "black/__init__.py",
+                "line_number": 1603,
+                "reason": "The error raised was an 'ASTSafetyError' originating from this file, indicating a critical failure in the code generation process."
+            },
+            {
+                "file": "/tmp/blk_5p693cih.log",
+                "line_number": null,
+                "reason": "This diff file was mentioned in the error message as potentially helpful for debugging the issue with the code generation."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "ASTSafetyError",
+                "evidence": "Black produced code that is not equivalent to the source, as indicated by the error message: 'Black 0.1.dev1+g2f7e3239c on Python (CPython) 3.13.7 produced code that is not equivalent to the source.'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "build",
+                "step": "Run fuzz tests",
+                "command": "tox -e fuzz"
+            }
+        ]
+    },
+    {
+        "sha_fail": "e87521de11a3590c9e844173d80eba1a07e36dd8",
+        "error_context": [
+            "The CI run failed during the 'Smoke test' step, where the function 'checkSums' in 'lib/core/common.py' returned 'False' instead of the expected 'True'. This failure caused the smoke test to log a final result of 'FAILED', leading to an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "sqlmap/lib/core/common.py",
+                "line_number": 5594,
+                "reason": "The failure occurred in the 'checkSums' function, where the expected return value was 'True', but the actual return value was 'False'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "The smoke test failed with the message: 'Expected: True, Got: False'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "build",
+                "step": "Smoke test",
+                "command": "python sqlmap.py --smoke"
+            }
+        ]
+    },
+    {
+        "sha_fail": "86e4cd55fa5e00e99c72cd91c4b69b231d79a270",
+        "error_context": [
+            "The CI run failed during the 'Smoke test' step, where an assertion failure occurred in the 'checkSums' function of the 'lib/core/common.py' file. The expected return value was 'True', but the actual return value was 'False', leading to a test failure. This failure was confirmed by the log message indicating that the smoke test concluded with a final result of 'FAILED'."
+        ],
+        "relevant_files": [
+            {
+                "file": "sqlmap/lib/core/common.py",
+                "line_number": 5594,
+                "reason": "Assertion failure in 'checkSums' function: Expected True but got False."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "Expected: True, Got: False during the smoke test."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "build",
+                "step": "Smoke test",
+                "command": "python sqlmap.py --smoke"
+            }
+        ]
+    },
+    {
+        "sha_fail": "e6f35571a577e5f0d2e2754871242438de3404de",
+        "error_context": [
+            "The CI run failed due to a syntax error in the code, specifically a string literal that was not terminated. This error was detected during the execution of the CI steps, leading to a failure in the build process."
+        ],
+        "relevant_files": [
+            {
+                "file": "path/to/file.py",
+                "line_number": null,
+                "reason": "The file contains a string literal that is not properly terminated, causing a syntax error during the build step."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Syntax Error",
+                "evidence": "String literal is not terminated"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Linux (python=${{ matrix.pyver }} cc=${{ matrix.cc }} sanitize=${{ matrix.sanitize }})",
+                "step": "Build kitty",
+                "command": "python .github/workflows/ci.py build"
+            }
+        ]
+    },
+    {
+        "sha_fail": "b94d6dc7134d3bf6b510a164f1b7f02e4610cdbc",
+        "error_context": [
+            "The CI run failed due to a syntax error in the code, specifically a string literal that was not terminated. This error was detected during the execution of the CI steps, leading to a failure in the build process."
+        ],
+        "relevant_files": [
+            {
+                "file": "path/to/file.py",
+                "line_number": null,
+                "reason": "The file contains a string literal that is not properly terminated, causing a syntax error during the build step."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "String Literal Error",
+                "evidence": "String literal is not terminated"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Linux (python=${{ matrix.pyver }} cc=${{ matrix.cc }} sanitize=${{ matrix.sanitize }})",
+                "step": "Build kitty",
+                "command": "python .github/workflows/ci.py build"
+            }
+        ]
+    },
+    {
+        "sha_fail": "34ae42cf302d34e412ea2c95f6a2058438cc2aac",
+        "error_context": [
+            "The CI run failed due to a syntax error in the code, specifically a string literal that was not terminated. This error was detected during the execution of the CI steps, leading to a failure in the build process."
+        ],
+        "relevant_files": [
+            {
+                "file": "path/to/file.py",
+                "line_number": null,
+                "reason": "The file contains a string literal that is not properly terminated, causing a syntax error during the build step."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Syntax Error",
+                "evidence": "String literal is not terminated"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Linux (python=${{ matrix.pyver }} cc=${{ matrix.cc }} sanitize=${{ matrix.sanitize }})",
+                "step": "Build kitty",
+                "command": "python .github/workflows/ci.py build"
+            }
+        ]
+    },
+    {
+        "sha_fail": "0276b7a794ed6215d9da8584791916b37610e3b5",
+        "error_context": [
+            "The CI run failed due to an error encountered while decoding a value that started with an unexpected character. This issue was reported in the overall log as 'Can not decode value starting with character '\\\\''. The failure likely occurred during the execution of one or more steps that involved processing configuration or input data."
+        ],
+        "relevant_files": [],
+        "error_types": [
+            {
+                "category": "Configuration Error",
+                "subcategory": "Decoding Error",
+                "evidence": "The log states 'Can not decode value starting with character '\\\\''."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": null,
+                "step": null,
+                "command": null
+            }
+        ]
+    },
+    {
+        "sha_fail": "d2a7890921a901795f0e33404b0d7b2f53836483",
+        "error_context": [
+            "The CI run failed during the 'Ruff Check' step, where the command 'ruff check --fix-only --diff --exit-non-zero-on-fix' identified issues in the file 'dspy/teleprompt/gepa/gepa_utils.py'. Specifically, it reported 3 errors and indicated that 69 additional fixes were available. The process completed with an exit code of 1, indicating a failure due to these identified issues."
+        ],
+        "relevant_files": [
+            {
+                "file": "dspy/teleprompt/gepa/gepa_utils.py",
+                "line_number": null,
+                "reason": "The command 'ruff check --fix-only --diff --exit-non-zero-on-fix' found issues in this file, specifically stating 'Would fix 3 errors (69 additional fixes available with `--unsafe-fixes`).'"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Linting Errors",
+                "evidence": "Ruff found issues that can be fixed automatically, indicating 3 errors and 69 additional fixes available."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Check Ruff Fix",
+                "step": "Ruff Check",
+                "command": "ruff check --fix-only --diff --exit-non-zero-on-fix"
+            }
+        ]
+    },
+    {
+        "sha_fail": "b0ad27a67681f1b6fb473cc75c642efa1f4941d5",
+        "error_context": [
+            "The CI run failed during the 'Run lints' step due to multiple type checking errors reported by the linting tool. Specifically, 64 errors were identified across various files, primarily concerning partially unknown types in the code. This indicates significant issues with type definitions and imports, leading to the script failing with exit status 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "examples/responses/background_streaming.py",
+                "line_number": 28,
+                "reason": "Errors reported include partially unknown types for variables such as 'event', 'type', and 'id', indicating issues with type definitions."
+            },
+            {
+                "file": "examples/responses/background_streaming_async.py",
+                "line_number": 29,
+                "reason": "Errors reported include partially unknown types for variables such as 'event' and 'type', indicating issues with type definitions."
+            },
+            {
+                "file": "examples/responses/streaming.py",
+                "line_number": 26,
+                "reason": "Errors reported include partially unknown types for variables such as 'event' and 'type', indicating issues with type definitions."
+            },
+            {
+                "file": "examples/responses/streaming_tools.py",
+                "line_number": null,
+                "reason": "Errors reported include partially unknown types for variables, indicating issues with type definitions."
+            },
+            {
+                "file": "src/openai/lib/streaming/responses/__init__.py",
+                "line_number": 9,
+                "reason": "Errors reported include partially unknown types for 'ResponseStreamEvent', indicating issues with type definitions."
+            },
+            {
+                "file": "src/openai/lib/streaming/responses/_events.py",
+                "line_number": 34,
+                "reason": "Errors reported include an unknown import symbol 'ResponseReasoningSummaryDoneEvent', indicating issues with variable types."
+            },
+            {
+                "file": "src/openai/lib/streaming/responses/_responses.py",
+                "line_number": 10,
+                "reason": "Multiple errors reported regarding partially unknown types and return types, indicating significant issues with type definitions."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "64 errors reported, primarily concerning partially unknown types in the code."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint",
+                "step": "Run lints",
+                "command": "./scripts/lint"
+            }
+        ]
+    },
+    {
+        "sha_fail": "b7c2ddc5e5dedda01015b3d0e14ea6eb68c282d3",
+        "error_context": [
+            "The CI run failed during the linting step of the 'lint' job. The linting process executed the command './scripts/lint' and identified a linting error in 'tests/utils.py', specifically an unsorted or unformatted import block. This resulted in an exit status of 1, indicating failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/utils.py",
+                "line_number": 1,
+                "reason": "Linting error found: '1:1 I001 [*] Import block is un-sorted or un-formatted'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unsorted Imports",
+                "evidence": "Linting error identified: 'Import block is un-sorted or un-formatted'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint",
+                "step": "Run lints",
+                "command": "./scripts/lint"
+            }
+        ]
+    },
+    {
+        "sha_fail": "03f8b88a0d428b74a7822e678a60d0ef106ea961",
+        "error_context": [
+            "The CI run failed during the testing phase, specifically in the 'Run tests' step. A total of 4 tests failed due to assertion errors related to signature mismatches in the parameters of the `stop` argument in the functions being tested. The errors were triggered by the function `assert_signatures_in_sync`, which raised an AssertionError indicating that the types for the `stop` parameter do not match across different test cases."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/lib/chat/test_completions_streaming.py",
+                "line_number": 1075,
+                "reason": "Failure in test_stream_method_in_sync due to signature mismatch for the `stop` parameter."
+            },
+            {
+                "file": "tests/lib/chat/test_completions.py",
+                "line_number": 991,
+                "reason": "Failure in test_parse_method_in_sync due to signature mismatch for the `stop` parameter."
+            },
+            {
+                "file": "src/openai/_utils/_reflection.py",
+                "line_number": 43,
+                "reason": "The function assert_signatures_in_sync is called in the failing tests, leading to AssertionError due to signature mismatches."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "1 errors encountered when comparing signatures: types for the `stop` param are do not match."
+            },
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "types for the `stop` param are do not match; source='Union[Optional[str], SequenceNotStr[str], None] | NotGiven' checking='Union[Optional[str], List[str], None] | NotGiven'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test",
+                "step": "Run tests",
+                "command": "./scripts/test"
+            }
+        ]
+    },
+    {
+        "sha_fail": "5af3fcc465a2dfaebc52f7b3ce7177440b712298",
+        "error_context": [
+            "The CI run failed during the 'Run pre-commit' step due to flake8 errors in the file 't/unit/backends/test_couchdb.py'. Specifically, the flake8 hook reported three issues: E302 (expected 2 blank lines, found 1) at line 121, E127 (continuation line over-indented for visual indent) at line 129, and F901 ('raise NotImplemented' should be 'raise NotImplementedError') at line 154. These errors caused the pre-commit step to exit with code 1, leading to the overall failure of the CI process."
+        ],
+        "relevant_files": [
+            {
+                "file": "t/unit/backends/test_couchdb.py",
+                "line_number": 121,
+                "reason": "The file contains multiple flake8 errors that caused the pre-commit hook to fail, specifically issues related to code formatting and incorrect exception raising."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Blank Lines",
+                "evidence": "E302 (expected 2 blank lines, found 1) at line 121"
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Indentation",
+                "evidence": "E127 (continuation line over-indented for visual indent) at line 129"
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Incorrect Exception",
+                "evidence": "F901 ('raise NotImplemented' should be 'raise NotImplementedError') at line 154"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "linter",
+                "step": "Run pre-commit",
+                "command": "uses: pre-commit/action@v3.0.1"
+            }
+        ]
+    },
+    {
+        "sha_fail": "0c72143691d2bd88c3346287b827c1952293e338",
+        "error_context": [
+            "The CI run failed during the 'Check dependencies' step due to discovered vulnerabilities in the dependencies. Specifically, the command 'python setup/unix-ci.py check-dependencies' reported high severity vulnerabilities for 'node' (CVE-2025-27210) and 'lxml-html-clean' (CVE-2024-52595). The process completed with an exit code of 2, indicating a failure due to these vulnerabilities."
+        ],
+        "relevant_files": [
+            {
+                "file": "setup/unix-ci.py",
+                "line_number": null,
+                "reason": "Executed command 'python setup/unix-ci.py check-dependencies' which led to the discovery of vulnerabilities."
+            },
+            {
+                "file": "node",
+                "line_number": null,
+                "reason": "Vulnerability found: 'node' version 20.19.2 has a high severity vulnerability (CVE-2025-27210)."
+            },
+            {
+                "file": "lxml-html-clean",
+                "line_number": null,
+                "reason": "Vulnerability found: 'lxml-html-clean' version 0.1.1 has a high severity vulnerability (CVE-2024-52595)."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Dependency Error",
+                "subcategory": "Vulnerability",
+                "evidence": "ERROR discovered vulnerabilities at or above the severity threshold for 'node' and 'lxml-html-clean'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Scan dependencies for vulnerabilities",
+                "step": "Check dependencies",
+                "command": "python setup/unix-ci.py check-dependencies"
+            }
+        ]
+    },
+    {
+        "sha_fail": "5e68d7e73930685c3ec5716e576e8ff13ffa53f4",
+        "error_context": [
+            "The CI run failed during the 'Check dependencies' step due to critical vulnerabilities discovered in the FFmpeg package. The command 'python setup/unix-ci.py check-dependencies' was executed, which identified multiple CVEs (CVE-2025-59733, CVE-2025-59729, CVE-2025-59731, CVE-2025-59732, CVE-2025-59734) with varying severity levels, leading to an exit code of 2 and indicating that the CI process could not complete successfully."
+        ],
+        "relevant_files": [
+            {
+                "file": "setup/unix-ci.py",
+                "line_number": null,
+                "reason": "The command 'python setup/unix-ci.py check-dependencies' was executed, which is critical for checking dependencies."
+            },
+            {
+                "file": "FFmpeg",
+                "line_number": null,
+                "reason": "Multiple vulnerabilities were discovered in the FFmpeg package, leading to a critical warning and failure of the CI process."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Dependency Error",
+                "subcategory": "Vulnerability Detected",
+                "evidence": "ERROR discovered vulnerabilities at or above the severity threshold for FFmpeg."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Scan dependencies for vulnerabilities",
+                "step": "Check dependencies",
+                "command": "python setup/unix-ci.py check-dependencies"
+            }
+        ]
+    },
+    {
+        "sha_fail": "44464700849670aefca66ee42eb7e75abd5c1ba3",
+        "error_context": [
+            "The CI run failed during the 'Check dependencies' step when executing the command 'python setup/unix-ci.py check-dependencies'. This step discovered vulnerabilities related to Python version '3.11.13', specifically the vulnerability 'CVE-2025-8291' with a severity of 'Medium'. The process completed with an exit code of 2, indicating a failure due to these critical vulnerabilities."
+        ],
+        "relevant_files": [
+            {
+                "file": "setup/unix-ci.py",
+                "line_number": null,
+                "reason": "Executed command led to the discovery of vulnerabilities during the dependency check."
+            },
+            {
+                "file": "CVE-2025-8291",
+                "line_number": null,
+                "reason": "Vulnerability discovered related to Python 3.11.13, indicating a critical issue that caused the CI run to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Dependency Error",
+                "subcategory": "Vulnerability Detected",
+                "evidence": "ERROR discovered vulnerabilities at or above the severity threshold"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Scan dependencies for vulnerabilities",
+                "step": "Check dependencies",
+                "command": "python setup/unix-ci.py check-dependencies"
+            }
+        ]
+    },
+    {
+        "sha_fail": "789b7649d036666d8e2e07913e97a1de7a340f8b",
+        "error_context": [
+            "The CI run failed during the 'Install dependencies' step when executing the command 'uv sync'. The error message indicated that the README.md file was missing, which is required for the build process. This absence led to an OSError, causing the build to fail."
+        ],
+        "relevant_files": [
+            {
+                "file": "Dockerfile",
+                "line_number": null,
+                "reason": "The build process fails during the execution of 'RUN uv sync' due to the absence of the README.md file, as indicated by the error message: 'OSError: Readme file does not exist: README.md'."
+            },
+            {
+                "file": "/root/.cache/uv/builds-v0/.tmpbgv6JS/lib/python3.13/site-packages/hatchling/build.py",
+                "line_number": null,
+                "reason": "This file is referenced in the traceback of the error that occurs during the build process, specifically in the context of the 'uv sync' command."
+            },
+            {
+                "file": "/root/.cache/uv/builds-v0/.tmpbgv6JS/lib/python3.13/site-packages/hatchling/metadata/core.py",
+                "line_number": null,
+                "reason": "This file is also referenced in the traceback of the error, indicating that the validation of fields failed due to the missing README.md file."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Build Error",
+                "subcategory": "Missing File",
+                "evidence": "OSError: Readme file does not exist: README.md"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "checks",
+                "step": "Install dependencies",
+                "command": "uv venv --python 3.11\n          uv sync\n          uv pip install pip"
+            }
+        ]
+    },
+    {
+        "sha_fail": "331dcf050910618b9bb5e3028da4597770199f72",
+        "error_context": [
+            "The CI run failed during the 'Run pre-commit' step due to a formatting error where values in a configuration file were not properly separated by commas. This was indicated by the error message 'Values must be separated by a comma'."
+        ],
+        "relevant_files": [
+            {
+                "file": "path/to/file.py",
+                "line_number": null,
+                "reason": "The file contains configuration values that are incorrectly formatted, leading to the pre-commit failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Configuration Error",
+                "evidence": "The error message 'Values must be separated by a comma' indicates a formatting issue in the configuration."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-and-format",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files --show-diff-on-failure"
+            }
+        ]
+    },
+    {
+        "sha_fail": "b860ffe5103cf9bc6270707dd2a7955f74f7d3fb",
+        "error_context": [
+            "The CI run failed during the 'Run pre-commit' step due to formatting issues detected by the 'ruff-format' hook. This hook indicated that two files were modified, which caused the pre-commit checks to fail, resulting in an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "lightrag/kg/deprecated/chroma_impl.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' pre-commit hook, indicating a failure in the formatting check."
+            },
+            {
+                "file": "lightrag/kg/postgres_impl.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' pre-commit hook, indicating a failure in the formatting check."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Formatting Error",
+                "evidence": "The 'ruff-format' hook failed, indicating that 2 files were reformatted."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-and-format",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files --show-diff-on-failure"
+            }
+        ]
     }
 ]
