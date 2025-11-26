@@ -16,21 +16,19 @@ def run_cmd(args, cwd=None):
         )
     return result.stdout.strip()
 
-def ensure_repo_at_commit(repo_url: str, repo_path: str, sha_fail: str):
-    """
-    Minimal: clone (shallow), fetch just the target commit (shallow), checkout it.
-    """
-    parent = os.path.dirname(repo_path)
-    os.makedirs(parent, exist_ok=True)
-
+def ensure_repo_at_commit(repo_url, repo_path, commit_sha):
     if not os.path.exists(repo_path):
-        # Shallow clone (depth=1)
-        run_cmd(["git", "clone", "--depth", "1", repo_url, repo_path])
-
-    # Shallow-fetch exactly the failed commit so it’s available locally
-    run_cmd(["git", "fetch", "--depth", "1", "origin", sha_fail], cwd=repo_path)
-
-    # Checkout that commit cleanly (detached HEAD)
-    run_cmd(["git", "checkout", "--detach", sha_fail], cwd=repo_path)
-    run_cmd(["git", "reset", "--hard", sha_fail], cwd=repo_path)
-    run_cmd(["git", "clean", "-fdx"], cwd=repo_path)
+        run_cmd(["git", "clone", repo_url, repo_path])
+    else:
+        # Make sure it's a git repository
+        if not os.path.exists(os.path.join(repo_path, ".git")):
+            raise RuntimeError(f"Directory exists but is not a git repository: {repo_path}")
+        # Pull latest changes
+        run_cmd(["git", "fetch", "--all"], cwd=repo_path)
+    
+    # **Reset local changes to make repo clean**
+    run_cmd(["git", "reset", "--hard"], cwd=repo_path)
+    run_cmd(["git", "clean", "-fd"], cwd=repo_path)  # remove untracked files/directories
+    
+    # Checkout the desired commit
+    run_cmd(["git", "checkout", "--detach", commit_sha], cwd=repo_path)
