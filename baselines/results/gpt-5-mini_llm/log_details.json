@@ -1,0 +1,29 @@
+[
+    {
+        "sha_fail": null,
+        "error_context": [
+            "The CI run failed because the 'check_code_quality' job's 'Check quality' step invoked ruff and ruff format (--check) and the linter reported a formatting/import-sorting error. The failing step (logged as 'check_code_quality/5_Check quality.txt') ran the commands 'ruff check examples tests src utils scripts' and 'ruff format examples tests src utils scripts --check'. Ruff produced: 'examples/community/ip_adapter_face_id.py:15:1: I001 [*] Import block is un-sorted or un-formatted' and 'Found 1 error.' followed by '[*] 1 fixable with the `--fix` option.' The ruff failure caused the step to exit with code 1, which in turn made the CI job fail. The workflow shows this step runs after setting up Python 3.8 and installing quality dependencies (pip install .[quality]), so the failure is limited to code formatting detected by the linter rather than dependency or runtime errors."
+        ],
+        "relevant_files": [
+            {
+                "file": "examples/community/ip_adapter_face_id.py",
+                "line_number": 15,
+                "reason": "Ruff reported an import-sorting/formatting diagnostic for this file at 'examples/community/ip_adapter_face_id.py:15:1: I001', which was the single error that caused the linter step to fail ('Found 1 error.' and process exited with code 1)."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unsorted/Unformatted import block (ruff I001)",
+                "evidence": "Log: 'examples/community/ip_adapter_face_id.py:15:1: I001 [*] Import block is un-sorted or un-formatted' and 'Found 1 error.' with '[*] 1 fixable with the `--fix` option.'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "check_code_quality",
+                "step": "Check quality",
+                "command": "ruff check examples tests src utils scripts\nruff format examples tests src utils scripts --check"
+            }
+        ]
+    }
+]

@@ -454,7 +454,7 @@ Return a SINGLE aggregated summary for the entire failed run using this exact st
     def _get_encoder(self):
         """Safely get a tiktoken encoder for the model."""
         try:
-            return tiktoken.encoding_for_model("gpt-4o-mini")
+            return tiktoken.encoding_for_model(self.model_name)
         except KeyError:
             return tiktoken.get_encoding("cl100k_base")
 

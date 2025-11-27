@@ -39,7 +39,7 @@ LLM_REGISTRY: Dict[str, LLMInfo] = {
         temperature=0.0,
         api_key=OPENAI_API_KEY,
     ),
-    "gpt4.1": LLMInfo(
+    "gpt-4.1": LLMInfo(
         provider="openai",
         model_name="gpt-4.1",  # change to the exact model name you use
         temperature=0.0,
@@ -53,7 +53,7 @@ LLM_REGISTRY: Dict[str, LLMInfo] = {
         api_key=OPENAI_API_KEY,
     ),
     
-    "gpt5-mini": LLMInfo(
+    "gpt-5-mini": LLMInfo(
         provider="openai",
         model_name="gpt-5-mini",
         temperature=0.0,

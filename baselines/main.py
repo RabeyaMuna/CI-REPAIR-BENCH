@@ -106,13 +106,13 @@ if __name__ == "__main__":
     # Construct dataset path dynamically
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # one level up from ci-build-repair-project
     dataset_path = os.path.join(base_dir, "dataset", "lca_dataset.parquet")
-    model_key = "gpt5-mini"   # or "gpt4o", "deepseek-chat", etc.
+    model_key = "gpt-4o-mini"   # or "gpt4o", "deepseek-chat", etc.
     llm = get_llm(model_key)
     # Load dataset
     dataset_df = pd.read_parquet(dataset_path)
     dataset = dataset_df.to_dict(orient="records")
 
-    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="bm25")
+    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="llm")
 
     output_file = os.path.join(config.project_result_dir, "generated_patches.json")
     with open(output_file, "w") as f:
