@@ -235,8 +235,8 @@ def normalize_failure_only(records):
 
 # -----------------------------
 # Config / Paths
-# -----------------------------
-CONFIG_PATH = "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/config.yaml"
+current_dir = os.getcwd()
+CONFIG_PATH = os.path.join(current_dir, "config.yaml")
 config = OmegaConf.load(CONFIG_PATH)
 base_dir = config.get("base_dir")
 
@@ -296,7 +296,7 @@ for job in pushed_jobs:
 enriched = []
 for row in checked:
     c = (row.get("conclusion") or "").lower()
-    if c in ("", "waiting", "queued", "in_progress"):
+    if c in ("", "waiting", "queued", "in_progress", "invalid", "notfound"):
         inferred = infer_conclusion_from_api(row, bench.credentials)
         if inferred:
             row["conclusion"] = inferred

@@ -7,71 +7,18 @@ import requests
 import subprocess
 from git import GitCommandError
 from ruamel.yaml import YAML
-
-
-replacement_map = {
-        "ubuntu-20.04": "ubuntu-latest",
-        "ubuntu-latest-unit-tester": "ubuntu-latest"
-    }
-
-def has_deprecated_runner(workflow_file):
-    """
-    Checks whether the workflow contains any deprecated runners.
-    Returns:
-        (True, deprecated_runner)  → if a deprecated runner is found
-        (False, None)              → if no deprecated runners are found
-    """
-    yaml = YAML()
-
-    with open(workflow_file, "r", encoding="utf-8") as f:
-        yaml_data = yaml.load(f)
-
-    if not isinstance(yaml_data, dict) or "jobs" not in yaml_data:
-        return False, None
-
-    for job_name, job in yaml_data.get("jobs", {}).items():
-        # --- Check runs-on ---
-        runner = job.get("runs-on")
-        if isinstance(runner, str):
-            lower = runner.lower()
-            if lower in replacement_map:
-                print(f"[FOUND] Deprecated runner in job '{job_name}': {runner}")
-                return True, lower
-        elif isinstance(runner, list):
-            for r in runner:
-                lower = str(r).lower()
-                if lower in replacement_map:
-                    print(f"[FOUND] Deprecated runner in job '{job_name}': {r}")
-                    return True, lower
-
-        # --- Check strategy.matrix.os ---
-        strategy = job.get("strategy")
-        if strategy and isinstance(strategy, dict):
-            matrix = strategy.get("matrix")
-            if matrix and isinstance(matrix, dict) and "os" in matrix:
-                os_list = matrix["os"]
-                if isinstance(os_list, list):
-                    for os_val in os_list:
-                        lower = str(os_val).lower()
-                        if lower in replacement_map:
-                            print(f"[FOUND] Deprecated matrix OS in job '{job_name}': {os_val}")
-                            return True, lower
-
-    return False, None
-
-# --- add near the top of benchmark_utils.py ---
   
 def edit_workflow_push(workflow_file):
     """
     editing workflow.yaml so, that it would be run on push
     """
 
-    yaml = YAML()
+    yaml = YAML() 
     with open(workflow_file, "r") as file:
         yaml_data = yaml.load(file)
-
+        
     yaml_data["on"] = "push"
-
+    
     with open(workflow_file, "w") as file:
         yaml.dump(yaml_data, file)
 
@@ -123,21 +70,24 @@ def copy_and_edit_workflow_file(datapoint, repo):
 
     workflow_path = datapoint.get("workflow_path")
     workflow_content = datapoint.get("workflow")
-    
+
     if not workflow_path or not os.path.isfile(os.path.join(repo.working_dir, workflow_path)):
         print(f"[WARN] Workflow path invalid or missing for {datapoint['id']}: {workflow_path}")
         return
 
     target_file = os.path.join(workflow_dir, os.path.basename(workflow_path))
+
     # --- Load workflow YAML ---
     if workflow_content:
         yaml = YAML()
         yaml.preserve_quotes = True
         yaml_data = yaml.load(io.StringIO(workflow_content))
+        
         with open(target_file, "w", encoding="utf-8") as f:
           yaml.dump(yaml_data, f)
-
+    
     edit_workflow_push(target_file)
+    
     reference_files = extract_referenced_workflows(target_file)
 
     reference_files.add(os.path.basename(target_file))
@@ -248,6 +198,7 @@ def get_run_data(repo_name, commit_sha, credentials, config):
     headers = {"Authorization": f"token {token}"}
 
     jobs_url = f"https://api.github.com/repos/{config.benchmark_owner}/{repo_name}/commits/{commit_sha}/check-runs"
+    
     response = requests.get(jobs_url, headers=headers)
     data = response.json()
     try:
