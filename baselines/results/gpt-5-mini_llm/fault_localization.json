@@ -191,5 +191,351 @@
                 ]
             }
         ]
+    },
+    {
+        "sha_fail": "da7ae359227a089cedf0b7aba53962766e7eb0b2",
+        "fault_localization_data": [
+            {
+                "file_path": "framework/e2e/e2e-bare/e2e_bare/client_app.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/e2e/e2e-bare/e2e_bare/client_app.py",
+                "faults": [
+                    {
+                        "file_path": "framework/e2e/e2e-bare/e2e_bare/client_app.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/e2e/e2e-bare/e2e_bare/client_app.py",
+                        "line_range": [
+                            1,
+                            6
+                        ],
+                        "reason": "1) Hardcoded server address causes runtime connection failures: CI logs show grpc._channel._MultiThreadedRendezvous StatusCode.UNAVAILABLE with \"failed to connect to all addresses; ... ipv4:127.0.0.1:8080: Failed to connect to remote host: connect: Connection refused (111)\". This file calls start_client(server_address=\"127.0.0.1:8080\", ...) at lines 65-67, forcing clients to attempt connection to a fixed address/port that may not match the test harness server binding. This directly explains the recorded network connection refusal and subsequent RPC cancellations and job timeout (exit code 124). 2) Deprecated API usage: CI logs include deprecation warnings \"flwr.client.start_client() is deprecated\" and \"flwr.server.start_server() is deprecated\". This file imports and uses start_client (import at lines 5 and call at lines 65-67) and also constructs ClientApp at lines 59-61; relying on deprecated APIs is flagged in CI (configuration warning) and may indicate the code path is not aligned with the test harness expectations. Both faults are present in the top-level module behavior (standalone __main__ invocation and imports) so scope is the whole file (lines 1-68).",
+                        "issue_type": "runtime_error",
+                        "fault_localization_level": "file",
+                        "code_snippet": "from datetime import datetime\n\nimport numpy as np\n\nfrom flwr.client import ClientApp, NumPyClient, start_client\nfrom flwr.common import ConfigRecord, Context, RecordDict"
+                    }
+                ]
+            },
+            {
+                "file_path": "flwr/client/app.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/client/app.py",
+                "faults": [
+                    {
+                        "file_path": "flwr/client/app.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/client/app.py",
+                        "line_range": [
+                            804,
+                            816
+                        ],
+                        "reason": "Runtime: _run_flwr_clientapp installs a background monitor thread (main_process_monitor) that forcefully kills the process with SIGKILL when the parent PID no longer matches main_pid (lines 806-811). CI shows RPC cancellation and abrupt client termination (evidence: gRPC errors reporting \"Cancelling all calls\" and the job ending with exit code 124). Killing the process with os.kill(os.getpid(), 9) causes immediate, unclean termination of in-flight gRPC calls and can produce the observed \"Cancelling all calls\" and timeout/forced-termination symptoms. The monitor uses a tight check (os.getppid() != main_pid) and unconditional SIGKILL rather than a graceful shutdown sequence (lines 806-812).",
+                        "issue_type": "runtime_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def _run_flwr_clientapp(args: list[str], main_pid: int) -> None:\n    # Monitor the main process in case of SIGKILL\n    def main_process_monitor() -> None:\n        while True:\n            time.sleep(1)\n            if os.getppid() != main_pid:\n                os.kill(os.getpid(), 9)\n\n    threading.Thread(target=main_process_monitor, daemon=True).start()\n\n    # Run the command\n    sys.argv = args\n    flwr_clientapp()"
+                    },
+                    {
+                        "file_path": "flwr/client/app.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/client/app.py",
+                        "line_range": [
+                            819,
+                            837
+                        ],
+                        "reason": "Merged faults within run_clientappio_api_grpc (lines 819-837):\n- Runtime race / readiness: The gRPC server is started asynchronously (clientappio_grpc_server.start() at line 836) and the function returns immediately (line 837) without ensuring the server is bound/listening or signalling readiness. CI evidence shows clients failed to connect with \"failed to connect to all addresses; ... connection refused (111)\", consistent with a race where clients try to connect before the server is ready.\n- Type/annotation mismatch (lint/type): The variable clientappio_servicer is annotated as grpc.Server but assigned ClientAppIoServicer() (line 824), a mismatch that will trigger static type checkers (mypy) and may hide confusion between servicer vs server objects. While this is not itself the runtime cause, it is a clear type-level fault present in this method and may lead to developer confusion or incorrect usage of APIs (line 824).\nTogether these issues (missing readiness/wait and the servicer/server confusion) explain the observed connection-refused and subsequent RPC cancellation errors from CI logs.",
+                        "issue_type": "runtime_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def run_clientappio_api_grpc(\n    address: str,\n    certificates: Optional[tuple[bytes, bytes, bytes]],\n) -> tuple[grpc.Server, ClientAppIoServicer]:\n    \"\"\"Run ClientAppIo API gRPC server.\"\"\"\n    clientappio_servicer: grpc.Server = ClientAppIoServicer()\n    clientappio_add_servicer_to_server_fn = add_ClientAppIoServicer_to_server\n    clientappio_grpc_server = generic_create_grpc_server(\n        servicer_and_add_fn=(\n            clientappio_servicer,\n            clientappio_add_servicer_to_server_fn,\n        ),\n        server_address=address,\n        max_message_length=GRPC_MAX_MESSAGE_LENGTH,\n        certificates=certificates,\n    )\n    log(INFO, \"Starting Flower ClientAppIo gRPC server on %s\", address)\n    clientappio_grpc_server.start()\n    return clientappio_grpc_server, clientappio_servicer"
+                    }
+                ]
+            },
+            {
+                "file_path": "flwr/client/grpc_client/connection.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/client/grpc_client/connection.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "df0344c9bd80f87fed394e512d67a3138a1d8176",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/common/serde_utils.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/common/serde_utils.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/common/serde_utils.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/common/serde_utils.py",
+                        "line_range": [
+                            17,
+                            32
+                        ],
+                        "reason": "Pylint import/name errors (E0611) reported for symbols imported from flwr.proto.recorddict_pb2, causing the lint step to fail. CI evidence: \"py/flwr/common/serde_utils.py:22:0: E0611: No name 'BoolList' in module 'flwr.proto.recorddict_pb2' (no-name-in-module)\" and similar messages for BytesList, DoubleList, SintList, StringList, UintList. The failing import statement block is at lines 22-29 in this file (from flwr.proto.recorddict_pb2 import (BoolList, BytesList, DoubleList, SintList, StringList, UintList)). The workflow log also shows proto stub generation immediately prior to linting (\"Writing mypy to flwr/proto/recorddict_pb2.pyi\"), indicating a mismatch between generated protobuf stubs/module contents and the names this file expects. Sub-faults merged here: 1) Missing symbols imported from flwr.proto.recorddict_pb2 -> pylint E0611 errors; 2) Mismatch between generated protobuf mypy stubs and actual runtime proto module (proto stub/module missing symbols) which explains why the imports are not present. These issues are localized to the import block and cause the CI step to exit non-zero.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "from collections.abc import MutableMapping\nfrom typing import Any, TypeVar, cast\n\nfrom google.protobuf.message import Message as GrpcMessage\n\nfrom flwr.proto.recorddict_pb2 import (\n    BoolList,\n    BytesList,\n    DoubleList,\n    SintList,\n    StringList,\n    UintList,\n)\n\nfrom .constant import INT64_MAX_VALUE\nfrom .record.typeddict import TypedDict"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "ed13d89504c50a1b3f5d9757b74c7aaf38356150",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/cli/utils.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/cli/utils.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/cli/utils.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/cli/utils.py",
+                        "line_range": [
+                            291,
+                            325
+                        ],
+                        "reason": "CI pylint failure: E1101 'Instance of \"RpcError\" has no \"details\" member (no-member)' reported at py/flwr/cli/utils.py:323:24. The call to e.details() occurs inside the flwr_cli_grpc_exc_handler context manager (lines 291\u2013325) in the PERMISSION_DENIED handling branch (line 323). Pylint flags that grpc.RpcError (the caught exception type) does not expose a 'details' member/method according to its type stubs, which triggers the blocking lint error shown in the CI logs.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def flwr_cli_grpc_exc_handler() -> Iterator[None]:\n    \"\"\"Context manager to handle specific gRPC errors.\n\n    It catches grpc.RpcError exceptions with UNAUTHENTICATED, UNIMPLEMENTED, and\n    PERMISSION_DENIED statuses, informs the user, and exits the application. All other\n    exceptions will be allowed to escape.\n    \"\"\"\n    try:\n        yield\n    except grpc.RpcError as e:\n        if e.code() == grpc.StatusCode.UNAUTHENTICATED:\n            typer.secho(\n                \"\u274c Authentication failed. Please run `flwr login`\"\n                \" to authenticate and try again.\",\n                fg=typer.colors.RED,\n                bold=True,\n            )\n            raise typer.Exit(code=1) from None\n        if e.code() == grpc.StatusCode.UNIMPLEMENTED:\n            typer.secho(\n                \"\u274c User authentication is not enabled on this SuperLink.\",\n                fg=typer.colors.RED,\n                bold=True,\n            )\n            raise typer.Exit(code=1) from None\n        if e.code() == grpc.StatusCode.PERMISSION_DENIED:\n            typer.secho(\n                \"\u274c Authorization failed. Please contact your administrator\"\n                \" to check your permissions.\",\n                fg=typer.colors.RED,\n                bold=True,\n            )\n            typer.secho(e.details(), fg=typer.colors.RED, bold=True)\n            raise typer.Exit(code=1) from None\n        raise"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "f231d50356ccfb76ed54d27e9fd32dd40e824f28",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/supercore/scheduler/run_scheduler.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/supercore/scheduler/run_scheduler.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/supercore/scheduler/run_scheduler.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/supercore/scheduler/run_scheduler.py",
+                        "line_range": [
+                            37,
+                            111
+                        ],
+                        "reason": "CI pylint failure: pylint emitted W0108 (unnecessary-lambda) for the lambda used in the register_exit_handlers call, causing the lint step to return a non-zero exit code (Process completed with exit code 4). Evidence from CI logs: \"py/flwr/supercore/scheduler/run_scheduler.py:66:23: W0108: Lambda may not be necessary (unnecessary-lambda)\". Concrete code locations: the call register_exit_handlers(...) is in this function (lines ~63-67) and uses exit_handlers=[lambda: channel.close()] (line 66). Additional fault: the inline disable comment intended to suppress W0108 is misspelled as \"pytlint: disable=W0108\" (on the same line 66), so the suppression did not take effect and pylint still reported W0108. Sub-fault summary: (1) unnecessary lambda present at line 66 triggering pylint W0108; (2) incorrect inline disable spelling \"pytlint\" on line 66 so the linter suppression was not applied; both issues are inside the run_app_scheduler function (lines 37-111) and together explain the CI failure.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def run_app_scheduler(\n    plugin_class: type[SchedulerPlugin],\n    appio_api_address: str,\n    flwr_dir: Optional[str] = None,\n) -> None:\n    \"\"\"Run the Flower app scheduler.\n\n    Parameters\n    ----------\n    plugin_class : type[SchedulerPlugin]\n        The class of the scheduler plugin to use.\n    appio_api_address : str\n        The address of the AppIO API.\n    flwr_dir : Optional[str] (default: None)\n        The Flower directory.\n    \"\"\"\n    # Create the channel to the AppIO API\n    # No TLS support for now, so insecure connection\n    channel = create_channel(\n        server_address=appio_api_address,\n        insecure=True,\n        root_certificates=None,\n    )\n    channel.subscribe(on_channel_state_change)\n\n    # Register exit handlers to close the channel on exit\n    register_exit_handlers(\n        event_type=EventType.FLWR_APP_SCHEDULER_RUN_LEAVE,\n        exit_message=\"Flower app scheduler terminated gracefully.\",\n        exit_handlers=[lambda: channel.close()],  # pytlint: disable=W0108\n    )\n\n    # Create the gRPC stub for the AppIO API\n    # We shall merge the ClientAppIo and ServerAppIo in the future\n    # so we can use the same stub for both.\n    # For now, we use ClientAppIoStub.\n    stub = ClientAppIoStub(channel)\n\n    def get_run(run_id: int) -> Run:\n        _req = GetRunRequest(run_id=run_id)\n        _res = stub.GetRun(_req)\n        return run_from_proto(_res.run)\n\n    # Create the scheduler plugin instance\n    plugin = plugin_class(\n        appio_api_address=appio_api_address,\n        flwr_dir=str(get_flwr_dir(flwr_dir)),\n        get_run=get_run,\n    )\n\n    # Start the scheduler loop\n    try:\n        while True:\n            # Fetch suitable run IDs\n            get_runs_req = GetRunIdsWithPendingMessagesRequest()\n            get_runs_res = stub.GetRunIdsWithPendingMessages(get_runs_req)\n\n            # Allow the plugin to select a run ID\n            run_id = None\n            if get_runs_res.run_ids:\n                run_id = plugin.select_run_id(candidate_run_ids=get_runs_res.run_ids)\n\n            # Apply for a token if a run ID was selected\n            if run_id is not None:\n                tk_req = RequestTokenRequest(run_id=run_id)\n                tk_res = stub.RequestToken(tk_req)\n\n                # Launch the app if a token was granted; do nothing if not\n                if tk_res.token:\n                    plugin.launch_app(token=tk_res.token, run_id=run_id)\n\n            # Sleep for a while before checking again\n            time.sleep(1)\n    finally:\n        channel.close()"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "f539ef9be2b510a9bef42e224e7c601f5965bcda",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/supernode/nodestate/in_memory_nodestate.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/supernode/nodestate/in_memory_nodestate.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/supernode/nodestate/in_memory_nodestate.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/supernode/nodestate/in_memory_nodestate.py",
+                        "line_range": [
+                            18,
+                            26
+                        ],
+                        "reason": "Lint failure reported by ruff: \"py/flwr/supernode/nodestate/in_memory_nodestate.py:21:30: F401 `typing.Union` imported but unused\". The import statement at line 21 ('from typing import Optional, Union') includes Union which is not referenced elsewhere in this file (no usage in lines 1-150). CI log also indicates \"Found 1 error. 1 fixable with the `--fix` option.\" Per file outline this fault falls in the import block (lines 18-26), so the import_block scope [18-26] is reported.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "from collections.abc import Sequence\nfrom dataclasses import dataclass\nfrom threading import Lock\nfrom typing import Optional, Union\n\nfrom flwr.common import Context, Message\nfrom flwr.common.typing import Run\n\nfrom .nodestate import NodeState"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "0309bd9e095b3da3cb01d220541674d3b8e0a803",
+        "fault_localization_data": [
+            {
+                "file_path": "agno/cli/auth_server.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/agno/libs/agno/agno/cli/auth_server.py",
+                "faults": [
+                    {
+                        "file_path": "agno/cli/auth_server.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/agno/libs/agno/agno/cli/auth_server.py",
+                        "line_range": [
+                            1,
+                            6
+                        ],
+                        "reason": "Mypy reported: \"agno/cli/auth_server.py:102: error: \\\"BaseServer\\\" has no attribute \\\"running\\\"  [attr-defined]\". The code dynamically assigns and reads a non-existent attribute `running` on server objects (BaseServer/HTTPServer) in multiple places: line 102 (self.server.running = False in CliAuthRequestHandler._redirect_with_status), line 167 (self.server.running = False in do_POST), line 185 (self._server.running = False in CliAuthServer.__init__), and lines 188-189 (self._server.running = True and while self._server.running in CliAuthServer.run). Because these assignments/read accesses add an attribute not declared on the server type, static type checkers (mypy) raise attr-defined errors. CI evidence is the exact mypy attr-defined message pointing to line 102. This is a file-spanning typing issue affecting both the request handler and server classes.",
+                        "issue_type": "type_error",
+                        "fault_localization_level": "file",
+                        "code_snippet": "import json\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\nfrom typing import Optional\nfrom urllib.parse import parse_qs, quote, urlparse\n\nfrom agno.cli.settings import agno_cli_settings"
+                    },
+                    {
+                        "file_path": "agno/cli/auth_server.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/agno/libs/agno/agno/cli/auth_server.py",
+                        "line_range": [
+                            174,
+                            196
+                        ],
+                        "reason": "Within CliAuthServer (lines 174-196) the shut_down method calls `self._thread.close()` (line 196). The Thread object created at line 183 is threading.Thread, which does not define a `close` method \u2014 this is an invalid attribute usage and will trigger attribute/type errors under static analysis (e.g., mypy would report an attr-defined error or attribute access issue). This is a class-level fault in CliAuthServer.",
+                        "issue_type": "type_error",
+                        "fault_localization_level": "class",
+                        "code_snippet": "class CliAuthServer:\n    \"\"\"\n    Source: https://stackoverflow.com/a/38196725/10953921\n    \"\"\"\n\n    def __init__(self, port: int = 9191):\n        import threading\n\n        self._server = HTTPServer((\"\", port), CliAuthRequestHandler)\n        self._thread = threading.Thread(target=self.run)\n        self._thread.daemon = True\n        self._server.running = False  # type: ignore\n\n    def run(self):\n        self._server.running = True  # type: ignore\n        while self._server.running:  # type: ignore\n            self._server.handle_request()\n\n    def start(self):\n        self._thread.start()\n\n    def shut_down(self):\n        self._thread.close()  # type: ignore"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "00dff2ac803dca7ae44435c5dea311c633926b87",
+        "fault_localization_data": [
+            {
+                "file_path": "tabular/src/autogluon/tabular/models/tabm/tabm_reference.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/autogluon/tabular/src/autogluon/tabular/models/tabm/tabm_reference.py",
+                "faults": [
+                    {
+                        "file_path": "tabular/src/autogluon/tabular/models/tabm/tabm_reference.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/autogluon/tabular/src/autogluon/tabm/tabm_reference.py",
+                        "line_range": [
+                            438,
+                            594
+                        ],
+                        "reason": "Codespell lint failure reported: \"./tabular/src/autogluon/tabular/models/tabm/tabm_reference.py:533: presense ==> presence\". The misspelling 'presense' appears in a comment inside Model.__init__ (line 533: \"# the presense of num_embeddings.\") and caused the codespell job to exit non-zero, failing CI. Fixing the typo to 'presence' will resolve the codespell lint error.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "method",
+                        "code_snippet": "    def __init__(\n        self,\n        *,\n        n_num_features: int,\n        cat_cardinalities: list[int],\n        n_classes: None | int,\n        backbone: dict,\n        bins: None | list[Tensor],  # For piecewise-linear encoding/embeddings.\n        num_embeddings: None | dict = None,\n        arch_type: Literal[\n            # Plain feed-forward network without any kind of ensembling.\n            'plain',\n            #\n            # TabM\n            'tabm',\n            #\n            # TabM-mini\n            'tabm-mini',\n            #\n            # TabM-packed\n            'tabm-packed',\n            #\n            # TabM. The first adapter is initialized from the normal distribution.\n            # This variant was not used in the paper, but it may be useful in practice.\n            'tabm-normal',\n            #\n            # TabM-mini. The adapter is initialized from the normal distribution.\n            # This variant was not used in the paper.\n            'tabm-mini-normal',\n        ],\n        k: None | int = None,\n        share_training_batches: bool = True,\n    ) -> None:\n        # >>> Validate arguments.\n        assert n_num_features >= 0\n        assert n_num_features or cat_cardinalities\n        if arch_type == 'plain':\n            assert k is None\n            assert (\n                share_training_batches\n            ), 'If `arch_type` is set to \"plain\", then `simple` must remain True'\n        else:\n            assert k is not None\n            assert k > 0\n\n        super().__init__()\n\n        # >>> Continuous (numerical) features\n        first_adapter_sections = []  # See the comment in `_init_first_adapter`.\n\n        if n_num_features == 0:\n            assert bins is None\n            self.num_module = None\n            d_num = 0\n\n        elif num_embeddings is None:\n            assert bins is None\n            self.num_module = None\n            d_num = n_num_features\n            first_adapter_sections.extend(1 for _ in range(n_num_features))\n\n        else:\n            if bins is None:\n                self.num_module = make_module(\n                    **num_embeddings, n_features=n_num_features\n                )\n            else:\n                assert num_embeddings['type'].startswith('PiecewiseLinearEmbeddings')\n                self.num_module = make_module(**num_embeddings, bins=bins)\n            d_num = n_num_features * num_embeddings['d_embedding']\n            first_adapter_sections.extend(\n                num_embeddings['d_embedding'] for _ in range(n_num_features)\n            )\n\n        # >>> Categorical features\n        self.cat_module = (\n            OneHotEncoding0d(cat_cardinalities) if cat_cardinalities else None\n        )\n        first_adapter_sections.extend(cat_cardinalities)\n        d_cat = sum(cat_cardinalities)\n\n        # >>> Backbone\n        d_flat = d_num + d_cat\n        self.minimal_ensemble_adapter = None\n        # Any backbone can be here but we provide only MLP\n        self.backbone = make_module(d_in=d_flat, **backbone)\n\n        if arch_type != 'plain':\n            assert k is not None\n            first_adapter_init = (\n                None\n                if arch_type == 'tabm-packed'\n                else 'normal'\n                if arch_type in ('tabm-mini-normal', 'tabm-normal')\n                # For other arch_types, the initialization depends\n                # on the presense of num_embeddings.\n                else 'random-signs'\n                if num_embeddings is None\n                else 'normal'\n            )\n\n            if arch_type in ('tabm', 'tabm-normal'):\n                # Like BatchEnsemble, but all multiplicative adapters,\n                # except for the very first one, are initialized with ones.\n                assert first_adapter_init is not None\n                make_efficient_ensemble(\n                    self.backbone,\n                    LinearEfficientEnsemble,\n                    k=k,\n                    ensemble_scaling_in=True,\n                    ensemble_scaling_out=True,\n                    ensemble_bias=True,\n                    scaling_init='ones',\n                )\n                _init_first_adapter(\n                    _get_first_ensemble_layer(self.backbone).r,  # type: ignore[code]\n                    first_adapter_init,\n                    first_adapter_sections,\n                )\n\n            elif arch_type in ('tabm-mini', 'tabm-mini-normal'):\n                # MiniEnsemble\n                assert first_adapter_init is not None\n                self.minimal_ensemble_adapter = ScaleEnsemble(\n                    k,\n                    d_flat,\n                    init='random-signs' if num_embeddings is None else 'normal',\n                )\n                _init_first_adapter(\n                    self.minimal_ensemble_adapter.weight,  # type: ignore[code]\n                    first_adapter_init,\n                    first_adapter_sections,\n                )\n\n            elif arch_type == 'tabm-packed':\n                # Packed ensemble.\n                # In terms of the Packed Ensembles paper by Laurent et al.,\n                # TabM-packed is PackedEnsemble(alpha=k, M=k, gamma=1).\n                assert first_adapter_init is None\n                make_efficient_ensemble(self.backbone, NLinear, n=k)\n\n            else:\n                raise ValueError(f'Unknown arch_type: {arch_type}')\n\n        # >>> Output\n        d_block = backbone['d_block']\n        d_out = 1 if n_classes is None else n_classes\n        self.output = (\n            nn.Linear(d_block, d_out)\n            if arch_type == 'plain'\n            else NLinear(k, d_block, d_out)  # type: ignore[code]\n        )\n\n        # >>>\n        self.arch_type = arch_type\n        self.k = k\n        self.share_training_batches = share_training_batches"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "6b71b0ed836b8c61f092e369e77501911dc9d5f3",
+        "fault_localization_data": [
+            {
+                "file_path": "webui.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/stable-diffusion-webui/webui.py",
+                "faults": [
+                    {
+                        "file_path": "webui.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/stable-diffusion-webui/webui.py",
+                        "line_range": [
+                            1,
+                            18
+                        ],
+                        "reason": "CI evidence: ruff reported F821 Undefined name `cmd_opts` (examples: webui.py:28:12, webui.py:67:8) and overall message \"Found 13 errors.\" The source references `cmd_opts` in many places but there is no definition or import of `cmd_opts` anywhere in the file. Affected usages appear across multiple functions (therefore file-level scope): configurar_ui (lines 25-29: uses cmd_opts.no_gradio_queue), decidir_autolancamento (31-38: cmd_opts.autolaunch, cmd_opts.webui_is_non_local), lancar_interface (40-56: cmd_opts.share, .port, .tls_keyfile, .tls_certfile, .disable_tls_verify, .gradio_debug, .gradio_allowed_path, .subpath), and configurar_apis (64-69: cmd_opts.api). Because the undefined name occurs in multiple non-overlapping outline elements, the fault is reported at file scope: the identifier `cmd_opts` must be defined or imported to resolve the F821 errors shown by ruff.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "file",
+                        "code_snippet": "import os\nimport time\nfrom modules import (\n    shared,\n    ui_tempdir,\n    startup_timer,\n    initialize_util,\n    progress,\n    ui,\n    ui_extra_networks,\n    timer,\n    initialize,\n    script_callbacks\n)\nfrom api import create_api  # ajuste se create_api for de outro m\u00f3dulo\nfrom packaging.version import parse\nfrom pathlib import Path\nimport gradio"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "1559358d5679d353417ef140c1894997b4c7160f",
+        "fault_localization_data": [
+            {
+                "file_path": "taipy/event/event_consumer.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/taipy/event/event_consumer.py",
+                "faults": [
+                    {
+                        "file_path": "taipy/event/event_consumer.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/taipy/event/event_consumer.py",
+                        "line_range": [
+                            12,
+                            30
+                        ],
+                        "reason": "Ruff reported an import formatting/sorting issue (I001) in the import block. CI linter output: 'taipy/event/event_consumer.py:12:1: I001 [*] Import block is un-sorted or un-formatted ... = help: Organize imports' and 'Found 1 error. 1 fixable with the `--fix` option.' The imports appearing on lines 12-30 are the source of this error and must be reordered/formatted to satisfy ruff's import-sorting rules.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "from typing import Callable, Dict, List, Optional, Union\n\nfrom taipy import DataNode, Gui, Scenario, Submission, SubmissionStatus\nfrom taipy.common.logger._taipy_logger import _TaipyLogger\nfrom taipy.common._check_dependencies import EnterpriseEditionUtils\nfrom taipy.core.common._utils import _load_fct\nfrom taipy.core.config import DataNodeConfig, ScenarioConfig, TaskConfig\nfrom taipy.core.notification import (\n    Event,\n    EventEntityType,\n    EventOperation,\n    Notifier,\n    _Registration,\n    _Topic,\n)\nfrom taipy.core.notification._core_event_consumer import _CoreEventConsumerBase\nfrom taipy.event._event_callback import _Callback\nfrom taipy.event._event_processor import _AbstractEventProcessor, _EventProcessor\nfrom taipy.exceptions import NoGuiDefinedInEventConsumer"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "166f99e7023eb1ab623926aa8ce743e7fb2a6d50",
+        "fault_localization_data": [
+            {
+                "file_path": "tests/gui/gui_specific/test_notification_on_close.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/tests/gui/gui_specific/test_notification_on_close.py",
+                "faults": [
+                    {
+                        "file_path": "tests/gui/gui_specific/test_notification_on_close.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/tests/gui/gui_specific/test_notification_on_close.py",
+                        "line_range": [
+                            12,
+                            21
+                        ],
+                        "reason": "Ruff reported I001: 'Import block is un-sorted or un-formatted' at tests/gui/gui_specific/test_notification_on_close.py:12:1 causing the linter step to exit non-zero. The import block (lines 12-21) is not correctly ordered/formatted according to ruff rules: stdlib imports (lines 12: 'import inspect', 13: 'import json', 14: 'from contextlib import nullcontext') are unsorted (expected alphabetical or grouped order, e.g., 'from contextlib', 'import inspect', 'import json'), third-party imports (line 15: 'from flask import g', 17: 'import pandas as pd', 18: 'import pytest') and local/package imports (lines 20-21: 'from taipy.gui', 'from taipy.gui.utils') may not be separated/sorted correctly. The CI evidence is the ruff message I001 and the failing linter process exit ('The process ... ruff ... failed with exit code 1'). Fixing the import ordering/formatting in this import_block (lines 12-21) will address the reported linter failure.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import inspect\nimport json\nfrom contextlib import nullcontext\nfrom flask import g\n\nimport pandas as pd\nimport pytest\n\nfrom taipy.gui import Gui\nfrom taipy.gui.utils import _get_module_name_from_frame, _TaipyContent"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "23546b560fa453bd3fb05e7b8661bf77f77fb1a6",
+        "fault_localization_data": [
+            {
+                "file_path": "tests/gui/e2e/renderers/test_html_rendering.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/tests/gui/e2e/renderers/test_html_rendering.py",
+                "faults": [
+                    {
+                        "file_path": "tests/gui/e2e/renderers/test_html_rendering.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/tests/gui/e2e/renderers/test_html_rendering.py",
+                        "line_range": [
+                            12,
+                            26
+                        ],
+                        "reason": "Dependency import failure: CI shows ModuleNotFoundError: No module named 'taipy.gui.servers.fastapi' raised while importing this test module (pytest collection aborted, 'Interrupted: 1 error during collection'). In the file, the import block (lines 12-26) includes unconditional imports of server modules: line 25 'from taipy.gui.servers.fastapi import _FastAPIServer' and line 26 'from taipy.gui.servers.flask import _FlaskServer'. The missing module 'taipy.gui.servers.fastapi' (absent file or not exported in package) directly causes the ImportError shown in the CI logs and prevents test collection/execution. Affects all failing jobs that run pytest (coverage and partial-tests matrix).",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import inspect\nimport os\nimport time\nfrom importlib import util\nfrom pathlib import Path\nfrom urllib.request import urlopen\n\nimport pytest\n\nif util.find_spec(\"playwright\"):\n    from playwright._impl._page import Page\n\nfrom taipy.gui import Gui, Html\nfrom taipy.gui.servers.fastapi import _FastAPIServer\nfrom taipy.gui.servers.flask import _FlaskServer"
+                    }
+                ]
+            },
+            {
+                "file_path": "taipy/rest/api/schemas/datanode.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/taipy/rest/api/schemas/datanode.py",
+                "faults": [
+                    {
+                        "file_path": "taipy/rest/api/schemas/datanode.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/taipy/rest/api/schemas/datanode.py",
+                        "line_range": [
+                            97,
+                            99
+                        ],
+                        "reason": "CI emitted a Marshmallow deprecation warning: \"RemovedInMarshmallow4Warning: The 'default' argument to fields is deprecated. Use 'dump_default' instead.\" This matches the code at line 99 where DataNodeFilterSchema.join_operator is declared using fields.String(default=\"AND\"). The usage of the 'default' argument is deprecated and triggers the warning during test collection; replace 'default' with 'dump_default' (or an appropriate Marshmallow 4-compatible alternative) to resolve the deprecation warning. Evidence: CI warning referencing taipy/rest/api/schemas/datanode.py:99 and the code line join_operator = fields.String(default=\"AND\").",
+                        "issue_type": "other",
+                        "fault_localization_level": "class",
+                        "code_snippet": "class DataNodeFilterSchema(DataNodeConfigSchema):\n    operators = fields.List(fields.Nested(OperatorSchema))\n    join_operator = fields.String(default=\"AND\")"
+                    }
+                ]
+            },
+            {
+                "file_path": "tests/gui/e2e/test_metric_indicator.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/tests/gui/e2e/test_metric_indicator.py",
+                "faults": [
+                    {
+                        "file_path": "tests/gui/e2e/test_metric_indicator.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/tests/gui/e2e/test_metric_indicator.py",
+                        "line_range": [
+                            1,
+                            280
+                        ],
+                        "reason": "Pytest emitted PytestUnknownMarkWarning for unknown pytest mark 'extension' used in this file (CI warnings summary: \"PytestUnknownMarkWarning: Unknown pytest.mark.extension\" reported for tests/gui/e2e/test_metric_indicator.py at lines 22, 37, 52). The file defines multiple test functions decorated with @pytest.mark.extension (test_has_default_value at lines 23\u201334, test_show_increase_delta_value at lines 38\u201349, test_show_decrease_delta_value at lines 53\u201364), which triggers the warning during collection because the 'extension' mark is not registered. This spans multiple non-overlapping test functions, so the issue is reported at the file level. (CI evidence: warnings summary entry pointing to lines 22, 37, 52.)",
+                        "issue_type": "linting",
+                        "fault_localization_level": "file",
+                        "code_snippet": "# Copyright 2021-2025 Avaiga Private Limited\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with\n# the License. You may obtain a copy of the License at\n#\n#        http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on\n# an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the\n# specific language governing permissions and limitations under the License.\nimport inspect\nfrom importlib import util\n\nimport pytest\n\nif util.find_spec(\"playwright\"):\n    from playwright._impl._page import Page\n\nfrom taipy.gui import Gui\n\n\n@pytest.mark.extension\ndef test_has_default_value(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|100|metric|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    events_list = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[local-name()='text']\")\n    gauge_value = events_list.nth(0).text_content()\n    assert gauge_value == \"100\"\n\n\n@pytest.mark.extension\ndef test_show_increase_delta_value(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|100|metric|delta=20|type=linear|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    events_list = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[local-name()='text']\")\n    delta_value = events_list.nth(1).text_content()\n    assert delta_value == \"\u25b220\"\n\n\n@pytest.mark.extension\ndef test_show_decrease_delta_value(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|100|metric|delta=-20|type=linear|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    events_list = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[local-name()='text']\")\n    delta_value = events_list.nth(1).text_content()\n    assert delta_value == \"\u25bc\u221220\"\n\n\n@pytest.mark.teste2e\ndef test_show_linear_chart(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|100|metric|delta=-20|type=linear|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    chart = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='bullet']\")\n    assert chart.is_visible()\n\n\n@pytest.mark.teste2e\ndef test_show_circular_chart_as_default_type(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|100|metric|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    chart = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='angular']\")\n    assert chart.is_visible()\n\n\n@pytest.mark.teste2e\ndef test_format_converter_integer_to_binary(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|show_value=True|delta=20|format=%b|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"110010\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_integer_to_signed_decimal_d_type(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|show_value=True|delta=20|format=%d|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"50\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_integer_to_signed_decimal_i_type(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|show_value=True|delta=20|format=%i|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"50\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_yields_float_using_science_notation(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|show_value=True|delta=20|format=%e|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"5.000000e+1\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_yields_float_using_fixed_point_notation_f_type(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|99.99|metric|show_value=True|delta=20|format=%.2f|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"99.99\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_yields_float_using_fixed_point_notation_g_type(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50.555|metric|show_value=True|delta=20|format=%.2g|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"51\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_yields_integer_as_octal(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|show_value=True|delta=20|format=%o|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"62\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_yields_integer_as_hexadecimal(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|show_value=True|delta=20|format=%x|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"32\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_yields_integer_as_uppercase_hexadecimal(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|show_value=True|delta=20|format=%X|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"32\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_yields_integer_as_unsigned_decimal(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|-50|metric|show_value=True|delta=20|format=%u|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"(50)\"\n\n\n@pytest.mark.teste2e\ndef test_format_converter_yields_edge_cases(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|show_value=True|format=a%%b%dc%%d|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    number = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[@class='number']\")\n    assert number.text_content() == \"a%b50c%d\"\n\n\n@pytest.mark.teste2e\ndef test_negative_delta_color(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|negative_delta_color=#3D9970|delta=-20|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    events_list = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[local-name()='text']\")\n    delta = events_list.nth(1)\n    fill_color = delta.evaluate(\"el => getComputedStyle(el).fill\")\n\n    assert fill_color == \"rgb(61, 153, 112)\"\n\n\n@pytest.mark.teste2e\ndef test_delta_color_invert(page: Page, gui: Gui, helpers):\n    page_md = \"\"\"\n<|50|metric|delta_color=invert|delta=-20|>\n\"\"\"\n    gui._set_frame(inspect.currentframe())\n    gui.add_page(name=\"test\", page=page_md)\n    helpers.run_e2e(gui)\n    page.goto(\"./test\")\n    page.wait_for_selector(\".plot-container\")\n    events_list = page.locator(\"//*[@class='js-plotly-plot']//*[name()='svg'][2]//*[local-name()='text']\")\n    delta = events_list.nth(1)\n    fill_color = delta.evaluate(\"el => getComputedStyle(el).fill\")\n\n    assert fill_color == \"rgb(61, 153, 112)\""
+                    }
+                ]
+            },
+            {
+                "file_path": ".local/share/virtualenvs/.../lib/python3.11/site-packages/apispec_webframeworks/__init__.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/tests/gui/hooks/__init__.py",
+                "faults": []
+            },
+            {
+                "file_path": ".local/share/virtualenvs/.../lib/python3.11/site-packages/pkg_resources/__init__.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/taipy/taipy/rest/api/resources/__init__.py",
+                "faults": []
+            }
+        ]
     }
 ]

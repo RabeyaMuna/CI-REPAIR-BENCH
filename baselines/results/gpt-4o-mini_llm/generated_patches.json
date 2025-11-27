@@ -1,3 +1,7 @@
 [
- 
+    {
+        "id": "4",
+        "sha_fail": "2e41e783672597e2e0c7b2842b5934d879374028",
+        "diff": "diff --git a/tests/test_websockets.py b/tests/test_websockets.py\nindex dd8413b..79ef919 100644\n--- a/tests/test_websockets.py\n+++ b/tests/test_websockets.py\n@@ -217,9 +217,8 @@ async def test_ws_frame_put_message_into_queue(opcode):\n \n     await assembler.put(Frame(opcode, b\"foo\"))\n \n-    assembler.chunks_queue.put.has_calls(\n-        call(b\"foo\"),\n-        call(None),\n+    assert assembler.chunks_queue.put.has_calls(\n+        [call(b\"foo\"), call(None)],\n     )\n \n \n"
+    }
 ]

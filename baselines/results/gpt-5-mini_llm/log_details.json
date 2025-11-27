@@ -410,5 +410,436 @@
                 "command": "./../../test_legacy.sh \"e2e-bare\""
             }
         ]
+    },
+    {
+        "sha_fail": "12795a2494a4bdedfb40434db6668f79471ea03f",
+        "error_context": [
+            "The CI run failed because pylint reported import/name errors (E0611) during the linting stage, causing the test step to exit non\u2011zero. The workflow ran ./framework/dev/check-protos.sh (which wrote mypy stubs such as flwr/proto/recorddict_pb2.pyi) and then ./framework/dev/test.sh (Lint + Test). During ./framework/dev/test.sh pylint produced multiple E0611 errors in py/flwr/common/serde_utils.py at line 22 complaining that symbols BoolList, BytesList, DoubleList, SintList, StringList, and UintList are not present in module flwr.proto.recorddict_pb2. Because pylint returned errors the step exited with code 2 ('Process completed with exit code 2'), failing the job. The proto-stub generation step ran immediately before linting (the log shows \"Writing mypy to flwr/proto/recorddict_pb2.pyi\" and then \"No changes detected\"), suggesting a mismatch between the generated protobuf stubs (or runtime proto module contents) and the names expected/imported by serde_utils.py."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/common/serde_utils.py",
+                "line_number": 22,
+                "reason": "Pylint error output points to this file and line: \"py/flwr/common/serde_utils.py:22:0: E0611: No name 'BoolList' in module 'flwr.proto.recorddict_pb2'\" (also repeated for other missing names). This is the location of the failing import/name assertions."
+            },
+            {
+                "file": "flwr/proto/recorddict_pb2.pyi",
+                "line_number": null,
+                "reason": "CI generated mypy stubs wrote this file earlier: \"Writing mypy to flwr/proto/recorddict_pb2.pyi\". Pylint then reported that names expected from flwr.proto.recorddict_pb2 are missing, implicating the generated protobuf module/stub as related to the import errors."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Linting",
+                "subcategory": "Pylint import/name error (E0611)",
+                "evidence": "Pylint logged: \"py/flwr/common/serde_utils.py:22:0: E0611: No name 'BoolList' in module 'flwr.proto.recorddict_pb2' (no-name-in-module)\" (and similar messages for BytesList, DoubleList, SintList, StringList, UintList)."
+            },
+            {
+                "category": "Type/Stub Mismatch",
+                "subcategory": "Protobuf stub/module missing symbols",
+                "evidence": "CI wrote protobuf mypy stubs: \"Writing mypy to flwr/proto/recorddict_pb2.pyi\" followed by pylint complaining missing names in flwr.proto.recorddict_pb2, indicating a mismatch between generated stubs/module and imports."
+            },
+            {
+                "category": "CI Failure",
+                "subcategory": "Non-zero exit code",
+                "evidence": "Runner reported: \"##[error]Process completed with exit code 2.\" immediately after pylint errors, causing the job to fail."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test_core",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "4765e4c569bf7b60739e5e4c36f272d81e71dfd9",
+        "error_context": [
+            "The CI run prepared the environment and installed dependencies successfully (actions/setup-python, pip/setuptools/poetry installs and 'python -m poetry install --all-extras' completed). The 'Check if protos need recompilation' step (./framework/dev/check-protos.sh) completed but emitted a non-fatal warning: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" The actual failing error occurred in the 'Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)' step when running ./framework/dev/test.sh: pylint reported a blocking error in py/flwr/cli/utils.py (line 323) \u2014 \"py/flwr/cli/utils.py:323:24: E1101: Instance of 'RpcError' has no 'details' member (no-member)\". That pylint E1101 triggered process termination with exit code 2 (\"##[error]Process completed with exit code 2.\"), causing the job 'Python 3.9' to fail. In short: installs and checks before linting succeeded; pylint uncovered a missing/unknown attribute on RpcError in py/flwr/cli/utils.py which caused the CI to fail."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/cli/utils.py",
+                "line_number": 323,
+                "reason": "Pylint error directly references this file and line: \"py/flwr/cli/utils.py:323:24: E1101: Instance of 'RpcError' has no 'details' member (no-member)\"; this lint failure caused the process to exit with code 2 and fail the job."
+            },
+            {
+                "file": "flwr/proto/run.proto",
+                "line_number": 20,
+                "reason": "check-protos.sh produced a proto-compiler warning for this file: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" \u2014 the warning was recorded but did not cause the job to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Linting / Static Analysis",
+                "subcategory": "Pylint E1101 (no-member)",
+                "evidence": "\"py/flwr/cli/utils.py:323:24: E1101: Instance of 'RpcError' has no 'details' member (no-member)\" and the job ended with \"##[error]Process completed with exit code 2.\""
+            },
+            {
+                "category": "Build / Proto check",
+                "subcategory": "Unused import (proto compiler warning)",
+                "evidence": "\"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" from ./framework/dev/check-protos.sh"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Python 3.9",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "0a3caf4c02e8edd38f1b0e339984380cfe102e17",
+        "error_context": [
+            "The CI run for commit 0a3caf4c02e8edd38f1b0e339984380cfe102e17 failed during the 'Lint + Test' step executed by the Python 3.11 job. The workflow installed dependencies and ran proto checks successfully (proto compiler emitted warnings but did not fail). The failure occurred when running ./framework/dev/test.sh: mypy completed successfully, but pylint produced a lint finding (W0108: unnecessary-lambda) in py/flwr/supercore/scheduler/run_scheduler.py and the job terminated with a non-zero exit code immediately after pylint output (Process completed with exit code 4). Proto warnings (two unused-import warnings referencing flwr/proto/fab.proto) and a mypy DeprecationWarning about numpy.typing are present in the logs but are warnings only and did not directly cause the job to fail."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/supercore/scheduler/run_scheduler.py",
+                "line_number": 66,
+                "reason": "Pylint reported a lint message at this file/line: \"py/flwr/supercore/scheduler/run_scheduler.py:66:23: W0108: Lambda may not be necessary (unnecessary-lambda)\"; this pylint output is immediately followed by the job failing with exit code 4."
+            },
+            {
+                "file": "flwr/proto/run.proto",
+                "line_number": 20,
+                "reason": "protoc emitted a warning: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" This is a compiler warning recorded by the proto check step."
+            },
+            {
+                "file": "flwr/proto/clientappio.proto",
+                "line_number": 20,
+                "reason": "protoc emitted a warning: \"flwr/proto/clientappio.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" This is a compiler warning recorded by the proto check step."
+            },
+            {
+                "file": "flwr/proto/fab.proto",
+                "line_number": null,
+                "reason": "Referenced by two proto warnings as the unused import target: \"Import flwr/proto/fab.proto is unused.\" The warnings point to this file as the imported but unused proto."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Linting",
+                "subcategory": "Unnecessary Lambda / Pylint warning",
+                "evidence": "pylint output: \"py/flwr/supercore/scheduler/run_scheduler.py:66:23: W0108: Lambda may not be necessary (unnecessary-lambda)\" followed immediately by the job terminating (exit code 4)."
+            },
+            {
+                "category": "CI Step Failure",
+                "subcategory": "Non-zero exit code from linter step",
+                "evidence": "After pylint output the workflow recorded: \"Your code has been rated at 10.00/10\" and then \"##[error]Process completed with exit code 4.\" indicating the lint/test step returned a non-zero code and caused the job to fail."
+            },
+            {
+                "category": "Proto Compilation",
+                "subcategory": "Unused import (proto)",
+                "evidence": "protoc warnings: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" and \"flwr/proto/clientappio.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\""
+            },
+            {
+                "category": "Type Checking / Tooling Warning",
+                "subcategory": "DeprecationWarning from mypy plugin",
+                "evidence": "mypy printed a DeprecationWarning: \"`numpy.typing.mypy_plugin` is deprecated... Please remove `plugins = numpy.typing.mypy_plugin` in your mypy config.\" but mypy otherwise reported success."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test_core (Python 3.11)",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "12637241ac97f32175dac72b5ab9f54c0268b13e",
+        "error_context": [
+            "The CI run for job 'Python 3.10' failed during the lint/test step. In the workflow step 'Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)' the script ./framework/dev/test.sh executed linters and reported a ruff error which caused the process to exit with code 1. Log evidence: \"py/flwr/supernode/nodestate/in_memory_nodestate.py:21:30: F401 [*] `typing.Union` imported but unused\" and \"Found 1 error. ... ##[error]Process completed with exit code 1.\"",
+            "Earlier in the run, the 'Check if protos need recompilation' step (./framework/dev/check-protos.sh) produced a protocol-buffer compiler warning about an unused proto import: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" That warning did not cause the job to fail (the script completed with 'No changes detected') but is relevant as a secondary issue surfaced by the CI checks."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/supernode/nodestate/in_memory_nodestate.py",
+                "line_number": 21,
+                "reason": "Ruff lint reported an unused import at this file and line: \"py/flwr/supernode/nodestate/in_memory_nodestate.py:21:30: F401 [*] `typing.Union` imported but unused\". This lint error was reported as 'Found 1 error' and caused the CI to exit with code 1."
+            },
+            {
+                "file": "flwr/proto/run.proto",
+                "line_number": 20,
+                "reason": "protoc emitted a warning referencing this file: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" The warning was produced by ./framework/dev/check-protos.sh and indicates an unused proto import."
+            },
+            {
+                "file": "flwr/proto/fab.proto",
+                "line_number": null,
+                "reason": "Referenced by the proto compiler warning as an unused import: \"Import flwr/proto/fab.proto is unused.\" The warning indicates this file is referenced by run.proto but the import appears unnecessary."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting / Linting",
+                "subcategory": "Unused Import",
+                "evidence": "Ruff output: \"py/flwr/supernode/nodestate/in_memory_nodestate.py:21:30: F401 [*] `typing.Union` imported but unused\" and \"Found 1 error. [*] 1 fixable with the `--fix` option.\" This lint failure caused exit code 1."
+            },
+            {
+                "category": "Build / Static Analysis Warning",
+                "subcategory": "Protocol Buffer unused import",
+                "evidence": "protoc warning: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" Emitted by ./framework/dev/check-protos.sh (did not fail the job but is a flagged issue)."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Python 3.10",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "1c3072e07ef32018243a661dd86d5a135a038b7c",
+        "error_context": [
+            "The CI run failed during the 'style-check (3.9)' job when the Mypy step reported a static type error. Earlier steps in that job completed successfully (checkout, Python setup, dependency installation, ruff format/check). Mypy reported: \"agno/cli/auth_server.py:102: error: \\\"BaseServer\\\" has no attribute \\\"running\\\"  [attr-defined]\" and the job ended with \"Found 1 error in 1 file (checked 440 source files)\" followed by \"Process completed with exit code 1.\" This single Mypy attribute error caused the style-check job to fail."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/cli/auth_server.py",
+                "line_number": 102,
+                "reason": "Mypy reported a failing attribute access at this file and line: \"agno/cli/auth_server.py:102: error: \\\"BaseServer\\\" has no attribute \\\"running\\\"  [attr-defined]\" \u2014 this type error is the direct cause of the CI failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy attribute error",
+                "evidence": "\"agno/cli/auth_server.py:102: error: \\\"BaseServer\\\" has no attribute \\\"running\\\"  [attr-defined]\" and \"Found 1 error in 1 file (checked 440 source files)\""
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "style-check (3.9)",
+                "command": "mypy ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "a904a306c88cded0c858b3f2cdcec26812f23fb2",
+        "error_context": [
+            "The CI run failed in the 'codespell' job (named 'Check for spelling errors') when the Codespell action detected a spelling mistake and returned a non-zero exit. The workflow ran the codespell-project/actions-codespell@v2 action inside a built Docker container; codespell printed an error referencing a misspelling in source code and then exited with failure: \"##[error]./tabular/src/autogluon/tabular/models/tabm/tabm_reference.py:533: presense ==> presence\" and \"Codespell found one or more problems\". Other steps (docker build, pip install during image build, and git checkout) completed successfully; pip printed only a root-user warning and a pip-update notice, which are warnings and did not cause the job to fail. The actionable root cause is the spelling/typo found by the Codespell linter in tabular/src/autogluon/tabular/models/tabm/tabm_reference.py at line 533."
+        ],
+        "relevant_files": [
+            {
+                "file": "tabular/src/autogluon/tabular/models/tabm/tabm_reference.py",
+                "line_number": 533,
+                "reason": "Codespell reported a misspelling at this file and line: \"./tabular/src/autogluon/tabular/models/tabm/tabm_reference.py:533: presense ==> presence\", and the Codespell failure message ('Codespell found one or more problems') caused the step to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Linting",
+                "subcategory": "Spelling/Typo",
+                "evidence": "\"##[error]./tabular/src/autogluon/tabular/models/tabm/tabm_reference.py:533: presense ==> presence\" and \"Codespell found one or more problems\" (codespell action output)"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "codespell",
+                "step": "Codespell",
+                "command": "codespell-project/actions-codespell@v2"
+            }
+        ]
+    },
+    {
+        "sha_fail": "6aa2a70eca9f16fb97ccea763eabfa7e2fb028bb",
+        "error_context": [
+            "The CI run failed because the ruff linter (job 'lint-python', name: 'ruff') reported undefined-name errors while running 'ruff check .' in the repository root. The workflow successfully set up Python and installed ruff (pip install ruff==0.3.3), but the 'Run Ruff' step produced 13 F821 errors referencing an undefined identifier `cmd_opts` in webui.py (examples: \"webui.py:28:12: F821 Undefined name `cmd_opts`\", \"webui.py:67:8: F821 Undefined name `cmd_opts`\"). Ruff reported \"Found 13 errors.\" and the process exited with code 1 (\"##[error]Process completed with exit code 1.\"), causing the job to fail. No other steps reported errors in the provided logs."
+        ],
+        "relevant_files": [
+            {
+                "file": "webui.py",
+                "line_number": 28,
+                "reason": "Multiple ruff F821 'Undefined name `cmd_opts`' errors originate from this file at several locations (e.g. webui.py:28:12, webui.py:34:55, webui.py:67:8), and ruff reported 'Found 13 errors.' which triggered the linter failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Linting",
+                "subcategory": "Undefined name (F821)",
+                "evidence": "\"webui.py:28:12: F821 Undefined name `cmd_opts`\" ... \"webui.py:67:8: F821 Undefined name `cmd_opts`\"; ruff reported \"Found 13 errors.\""
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-python",
+                "step": "Run Ruff",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "082776ecb574c05097b7a4e9881adc32eb46717e",
+        "error_context": [
+            "The CI run failed because the linter step in the partial-tests job reported a formatting/import-order issue. In job 'partial-tests' (step 'partial-tests / linter'), the chartboost/ruff-action identified an import block ordering/formatting error in taipy/event/event_consumer.py and returned a non-zero exit code. The mypy check in the same job completed successfully ('Success: no issues found in 1022 source files'), but ruff printed: 'Found 1 error.' and indicated the issue is fixable with '--fix'. The GitHub Actions runner then recorded 'Process completed with exit code 1.' and the job ended with failure. No runtime exceptions or test failures were reported \u2014 the failure is caused solely by the linter (ruff) finding an import formatting error."
+        ],
+        "relevant_files": [
+            {
+                "file": "taipy/event/event_consumer.py",
+                "line_number": 12,
+                "reason": "Ruff reported an import formatting/ordering error at this file and location: 'taipy/event/event_consumer.py:12:1: I001 [*] Import block is un-sorted or un-formatted' and printed the surrounding lines; ruff also stated 'Found 1 error.' and '1 fixable with the `--fix` option.', which is the direct cause of the linter step failing."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Import sorting/formatting",
+                "evidence": "taipy/event/event_consumer.py:12:1: I001 [*] Import block is un-sorted or un-formatted ... = help: Organize imports"
+            },
+            {
+                "category": "CI Job Failure",
+                "subcategory": "Linter reported issues (non-zero exit)",
+                "evidence": "Found 1 error. [*] 1 fixable with the `--fix` option. ##[error]Process completed with exit code 1."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "partial-tests",
+                "step": "partial-tests / linter",
+                "command": "chartboost/ruff-action@v1"
+            }
+        ]
+    },
+    {
+        "sha_fail": "e94e6e2d04916858d266fee02e21d626d4b396f2",
+        "error_context": [
+            "The CI run failed because the linter (ruff) reported a code formatting/import-order violation and exited non-zero during the 'partial-tests / linter' step. The ruff check produced: \"tests/gui/gui_specific/test_notification_on_close.py:12:1: I001 Import block is un-sorted or un-formatted\" and the ruff process then failed with exit code 1 (\"The process '/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff' failed with exit code 1\"). Mypy in the same step completed successfully (\"Success: no issues found in 1021 source files\"). There are non-critical pip-as-root warnings during the Docker build for the mypy container, but they did not cause the failure. In short: the linter detected an import-sorting/formatting issue in tests/gui/gui_specific/test_notification_on_close.py which caused the linter action to fail and the job to fail."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/gui/gui_specific/test_notification_on_close.py",
+                "line_number": 12,
+                "reason": "Ruff flagged this file with an import-order/formatting error: \"tests/gui/gui_specific/test_notification_on_close.py:12:1: I001 Import block is un-sorted or un-formatted\", which directly caused the linter step to fail."
+            },
+            {
+                "file": "/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff",
+                "line_number": null,
+                "reason": "The ruff binary invoked to run the linter returned a non-zero exit code: \"The process '/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff' failed with exit code 1\", linking this executable to the observed CI failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Import order / unsorted import block (I001)",
+                "evidence": "\"tests/gui/gui_specific/test_notification_on_close.py:12:1: I001 Import block is un-sorted or un-formatted\""
+            },
+            {
+                "category": "Tool Execution Failure",
+                "subcategory": "Linter exited non-zero",
+                "evidence": "\"The process '/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff' failed with exit code 1\""
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "partial-tests",
+                "step": "partial-tests / linter",
+                "command": "astral-sh/ruff-action@v3"
+            }
+        ]
+    },
+    {
+        "sha_fail": "a18e1a682e30d06ec5adbad9a34f88730e765d2c",
+        "error_context": [
+            "The CI run failed because pytest aborted during test collection due to an ImportError (ModuleNotFoundError) for the module taipy.gui.servers.fastapi. Multiple jobs hit the same fault: the 'coverage' job on ubuntu-latest failed in its 'Pytest' step while running pipenv run pytest --cov=... (collection error in tests/gui/e2e/renderers/test_html_rendering.py), and several matrix entries of the 'partial-tests' job (e.g. \"partial-tests / tests (3.10, windows-latest)\", \"partial-tests / tests (3.11, ubuntu-latest)\", and macOS variants) failed in their Pytest steps running pipenv run pytest -m \"teste2e\" tests/gui for the same reason. Log evidence shows the test module tests/gui/e2e/renderers/test_html_rendering.py attempts \"from taipy.gui.servers.fastapi import _FastAPIServer\" and raises \"ModuleNotFoundError: No module named 'taipy.gui.servers.fastapi'\", which immediately interrupted collection (\"Interrupted: 1 error during collection\").\n\nSecondary log entries show non-fatal warnings emitted during environment/setup and test collection (pkg_resources deprecation, marshmallow RemovedInMarshmallow4Warning, and unknown pytest marks), but these are warnings and did not cause the CI to fail. The blocking root cause across all failing jobs is the missing/failed import of taipy.gui.servers.fastapi (either the module file is not present at runtime or not exposed in the package path), so pytest cannot import the test module and exits with code 2."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/gui/e2e/renderers/test_html_rendering.py",
+                "line_number": 25,
+                "reason": "Test module that triggered the failure: log shows \"tests/gui/e2e/renderers/test_html_rendering.py:25: in <module> from taipy.gui.servers.fastapi import _FastAPIServer\" and the subsequent ModuleNotFoundError during pytest collection."
+            },
+            {
+                "file": "taipy/gui/servers/fastapi.py",
+                "line_number": null,
+                "reason": "Module referenced by the failing import. Logs report \"ModuleNotFoundError: No module named 'taipy.gui.servers.fastapi'\", indicating this module path/file is missing or not importable in the test environment."
+            },
+            {
+                "file": "taipy/rest/api/schemas/datanode.py",
+                "line_number": 99,
+                "reason": "Emitted a marshmallow deprecation warning during collection: \"taipy/rest/api/schemas/datanode.py:99: RemovedInMarshmallow4Warning: The 'default' argument to fields is deprecated. Use 'dump_default' instead.\" (non-fatal warning present in logs)."
+            },
+            {
+                "file": "tests/gui/e2e/test_metric_indicator.py",
+                "line_number": 22,
+                "reason": "Source of repeated pytest warnings: log shows \"tests/gui/e2e/test_metric_indicator.py:22 (and :37, :52): PytestUnknownMarkWarning: Unknown pytest.mark.extension\"; these are non-fatal warnings captured during collection."
+            },
+            {
+                "file": ".local/share/virtualenvs/.../lib/python3.11/site-packages/apispec_webframeworks/__init__.py",
+                "line_number": 1,
+                "reason": "Virtualenv site-package that issued a deprecation UserWarning: \"pkg_resources is deprecated as an API...\" as recorded in the warnings summary during test collection."
+            },
+            {
+                "file": ".local/share/virtualenvs/.../lib/python3.11/site-packages/pkg_resources/__init__.py",
+                "line_number": 3146,
+                "reason": "Virtualenv site-package that issued a DeprecationWarning for declare_namespace('zope'): log shows the warning at this file/line in the warnings summary."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Runtime Error",
+                "subcategory": "ImportError: ModuleNotFoundError",
+                "evidence": "\"E   ModuleNotFoundError: No module named 'taipy.gui.servers.fastapi'\" (raised while importing tests/gui/e2e/renderers/test_html_rendering.py)."
+            },
+            {
+                "category": "Test Failure",
+                "subcategory": "Pytest collection aborted due to ImportError",
+                "evidence": "\"ImportError while importing test module '.../tests/gui/e2e/renderers/test_html_rendering.py'\" and \"Interrupted: 1 error during collection\" (pytest short summary)."
+            },
+            {
+                "category": "Dependency Error",
+                "subcategory": "Missing module / missing package file",
+                "evidence": "Tests attempt to import taipy.gui.servers.fastapi but logs report the module is not found; this indicates a missing module file or package export at runtime: \"No module named 'taipy.gui.servers.fastapi'\"."
+            },
+            {
+                "category": "Deprecation Warning",
+                "subcategory": "pkg_resources deprecated",
+                "evidence": "\"UserWarning: pkg_resources is deprecated as an API. ... Refrain from using this package or pin to Setuptools<81.\" (from apispec_webframeworks/__init__.py in the virtualenv)."
+            },
+            {
+                "category": "Deprecation Warning",
+                "subcategory": "Marshmallow RemovedInMarshmallow4Warning",
+                "evidence": "\"taipy/rest/api/schemas/datanode.py:99: RemovedInMarshmallow4Warning: The 'default' argument to fields is deprecated. Use 'dump_default' instead.'\" (warning shown during collection)."
+            },
+            {
+                "category": "Test Warning",
+                "subcategory": "PytestUnknownMarkWarning",
+                "evidence": "\"PytestUnknownMarkWarning: Unknown pytest.mark.extension\" reported for tests/gui/e2e/test_metric_indicator.py (lines 22, 37, 52) in the warnings summary."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "coverage",
+                "step": "Pytest",
+                "command": "python -m pip install xmltodict\npipenv run pytest --cov=taipy --cov-report=xml:${{ github.workspace }}/coverage.xml --cov-config=.coveragerc"
+            },
+            {
+                "job": "partial-tests / tests (3.10, windows-latest)",
+                "step": "Pytest",
+                "command": "pipenv run pytest -m \"teste2e\" tests/gui"
+            },
+            {
+                "job": "partial-tests / tests (3.11, ubuntu-latest)",
+                "step": "Pytest",
+                "command": "pipenv run pytest -m \"teste2e\" tests/gui"
+            },
+            {
+                "job": "partial-tests / tests (3.11, macos-13)",
+                "step": "Pytest",
+                "command": "pipenv run pytest -m \"teste2e\" tests/gui"
+            },
+            {
+                "job": "partial-tests / tests (3.12, macos-13)",
+                "step": "Pytest",
+                "command": "pipenv run pytest -m \"teste2e\" tests/gui"
+            },
+            {
+                "job": "partial-tests / tests (3.12, ubuntu-latest)",
+                "step": "Pytest",
+                "command": "pipenv run pytest -m \"teste2e\" tests/gui"
+            }
+        ]
     }
 ]

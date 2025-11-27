@@ -1,339 +1,101 @@
 [
     {
-        "sha_fail": "c0d46a6bfc97c11b8a770d74b2fdb841622201a1",
+        "sha_fail": "2e41e783672597e2e0c7b2842b5934d879374028",
         "error_context": [
-            "The CI run failed during the 'Test with pytest' step across multiple Python versions due to a syntax error: 'String literal is not terminated'. This error occurred in all three pytest runs (3.10, 3.13, and 3.14.0-beta.3), indicating a consistent issue in the code being tested."
-        ],
-        "relevant_files": [],
-        "error_types": [
-            {
-                "category": "Code Formatting",
-                "subcategory": "Syntax Error",
-                "evidence": "'String literal is not terminated'"
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "pytest",
-                "step": "Test with pytest",
-                "command": "pytest -v --cov -k \"${TO_TEST}\" --junit-xml=.test_report_no_optionals_junit.xml"
-            }
-        ]
-    },
-    {
-        "sha_fail": "066ba5bb325850910e8f4cb76a91e3293c3b7619",
-        "error_context": [
-            "The CI run failed primarily due to multiple test failures during the execution of pytest. In the 'Test with pytest' step, a total of 57 tests failed, with 2176 errors and 51 marked as flaky. Notably, tests related to sending messages and handling media encountered timeout issues, while others failed due to assertion errors. Specific tests such as 'test_send_contact_default_protect_content' and 'test_send_sticker_default_protect_content' failed due to flood control being exceeded, leading to retries being delayed. Additionally, the test 'test_get_set_my_default_administrator_rights' failed due to an assertion error indicating a mismatch in expected values."
+            "The CI run failed during the 'Run tests' step, where 3 tests in 'tests/test_websockets.py' failed due to an AttributeError. The error occurred because the assertion 'has_calls' is not a valid assertion for the mock object used in the tests. This indicates a potential issue with the test implementation or the mocking setup."
         ],
         "relevant_files": [
             {
-                "file": "tests/_files/test_contact.py",
-                "line_number": null,
-                "reason": "The test 'test_send_contact_default_protect_content' failed due to flood control being exceeded, with a retry delay of 38679 seconds."
+                "file": "tests/test_websockets.py",
+                "line_number": 220,
+                "reason": "This file contains the failing tests that raised an AttributeError due to the use of 'has_calls' on a mock object."
             },
             {
-                "file": "tests/_files/test_sticker.py",
+                "file": "/opt/hostedtoolcache/Python/3.12.1/x64/lib/python3.12/unittest/mock.py",
                 "line_number": null,
-                "reason": "The test 'test_send_sticker_default_protect_content' failed, ignoring a timeout error."
-            },
-            {
-                "file": "tests/_files/test_audio.py",
-                "line_number": null,
-                "reason": "The test 'test_send_all_args[3]' failed with an assertion error where the expected file size did not match the actual file size."
-            },
-            {
-                "file": "tests/test_bot.py",
-                "line_number": null,
-                "reason": "The test 'test_get_set_my_default_administrator_rights' failed due to an assertion error: 'assert False is True'."
-            },
-            {
-                "file": "tests/test_forum.py",
-                "line_number": null,
-                "reason": "The test 'test_unpin_all_forum_topic_messages' failed due to a timeout."
-            },
-            {
-                "file": "tests/test_invoice.py",
-                "line_number": null,
-                "reason": "The test 'test_send_invoice_default_allow_sending_without_reply[default_bot1-None]' failed due to a timeout."
+                "reason": "This file is referenced in the stack trace for the AttributeError raised during the execution of the tests."
             }
         ],
         "error_types": [
             {
                 "category": "Test Failure",
-                "subcategory": "AssertionError",
-                "evidence": "The test 'test_get_set_my_default_administrator_rights' failed due to an assertion error: 'assert False is True'."
-            },
-            {
-                "category": "Test Failure",
-                "subcategory": "Timeout",
-                "evidence": "Multiple tests failed due to timeout errors, with the message 'Ignoring TimedOut error: Timed out' appearing frequently."
-            },
-            {
-                "category": "Test Failure",
-                "subcategory": "Flood Control Exceeded",
-                "evidence": "The test 'test_send_contact_default_protect_content' failed due to flood control being exceeded, with a retry delay of 38679 seconds."
+                "subcategory": "AttributeError",
+                "evidence": "The tests failed with an AttributeError indicating that 'has_calls' is not a valid assertion for the mock object."
             }
         ],
         "failed_job": [
             {
-                "job": "pytest",
-                "step": "Test with pytest",
-                "command": "pytest -v --cov --cov-append -n auto --dist worksteal --junit-xml=.test_report_optionals_junit.xml"
+                "job": "Linux / Python 3.12 / tox -e py312",
+                "step": "Run tests",
+                "command": "uses: sanic-org/simple-tox-action@v1"
             }
         ]
     },
     {
-        "sha_fail": "6066f06de3275801b19af5f23ccb5e3940991e60",
+        "sha_fail": "ba66fb81a0c8db48fed7abe833409f447b95708b",
         "error_context": [
-            "The CI run failed during the 'lint' step due to a failure in the trailing whitespace check. Although the pre-commit hooks executed successfully and most linting checks passed, the specific check for trailing whitespace failed initially, causing the CI process to exit with code 1. The file 'Lib/pathlib/types.py' was modified by the hook to fix the trailing whitespace issue, but the initial failure was sufficient to mark the CI run as unsuccessful."
+            "The CI run failed during the 'Check for soft dependencies' step, where pytest reported that two out of three tests failed. The failures were caused by an ImportError when attempting to import 'FromSingleFileMixin' from the 'diffusers.loaders' module. This import failure originated from the file 'src/diffusers/models/autoencoders/autoencoder_kl.py', which could not find the specified name in the indicated file path. The ImportError led to a RuntimeError in the test methods 'test_backend_registration' and 'test_pipeline_imports', resulting in the overall failure of the tests."
         ],
         "relevant_files": [
             {
-                "file": "Lib/pathlib/types.py",
+                "file": "src/diffusers/loaders/__init__.py",
                 "line_number": null,
-                "reason": "The file 'Lib/pathlib/types.py' was modified by the trailing whitespace hook, which initially failed the linting process."
+                "reason": "The error message indicates that 'FromSingleFileMixin' could not be imported from this file, which is critical for the tests."
+            },
+            {
+                "file": "src/diffusers/models/autoencoders/autoencoder_kl.py",
+                "line_number": null,
+                "reason": "This file attempted to import 'FromSingleFileMixin' but failed, causing the tests to fail."
+            },
+            {
+                "file": "tests/others/test_dependencies.py",
+                "line_number": null,
+                "reason": "This file contains the test methods that failed due to the RuntimeError caused by the import failure."
             }
         ],
         "error_types": [
             {
-                "category": "Code Formatting",
-                "subcategory": "Trailing Whitespace",
-                "evidence": "The linting process failed due to the message '- hook id: trailing-whitespace - exit code: 1 - files were modified by this hook'."
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "lint",
-                "step": "lint",
-                "command": "pre-commit/action@v3.0.1"
-            }
-        ]
-    },
-    {
-        "sha_fail": "b828018b142c3297f962643eea8c07ce460072ab",
-        "error_context": [
-            "The CI run failed during the 'Run tests with coverage' step due to an empty '--base-ref' option, which is required for the command to execute properly. This was preceded by a failure in the 'Install uv and set the Python version' step where the 'uv.toml' file could not be found, leading to a fallback to the latest version of 'uv'. The absence of 'uv.toml' indicates a potential misconfiguration or missing file that could affect the testing process."
-        ],
-        "relevant_files": [
-            {
-                "file": "llama_index/uv.toml",
-                "line_number": null,
-                "reason": "The file 'uv.toml' was not found, which is critical for determining the 'uv' version needed for the tests."
-            },
-            {
-                "file": "llama_index/pyproject.toml",
-                "line_number": null,
-                "reason": "The command failed because it could not determine the 'uv' version from 'uv.toml' or 'pyproject.toml', leading to a fallback."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Configuration Error",
-                "subcategory": "Missing configuration file",
-                "evidence": "Could not find file: /home/runner/work/llama_index/llama_index/uv.toml"
-            },
-            {
-                "category": "Configuration Error",
-                "subcategory": "Empty command option",
-                "evidence": "Error: Option '--base-ref' cannot be empty."
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "Unit Testing",
-                "step": "Run tests with coverage",
-                "command": "uv run -- llama-dev --repo-root '..' test --workers 8 --base-ref= --cov --cov-fail-under=50"
-            }
-        ]
-    },
-    {
-        "sha_fail": "d01a6ec49f1aac932816c81c0354de64c0183373",
-        "error_context": [
-            "The CI run failed during the 'Smoke test' step due to an ImportError when attempting to import the module 'lib.core.ncgui'. The error message indicated 'No module named '_curses'', which suggests that the required '_curses' module is not available in the Python environment. This failure occurred after the successful setup of the Python environment and the execution of the smoke test command 'python sqlmap.py --smoke'."
-        ],
-        "relevant_files": [
-            {
-                "file": "lib/core/ncgui.py",
-                "line_number": null,
-                "reason": "The smoke test failed at importing module 'lib.core.ncgui' due to the absence of the '_curses' module, as indicated by the error message in the logs."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Runtime Error",
-                "subcategory": "ImportError: No module named _curses",
-                "evidence": "The smoke test failed at importing module 'lib.core.ncgui': No module named '_curses'."
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "build",
-                "step": "Smoke test",
-                "command": "python sqlmap.py --smoke"
-            }
-        ]
-    },
-    {
-        "sha_fail": "71b7fd4a926acb2c018af855f325502bfe03d417",
-        "error_context": [
-            "The CI run failed during the 'Check Ruff Fix' step due to issues identified by the 'ruff' tool. The process attempted to check the code for formatting issues and found 4 errors that could be fixed automatically, along with 94 additional fixes available with the '--unsafe-fixes' option. The step completed with an error, indicated by the exit code 1, suggesting that the code did not meet the required formatting standards."
-        ],
-        "relevant_files": [
-            {
-                "file": "dspy/teleprompt/grpo.py",
-                "line_number": null,
-                "reason": "The file contains import order issues that 'ruff' identified and suggested fixing."
-            },
-            {
-                "file": "dspy/clients/lm.py",
-                "line_number": null,
-                "reason": "The file has similar import order issues that were flagged by 'ruff'."
-            },
-            {
-                "file": "dspy/clients/provider.py",
-                "line_number": null,
-                "reason": "This file also has import order issues that 'ruff' detected."
-            },
-            {
-                "file": "dspy/clients/lm_local_arbor.py",
-                "line_number": null,
-                "reason": "The file was flagged for import order issues by 'ruff'."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Code Formatting",
-                "subcategory": "Import Order",
-                "evidence": "Ruff found issues that can be fixed automatically."
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "Check Ruff Fix",
-                "step": "Check Ruff Fix",
-                "command": "ruff check --fix-only --diff --exit-non-zero-on-fix"
-            }
-        ]
-    },
-    {
-        "sha_fail": "a7b902770d8b2769920794cf4e2016525e3ea1d9",
-        "error_context": [
-            "The CI run failed during the 'Run tests and linter checks' step due to a test failure in 'test_clickhouse'. The test failed because of an assertion error indicating a mismatch between the expected and actual SQL query outputs. This was traced back to the 'validate_identity' method in 'test_dialect.py'. Additionally, there were deprecation warnings related to the use of fork in a multi-threaded context, which may lead to deadlocks."
-        ],
-        "relevant_files": [
-            {
-                "file": "sqlglot/tests/dialects/test_clickhouse.py",
-                "line_number": 49,
-                "reason": "The test 'test_clickhouse' failed due to an assertion error indicating a mismatch in expected SQL output."
-            },
-            {
-                "file": "sqlglot/tests/dialects/test_dialect.py",
-                "line_number": 34,
-                "reason": "The failure in 'test_clickhouse' was due to the assertion in the 'validate_identity' method, which is defined in this file."
-            },
-            {
-                "file": "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/multiprocessing/popen_fork.py",
-                "line_number": null,
-                "reason": "Multiple deprecation warnings were issued regarding the use of fork in a multi-threaded context, which may lead to deadlocks."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Test Failure",
-                "subcategory": "AssertionError",
-                "evidence": "AssertionError: \"SELECT EXTRACT(YEAR FROM toDateTime('2023-02-01'))\" != \"SELECT EXTRACT(YEAR FROM CAST('2023-02-01' AS Nullable(DateTime)))\"."
+                "category": "ImportError",
+                "subcategory": "ImportError: No module named X",
+                "evidence": "ImportError: cannot import name 'FromSingleFileMixin' from 'diffusers.loaders'"
             },
             {
                 "category": "Runtime Error",
-                "subcategory": "Deprecation Warning",
-                "evidence": "DeprecationWarning: This process (pid=2809) is multi-threaded, use of fork() may lead to deadlocks in the child."
+                "subcategory": "RuntimeError",
+                "evidence": "RuntimeError: Failed to import diffusers.models.autoencoders.autoencoder_kl because of the following error: cannot import name 'FromSingleFileMixin'"
             }
         ],
         "failed_job": [
             {
-                "job": "run-checks",
-                "step": "Run tests and linter checks",
-                "command": "source ./.venv/bin/activate\n        make check"
+                "job": "check_torch_dependencies",
+                "step": "Check for soft dependencies",
+                "command": "pytest tests/others/test_dependencies.py"
             }
         ]
     },
     {
-        "sha_fail": "5df3ea92f59125955124ea1883b777b489db3042",
+        "sha_fail": "2f0605c9ec79b7a675728cb525ad55b36ade2e93",
         "error_context": [
-            "In step 'Run tests and linter checks', the unit test 'test_annotate_funcs' failed due to an assertion error where the expected output 'BINARY' did not match the actual output 'UNKNOWN'. This indicates a failure in the logic being tested, leading to the overall test suite reporting one failure and two skipped tests, which caused a make command error and a process exit code of 2."
+            "The CI run failed during the 'Run pre-commitaction@v3.0.0.txt' step. The pre-commit checks were executed successfully, but the flake8 check failed due to a line length violation in the file 'import_export/resources.py'. Specifically, line 1360 exceeded the maximum allowed length of 88 characters, resulting in an exit code of 1."
         ],
         "relevant_files": [
             {
-                "file": "tests/test_optimizer.py",
-                "line_number": 921,
-                "reason": "The test 'test_annotate_funcs' failed due to an assertion error: 'UNKNOWN' != 'BINARY', indicating a failure in the logic being tested."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Test Failure",
-                "subcategory": "AssertionError",
-                "evidence": "AssertionError: 'UNKNOWN' != 'BINARY' in test 'test_annotate_funcs'."
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "run-checks",
-                "step": "Run tests and linter checks",
-                "command": "source ./.venv/bin/activate\n        make check"
-            }
-        ]
-    },
-    {
-        "sha_fail": "ff15e0ed7276b5aa8e4581769e8e8e7deca1420d",
-        "error_context": [
-            "The CI run failed during the 'Run full tests (3.14t-dev - 3.14t, py314)' step. The error occurred while attempting to set up Python version '3.14t-dev - 3.14t', which was not found for the architecture 'x64' on Ubuntu 24.04. The setup process could not proceed due to the unavailability of the specified Python version."
-        ],
-        "relevant_files": [
-            {
-                "file": "actions/setup-python@v5",
-                "line_number": null,
-                "reason": "The error occurred during the setup of Python version '3.14t-dev - 3.14t', which was not found for Ubuntu 24.04."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Configuration Error",
-                "subcategory": "Missing Python Version",
-                "evidence": "The version '3.14t-dev - 3.14t' with architecture 'x64' was not found for Ubuntu 24.04."
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "Run full tests",
-                "step": "Run full tests (3.14t-dev - 3.14t, py314)",
-                "command": "uses: actions/setup-python@v5"
-            }
-        ]
-    },
-    {
-        "sha_fail": "c7fbe73582650fe0c431fad4d0e290caa3efb3bb",
-        "error_context": [
-            "The CI run failed during the 'pre-commit' step due to the 'Add License' hook modifying the copyright headers in the '.github/workflows/pre-commit.yaml' file. This modification caused the pre-commit action to exit with code 1, indicating a failure."
-        ],
-        "relevant_files": [
-            {
-                "file": ".github/workflows/pre-commit.yaml",
-                "line_number": null,
-                "reason": "The 'Add License' hook modified the copyright headers in this file, leading to a failure."
+                "file": "import_export/resources.py",
+                "line_number": 1360,
+                "reason": "The flake8 check failed due to a line length violation: 'E501 line too long (101 > 88 characters)' at line 1360."
             }
         ],
         "error_types": [
             {
                 "category": "Code Formatting",
-                "subcategory": "License Header Modification",
-                "evidence": "The 'Add License' hook failed, indicating that it modified the copyright headers in the '.github/workflows/pre-commit.yaml' file."
+                "subcategory": "Line Length Exceeded",
+                "evidence": "The flake8 check reported 'E501 line too long (101 > 88 characters)' for line 1360 in 'import_export/resources.py'."
             }
         ],
         "failed_job": [
             {
-                "job": "pre-commit",
-                "step": "pre-commit",
+                "job": "main",
+                "step": "main/4_Run pre-commitaction@v3.0.0.txt",
                 "command": "uses: pre-commit/action@v3.0.0"
             }
         ]

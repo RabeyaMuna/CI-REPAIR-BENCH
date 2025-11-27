@@ -23,9 +23,23 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
     generated_patches = []
     results = []
     
-    subset = dataset[0:]
-    # target_ids = {241, 243, 281, 323}
-    # subset = [dp for dp in dataset if dp.get("id") in target_ids]
+    # subset = dataset[0:]
+    target_ids = target_ids = {
+    "4", "22", "32", "35", "41", "46", "53", "58", "69", "70", "71",
+    "77", "78", "79", "80", "81", "82", "83", "84", "85", "87", "88",
+    "92", "93", "106", "113", "117", "118", "124", "131", "147", "148",
+    "150", "151", "152", "155", "159", "161", "164", "165", "166", "167",
+    "168", "169", "170", "172", "173", "175", "178", "179", "180", "181",
+    "182", "183", "184", "185", "188", "191", "193", "194", "195", "197",
+    "200", "201", "202", "203", "205", "206", "207", "209", "210", "211",
+    "216", "217", "220", "223", "224", "225", "226", "228", "236", "237",
+    "238", "240", "241", "243", "247", "248", "252", "254", "259", "260",
+    "261", "265", "266", "270", "275", "276", "286", "287", "297", "299",
+    "306", "307", "314", "315", "316", "317", "318", "319", "321", "325",
+    "326", "327"
+}
+
+    subset = [dp for dp in dataset if dp.get("id") in target_ids]
     for datapoint in subset:
         task_id = datapoint["id"]
         repo_name = datapoint["repo_name"]
@@ -120,7 +134,7 @@ if __name__ == "__main__":
     dataset_df = pd.read_parquet(dataset_path)
     dataset = dataset_df.to_dict(orient="records")
 
-    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="bm25")
+    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="llm")
 
     output_file = os.path.join(config.project_result_dir, "generated_patches.json")
     with open(output_file, "w") as f:

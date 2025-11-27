@@ -1,54 +1,44 @@
 [
     {
-        "sha_fail": "d1b0280fb92d0d8590cf403ca46af3550507d4d2",
+        "sha_fail": "385c14d0ae500918cff5565ea836884bfaa2bfa5",
         "error_context": [
-            "The Windows test job failed because a unit test failed: ERROR: test_no_match in tornado/tornado/test/iostream_test.py (traceback shows the failure at line 1200). The test raised Exception(\"did not get expected log message\") from tornado/tornado/testing.py (raised in __exit__, shown at line 758) after run_sync returned a future result (tornado/tornado/ioloop.py:539). The failing command was the Windows test step running: py -m tornado.test --fail-if-logs=false.",
-            "The logs also show runtime warnings (RuntimeWarning: coroutine ... was never awaited at tornado/tornado/platform/asyncio.py:462) and many ResourceWarning: unclosed <socket.socket ...> messages \u2014 these are visible in the logs but the immediate cause of the job failure is the test exception."
+            "Two lint/format checks in the check_format matrix failed: the pylint run produced W0612 'unused-variable' warnings in cloudinit/net/dhcp.py (line 575), and the black check found one file that would be reformatted (tests/unittests/net/test_dhcp.py). Both failures came from tox testenvs invoked by the 'Check' matrix (TOXENV=pylint and TOXENV=black), causing the CI job to exit non\u2011zero.",
+            "Pylint's output shows specific warnings for cloudinit/net/dhcp.py:575 ('Unused variable \"out\"' and 'Unused variable \"err\"'), and Black's output explicitly states 'would reformat tests/unittests/net/test_dhcp.py' and '1 file would be reformatted', which made the black --check command fail."
         ],
         "relevant_files": [
             {
-                "file": "tornado/tornado/testing.py",
-                "line_number": 102,
-                "reason": "Traceback frames reference this file (e.g. \"File \"D:\\a\\tornado\\tornado\\tornado\\testing.py\", line 102, in __call__\" and later \"File \"D:\\a\\tornado\\tornado\\tornado\\testing.py\", line 758, in __exit__\\n    raise Exception(\\\"did not get expected log message\\\")\"). The raise in testing.py is the immediate source of the Exception."
+                "file": "cloudinit/net/dhcp.py",
+                "line_number": 575,
+                "reason": "Pylint warning frames in the log: 'cloudinit/net/dhcp.py:575: [W0612(unused-variable), Dhcpcd.dhcp_discovery] Unused variable 'out'' and 'cloudinit/net/dhcp.py:575: [W0612(unused-variable), Dhcpcd.dhcp_discovery] Unused variable 'err''. These tie this file and line to the pylint failure."
             },
             {
-                "file": "tornado/tornado/test/iostream_test.py",
-                "line_number": 1200,
-                "reason": "The failing test is reported as \"ERROR: test_no_match (tornado.test.iostream_test.TestIOStreamCheckHostname.test_no_match)\" and the traceback shows \"File \"D:\\a\\tornado\\tornado\\tornado\\test\\iostream_test.py\", line 1200, in test_no_match\", linking this test file and line to the failure."
-            },
-            {
-                "file": "tornado/tornado/ioloop.py",
-                "line_number": 539,
-                "reason": "The traceback includes \"File \"D:\\a\\tornado\\tornado\\tornado\\ioloop.py\", line 539, in run_sync\\n    return future_cell[0].result()\", showing the test executed through ioloop.run_sync before the exception propagated."
-            },
-            {
-                "file": "tornado/tornado/platform/asyncio.py",
-                "line_number": 462,
-                "reason": "Log shows a pending Task referencing this file: \"task: <Task pending name='Task-1330' coro=... running at D:\\a\\tornado\\tornado\\tornado\\platform\\asyncio.py:462>\" and a RuntimeWarning: \"coroutine 'SelectorThread.__init__.<locals>.thread_manager_anext' was never awaited\", tying this file/line to runtime warnings in the run."
+                "file": "tests/unittests/net/test_dhcp.py",
+                "line_number": null,
+                "reason": "Black reported formatting failure: log contains 'would reformat tests/unittests/net/test_dhcp.py' and '1 file would be reformatted', linking this file to the black --check failure."
             }
         ],
         "error_types": [
             {
-                "category": "Test Failure",
-                "subcategory": "Exception in unit test (did not get expected log message)",
-                "evidence": "\"ERROR: test_no_match (tornado.test.iostream_test.TestIOStreamCheckHostname.test_no_match)\" and the traceback showing \"File ... iostream_test.py, line 1200, in test_no_match\" followed by \"Exception: did not get expected log message\" (log lines around the failing test)."
+                "category": "Linting",
+                "subcategory": "Pylint warning - unused-variable (W0612)",
+                "evidence": "Log shows: 'cloudinit/net/dhcp.py:575: [W0612(unused-variable), Dhcpcd.dhcp_discovery] Unused variable 'out'' and '... Unused variable 'err'' and an InvocationError for the pylint tox env ('InvocationError for command ... -m pylint ... (exited with code 4)')."
             },
             {
-                "category": "Runtime Error",
-                "subcategory": "Unawaited coroutine / pending Task destroyed",
-                "evidence": "Log lines: \"[E ... base_events:1785] Task was destroyed but it is pending!\" and \"RuntimeWarning: coroutine 'SelectorThread.__init__.<locals>.thread_manager_anext' was never awaited\" with a frame at \"...platform\\asyncio.py:462\"."
-            },
-            {
-                "category": "Runtime Warning",
-                "subcategory": "ResourceWarning: unclosed socket(s)",
-                "evidence": "Many repeated lines in the log show \"ResourceWarning: unclosed <socket.socket fd=..., laddr=('127.0.0.1', ...), raddr=('127.0.0.1', ...)>\", which are visible immediately before the job termination message."
+                "category": "Code Formatting",
+                "subcategory": "Black --check would reformat file",
+                "evidence": "Log shows black output: 'would reformat tests/unittests/net/test_dhcp.py' and '1 file would be reformatted' followed by 'ERROR: InvocationError for command ... -m black . --check (exited with code 1)'."
             }
         ],
         "failed_job": [
             {
-                "job": "test_win",
-                "step": "Run test suite",
-                "command": "py -m tornado.test --fail-if-logs=false"
+                "job": "check_format (matrix env = pylint)",
+                "step": "Check pylint/6_Test.txt",
+                "command": "/home/runner/work/cloud-init/cloud-init/.tox/pylint/bin/python -m pylint cloudinit/ tests/ tools/ conftest.py setup.py"
+            },
+            {
+                "job": "check_format (matrix env = black)",
+                "step": "Check black/6_Test.txt",
+                "command": "/home/runner/work/cloud-init/cloud-init/.tox/black/bin/python -m black . --check"
             }
         ]
     }
