@@ -1,0 +1,25 @@
+[
+    {
+        "sha_fail": "2c06ffa4c9d2c37846c60ad75899b4d72f214ff9",
+        "fault_localization_data": [
+            {
+                "file_path": "examples/community/ip_adapter_face_id.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/ip_adapter_face_id.py",
+                "faults": [
+                    {
+                        "file_path": "examples/community/ip_adapter_face_id.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/ip_adapter_face_id.py",
+                        "line_range": [
+                            15,
+                            43
+                        ],
+                        "reason": "The import block is un-sorted or un-formatted as indicated by the CI error message. The imports should be organized according to PEP 8 guidelines, which typically require standard library imports, related third-party imports, and local application/library-specific imports to be grouped and sorted alphabetically. Lines 15-43 contain the import statements that need to be reviewed and corrected.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import inspect\nfrom typing import Any, Callable, Dict, List, Optional, Union\nfrom safetensors import safe_open\n\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom packaging import version\nfrom transformers import CLIPImageProcessor, CLIPTextModel, CLIPTokenizer, CLIPVisionModelWithProjection\n\nfrom diffusers.configuration_utils import FrozenDict\nfrom diffusers.image_processor import VaeImageProcessor\nfrom diffusers.loaders import FromSingleFileMixin, IPAdapterMixin, LoraLoaderMixin, TextualInversionLoaderMixin\nfrom diffusers.models import AutoencoderKL, UNet2DConditionModel\nfrom diffusers.models.attention_processor import FusedAttnProcessor2_0\nfrom diffusers.models.lora import adjust_lora_scale_text_encoder, LoRALinearLayer\nfrom diffusers.schedulers import KarrasDiffusionSchedulers\nfrom diffusers.utils import (\n    _get_model_file,\n    USE_PEFT_BACKEND,\n    deprecate,\n    logging,\n    scale_lora_layers,\n    unscale_lora_layers,\n)\nfrom diffusers.utils.torch_utils import randn_tensor\nfrom diffusers.pipelines.pipeline_utils import DiffusionPipeline\nfrom diffusers.pipelines.stable_diffusion.pipeline_output import StableDiffusionPipelineOutput\nfrom diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker"
+                    }
+                ]
+            }
+        ]
+    }
+]

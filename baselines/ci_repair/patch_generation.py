@@ -605,25 +605,27 @@ Each fault entry describes a specific issue detected by CI validation tools.
 
                         # 2) Run Ruff on the *applied* file only
                         #    We use full_path; ruff can handle absolute paths.
-                    for cmd in (
-                        ["ruff", "check", "--fix", full_path],
-                        ["ruff", "format", full_path],
-                    ):
-                        try:
-                            logger.info(f"Running Ruff command: {' '.join(cmd)}")
-                            ruff_proc = subprocess.run(
-                                cmd,
-                                cwd=self.repo_path,
-                                capture_output=True,
-                                text=True,
-                                timeout=300,
-                            )
-                            if ruff_proc.returncode != 0:
-                                logger.warning(
-                                    f"Ruff command failed: {' '.join(cmd)}\n{ruff_proc.stderr}"
+                        
+                    if full_path.suffix == ".py":
+                        for cmd in (
+                            ["ruff", "check", "--fix", full_path],
+                            ["ruff", "format", full_path],
+                        ):
+                            try:
+                                logger.info(f"Running Ruff command: {' '.join(cmd)}")
+                                ruff_proc = subprocess.run(
+                                    cmd,
+                                    cwd=self.repo_path,
+                                    capture_output=True,
+                                    text=True,
+                                    timeout=300,
                                 )
-                        except Exception as e:
-                            logger.error(f"Failed to run Ruff command {' '.join(cmd)}: {e}")
+                                if ruff_proc.returncode != 0:
+                                    logger.warning(
+                                        f"Ruff command failed: {' '.join(cmd)}\n{ruff_proc.stderr}"
+                                    )
+                            except Exception as e:
+                                logger.error(f"Failed to run Ruff command {' '.join(cmd)}: {e}")
             modified_content = self._read_file(full_path)
                 
             if modified_content != original:

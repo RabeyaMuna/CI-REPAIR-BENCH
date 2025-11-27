@@ -1,0 +1,29 @@
+[
+    {
+        "sha_fail": "2c06ffa4c9d2c37846c60ad75899b4d72f214ff9",
+        "error_context": [
+            "The CI job failed due to a code quality check that identified an import block in 'examples/community/ip_adapter_face_id.py' as un-sorted or un-formatted at line 15. The process completed with exit code 1, indicating a failure in the quality checks."
+        ],
+        "relevant_files": [
+            {
+                "file": "examples/community/ip_adapter_face_id.py",
+                "line_number": 15,
+                "reason": "The log states 'examples/community/ip_adapter_face_id.py:15:1: I001 [*] Import block is un-sorted or un-formatted', indicating this file caused the failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Import Block Formatting",
+                "evidence": "The error message indicates an issue with the import block: 'Import block is un-sorted or un-formatted'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "check_code_quality",
+                "step": "Check quality",
+                "command": "ruff check examples tests src utils scripts"
+            }
+        ]
+    }
+]

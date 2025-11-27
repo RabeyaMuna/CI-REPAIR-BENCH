@@ -52,6 +52,13 @@ LLM_REGISTRY: Dict[str, LLMInfo] = {
         temperature=0.0,
         api_key=OPENAI_API_KEY,
     ),
+    
+    "gpt5o-mini": LLMInfo(
+        provider="openai",
+        model_name="gpt-5o-mini",
+        temperature=0.0,
+        api_key=OPENAI_API_KEY,
+    ),
 
     # DeepSeek via OpenAI-compatible API
     "deepseek-chat": LLMInfo(

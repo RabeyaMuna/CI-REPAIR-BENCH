@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 import json
 import os
+import re
 import time
 import demjson3
 import tiktoken
@@ -8,7 +9,7 @@ from dotenv import load_dotenv
 from rank_bm25 import BM25Okapi
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
-
+from utilities.constant import ERROR_KEYWORDS
 from utilities.load_config import load_config
 from utilities.chunking_logic import chunk_log_by_tokens
 
@@ -47,7 +48,7 @@ class CILogAnalyzerLLM:
         print("Running Tool: LL M-based CI Log Analysis")
         results: List[Dict[str, Any]] = []
         THRESHOLD = 80_000
-
+        chunk_tracker = []
         for step in self.ci_log:
             step_name = step.get("step_name", "unknown_step")
             log = step.get("log", "")
@@ -61,11 +62,20 @@ class CILogAnalyzerLLM:
                 print(f"Token count for '{step_name}': {total_tokens}")
 
                 if total_tokens > THRESHOLD:
-                    chunks = chunk_log_by_tokens(log_text, max_tokens=60000, overlap=200)
-                    print(f"Chunking activated: {len(chunks)} chunks created for step '{step_name}'")
+                    raw_chunks = chunk_log_by_tokens(log_text, max_tokens=60000, overlap=200)
+                    print(f"Chunking activated: {len(raw_chunks)} chunks created for step '{step_name}'")
+                    
+                    chunk_tracker.append((step_name, len(raw_chunks)))
+                    
+                    if len(raw_chunks) > 10:
+                        chunks = self._filter_chunks(raw_chunks)
+                    else:
+                        chunks = raw_chunks
                 else:
                     chunks = [log_text]
                     print(f"No chunking needed for '{step_name}'")
+                    
+                self._save_chunk_tracker(chunk_tracker)
 
                 step_chunks = []
 
@@ -134,7 +144,6 @@ Return ONLY valid JSON with this exact structure:
 """
 
                     response = self.llm.invoke([HumanMessage(content=prompt)])
-
                     time.sleep(1.0)  # throttle
                     content = response.content.strip()
                     
@@ -144,9 +153,9 @@ Return ONLY valid JSON with this exact structure:
                     except json.JSONDecodeError:
                     # Fallback: tolerant decoder
                         cleaned_json = demjson3.decode(content)
-                    
-                    step_chunks.append(cleaned_json)
 
+                    step_chunks.append(cleaned_json)
+                
                 results.append({
                     "step_name": step_name,
                     "chunks": step_chunks
@@ -406,7 +415,6 @@ Return a SINGLE aggregated summary for the entire failed run using this exact st
    - Merge duplicates carefully (same file paths, same category/subcategory pairs).
    - Ensure every item is concise, evidence-based, and traceable to the logs and/or workflow.
 """
-
         try:
             response = self.llm.invoke([HumanMessage(content=prompt)]).content
             try:
@@ -475,3 +483,113 @@ Return a SINGLE aggregated summary for the entire failed run using this exact st
                 indent=2,
             )
         print(f"[ERROR LOGGED] {file_path}")
+
+    def _filter_chunks(self, raw_chunks: List[str]) -> List[str]:
+        """
+        Keep:
+        - All chunks in the first (n-6) that contain any ERROR_KEYWORDS (by word)
+        - Always keep the last 6 chunks (serial order preserved)
+        """
+        n_chunks = len(raw_chunks)
+
+        # If we have 6 or fewer chunks, just keep everything
+        if n_chunks <= 6:
+            print(f"Filtered from {n_chunks} ➝ {n_chunks} chunks (<= 6, kept all)")
+            return raw_chunks
+
+        cutoff = n_chunks - 6
+        filtered_chunks: List[str] = []
+
+        # 1) Check the first (n-6) chunks and keep only those with error keywords
+        for idx, chunk in enumerate(raw_chunks[:cutoff]):
+            for line_no, line in enumerate(chunk.splitlines(), start=1):
+                hits = self.is_line_error(line, ERROR_KEYWORDS)
+                if hits:
+                    # optional debug:
+                    # print(f"[FILTER] chunk {idx}, line {line_no}: hits={hits}")
+                    filtered_chunks.append(chunk)
+                    break  # done with this chunk
+
+        # 2) Append the last 6 chunks unconditionally (preserve serial order)
+        filtered_chunks.extend(raw_chunks[cutoff:])
+
+        print(
+            f"Filtered from {n_chunks} ➝ {len(filtered_chunks)} chunks "
+            f"(checked first {cutoff}, always kept last 6)"
+        )
+
+        return filtered_chunks
+      
+    def _save_chunk_tracker(self, chunk_tracker: List[tuple]):
+        debug_dir = os.path.join(self.config["out_folder"], "chunk_tracking")
+        os.makedirs(debug_dir, exist_ok=True)
+
+        file_path = os.path.join(debug_dir, "chunk_tracker.json")
+
+        # Load existing data if file exists
+        existing: List[Dict[str, Any]] = []
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+                    if not isinstance(existing, list):
+                        existing = []
+            except Exception:
+                existing = []
+
+        # Append this run
+        existing.append({"sha_fail": self.sha_fail, "chunks": chunk_tracker})
+
+        # Write back pretty JSON
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(existing, f, indent=2)
+
+        print(f"[CHUNK TRACKER SAVED] {file_path}")
+        
+        
+    def is_line_error(self, line: str, keywords) -> list[str]:
+        """
+        Return list of keywords that appear as separate words or exact phrases.
+        - Single-word keywords: must match a whole word in the line (case-sensitive).
+        - Multi-word keywords: matched as exact substrings (case-sensitive).
+        - Special rule: if we see 'error' or 'errors' but the previous word is 'no'
+        (e.g. 'no error', 'No errors'), we IGNORE that match.
+        """
+        hits = []
+
+        # Very simple tokenization: split on whitespace, strip basic punctuation
+        raw_tokens = line.split()
+        tokens = [tok.strip("[]():,") for tok in raw_tokens]
+
+        # 1) Phrase keywords → use substring
+        for kw in keywords:
+            if " " in kw:
+                if kw in line:  # exact phrase, case-sensitive
+                    hits.append(kw)
+
+        # 2) Single-word keywords → must match full token
+        # We also apply the "no error" rule here.
+        for idx, tok in enumerate(tokens):
+            for kw in keywords:
+                if " " in kw:
+                    continue  # phrases already handled
+
+                if tok == kw:
+                    # Special: ignore "error"/"errors" if previous token is 'no' (any case)
+                    if kw in ("error", "errors") and idx > 0:
+                        prev_tok = tokens[idx - 1]
+                        if prev_tok.lower() == "no":
+                            # e.g. "no error", "No errors" → not a real error
+                            continue
+
+                    hits.append(kw)
+
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_hits = []
+        for h in hits:
+            if h not in seen:
+                seen.add(h)
+                unique_hits.append(h)
+
+        return unique_hits

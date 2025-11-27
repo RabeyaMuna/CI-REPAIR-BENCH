@@ -17,13 +17,13 @@ from utilities.ensure_repo import ensure_repo_at_commit
 
 load_dotenv()
 
-def process_entire_dataset(dataset, config, llm, model_key):
+def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="llm"):
     error_details = []
     fault_localization = []
     generated_patches = []
     results = []
     
-    subset = dataset[315:]
+    subset = dataset[0:]
     # target_ids = {241, 243, 281, 323}
     # subset = [dp for dp in dataset if dp.get("id") in target_ids]
     for datapoint in subset:
@@ -40,17 +40,18 @@ def process_entire_dataset(dataset, config, llm, model_key):
         workflow_path = datapoint["workflow_path"]
         sha_success = datapoint["sha_success"]
         
-        result_dir = os.path.join(config.project_result_dir, model_key)
+        result_dir = os.path.join(config.project_result_dir, model_key+"_"+log_analyzer_type)
         if not os.path.exists(result_dir):
           os.makedirs(result_dir, exist_ok=True)
         
         print(f" Proceed with the commit: {sha_fail}")
         
         ensure_repo_at_commit(repo_url, repo_path, sha_fail)
-
         try:
-            log_analysis_result = CILogAnalyzerLLM(repo_path, logs, sha_fail, workflow, workflow_path, llm=llm, model_name=model_key).run()
-            # log_analysis_result = CILogAnalyzerBM25(repo_path, logs, sha_fail, workflow, workflow_path, llm=llm, model_name=model_key).run()
+            if log_analyzer_type=="llm":
+                log_analysis_result = CILogAnalyzerLLM(repo_path, logs, sha_fail, workflow, workflow_path, llm=llm, model_name=model_key).run()
+            else:
+                log_analysis_result = CILogAnalyzerBM25(repo_path, logs, sha_fail, workflow, workflow_path, llm=llm, model_name=model_key).run()
             
             error_details.append(log_analysis_result)
 
@@ -111,7 +112,7 @@ if __name__ == "__main__":
     dataset_df = pd.read_parquet(dataset_path)
     dataset = dataset_df.to_dict(orient="records")
 
-    results = process_entire_dataset(dataset, config, llm, model_key)
+    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="bm25")
 
     output_file = os.path.join(config.project_result_dir, "generated_patches.json")
     with open(output_file, "w") as f:

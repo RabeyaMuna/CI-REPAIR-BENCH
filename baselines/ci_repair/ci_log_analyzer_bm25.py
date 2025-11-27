@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from rank_bm25 import BM25Okapi
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
-
+from utilities.constant import ERROR_KEYWORDS
 from utilities.load_config import load_config
 from utilities.chunking_logic import chunk_log_by_tokens
 
@@ -41,95 +41,109 @@ class CILogAnalyzerBM25:
 
         self.error_details: List[Dict[str, Any]] = []
 
-        self.error_keywords = [
-            "Traceback",
-            "Exception",
-            "AssertionError",
-            "ImportError",
-            "ModuleNotFoundError",
-            "TypeError",
-            "ValueError",
-            "AttributeError",
-            "RuntimeError",
-            "IndexError",
-            "KeyError",
-            "SyntaxError",
-            "IndentationError",
-            "NameError",
-            "FileNotFoundError",
-            "pytest",
-            "E ",
-            "FAILED",
-            "FAIL",
-            "error",
-            "fail",
-            "exit code 1",
-            "black",
-            "ruff",
-            "flake8",
-            "mypy",
-            "coverage",
-            "unittest"
-        ]
-
     # ------------------------------------------------------------------
     def _extract_relevant_context(self, chunk_text: str, step_name: str) -> Dict[str, Any]:
         """
-        Extract relevant error context lines using BM25 and group them.
+        Extract relevant error context lines using BM25, but driven by ERROR_KEYWORDS.
+
+        - BM25 ranks all lines using ERROR_KEYWORDS (tokenized) as the query.
+        - We only keep lines that actually contain one or more ERROR_KEYWORDS
+          (substring match, case-insensitive).
+        - For each hit, we capture a context window around it.
         """
         lines = chunk_text.splitlines()
         if not lines:
             return {"step_name": step_name, "relevant_failures": []}
 
-        tokenized_corpus = [line.split() for line in lines]
-        bm25 = BM25Okapi(tokenized_corpus)
-        query = " ".join(self.error_keywords)
-        tokenized_query = query.split()
-        scores = bm25.get_scores(tokenized_query)
-
-        BM25_TOP_N = 100
         CONTEXT_LINES = 10
-        top_indices = [
-            i
-            for i, score in sorted(
-                enumerate(scores), key=lambda x: x[1], reverse=True
-            )
-            if score > 0.0
-        ][:BM25_TOP_N]
+        BM25_TOP_N = 100
 
-        relevant_failures = []
-        seen = set()
+        # Normalized, unique keywords for matching/query
+        normalized_keywords = list({
+            kw.lower().strip()
+            for kw in ERROR_KEYWORDS
+            if kw.strip()
+        })
 
-        for idx in top_indices:
-            line_text = lines[idx].strip()
-            if not line_text or line_text in seen:
+        # --- BM25 over lines -------------------------------------------------
+        # Each line is a "document" represented as tokens
+        tokenized_corpus = [line.lower().split() for line in lines]
+        bm25 = BM25Okapi(tokenized_corpus)
+
+        # Build query tokens from the keywords (split phrases into tokens)
+        query_tokens: List[str] = []
+        for kw in normalized_keywords:
+            query_tokens.extend(kw.split())
+
+        scores = bm25.get_scores(query_tokens)
+
+        # Indices sorted by BM25 score (high → low)
+        ranked_indices = sorted(
+            range(len(scores)), key=lambda i: scores[i], reverse=True
+        )
+
+        relevant_failures: List[Dict[str, Any]] = []
+        seen_spans = set()
+
+        for idx in ranked_indices:
+            # Limit the number of BM25-selected windows per chunk
+            if len(relevant_failures) >= BM25_TOP_N:
+                break
+
+            score = scores[idx]
+            if score <= 0.0:
+                # Because ranked in descending order, remaining will be <= 0 as well
+                break
+
+            line = lines[idx]
+            if not line.strip():
                 continue
-            seen.add(line_text)
 
-            error_type = next(
-                (kw for kw in self.error_keywords if kw.lower() in line_text.lower()),
-                "UnknownError",
-            )
+            lower_line = line.lower()
+
+            # Only keep lines that actually contain one or more ERROR_KEYWORDS
+            matched_keywords = [
+                kw for kw in normalized_keywords
+                if kw and kw in lower_line
+            ]
+            if not matched_keywords:
+                # BM25 scored it high, but it doesn't contain our keywords → skip
+                continue
+
+            # Context window
             start = max(0, idx - CONTEXT_LINES)
             end = min(len(lines), idx + CONTEXT_LINES + 1)
-            context_window = [lines[i] for i in range(start, end) if lines[i].strip()]
+            span = (start, end)
 
-            if "Error" in line_text or "Exception" in line_text:
-                parts = line_text.split(":", 1)
-                message = parts[1].strip() if len(parts) > 1 else line_text
+            # Avoid duplicate/overlapping windows
+            if span in seen_spans:
+                continue
+            seen_spans.add(span)
+
+            context_window = [l for l in lines[start:end] if l.strip()]
+
+            primary_keyword = matched_keywords[0]
+
+            # Extract "message" (everything after first ':' if present)
+            if ":" in line:
+                message_part = line.split(":", 1)[1].strip()
+                message = message_part if message_part else line
             else:
-                message = line_text
+                message = line
 
             relevant_failures.append(
                 {
-                    "line_number": idx + 1,
-                    "error_type": error_type,
+                    "line_number": idx + 1,              # 1-based
+                    "error_type": primary_keyword,       # driven by keywords
+                    "keywords": matched_keywords,        # all matched keywords
+                    "bm25_score": float(score),          # keep BM25 score for debugging
                     "message": message,
                     "context_lines": context_window,
                 }
             )
 
         return {"step_name": step_name, "relevant_failures": relevant_failures}
+
 
     # ------------------------------------------------------------------
     def _retrieve_relevant_files(
@@ -197,16 +211,13 @@ class CILogAnalyzerBM25:
                 log_lines = log if isinstance(log, list) else log.splitlines()
                 log_text = "\n".join(log_lines)
 
-                # Use cached encoder instead of re-creating one
                 total_tokens = len(self._encoder.encode(log_text))
 
                 if total_tokens > THRESHOLD:
                     chunks = chunk_log_by_tokens(
-                        log_text, max_tokens=80_000, overlap=200
+                        log_text, max_tokens=10_000, overlap=200
                     )
-                    print(
-                        f"Chunking activated: {len(chunks)} chunks for '{step_name}'"
-                    )
+                    print(f"Chunking activated: {len(chunks)} chunks for '{step_name}'")
                 else:
                     chunks = [log_text]
 
@@ -215,12 +226,45 @@ class CILogAnalyzerBM25:
                     details = self._extract_relevant_context(chunk_text, step_name)
                     all_failures.extend(details["relevant_failures"])
 
-                combined_query = " ".join(
-                    f["message"] for f in all_failures if f.get("message")
-                )
+                # -------------------------------
+                # Build combined_query from message + context_lines
+                # -------------------------------
+                combined_query_parts: List[str] = []
+
+                for f in all_failures:
+                    # message
+                    msg = f.get("message")
+                    if msg:
+                        combined_query_parts.append(str(msg))
+
+                    # context_lines
+                    ctx_lines = f.get("context_lines") or []
+                    for line in ctx_lines:
+                        if line:
+                            combined_query_parts.append(str(line))
+
+                combined_query = " ".join(combined_query_parts)
+
+                # -------------------------------
+                # Collect full_error_context (deduped) for output
+                # -------------------------------
+                full_error_context: List[str] = []
+                seen_ctx = set()
+
+                for f in all_failures:
+                    for line in f.get("context_lines") or []:
+                        if not line:
+                            continue
+                        if line not in seen_ctx:
+                            seen_ctx.add(line)
+                            full_error_context.append(line)
+
+                # -------------------------------
+                # BM25 file retrieval using enriched query
+                # -------------------------------
                 relevant_files = (
                     self._retrieve_relevant_files(combined_query)
-                    if combined_query
+                    if combined_query.strip()
                     else []
                 )
 
@@ -229,6 +273,7 @@ class CILogAnalyzerBM25:
                         "step_name": step_name,
                         "relevant_failures": all_failures,
                         "relevant_files": relevant_files,
+                        "full_error_context": full_error_context,
                     }
                 )
 
@@ -239,10 +284,12 @@ class CILogAnalyzerBM25:
                         "error": str(e),
                         "relevant_failures": [],
                         "relevant_files": [],
+                        "full_error_context": [],
                     }
                 )
 
         return results
+
 
     # ------------------------------------------------------------------
     def _generate_summary(self, log_details: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -308,16 +355,18 @@ class CILogAnalyzerBM25:
             entries = [log_details]
 
         for entry_idx, entry in enumerate(entries):
-            # entry is expected to be: {'step_name', 'relevant_failures', 'relevant_files'}
+            # entry is expected to be: {'step_name', 'relevant_failures', 'relevant_files', 'full_error_context'}
             if isinstance(entry, dict):
                 step_name = entry.get("step_name", "unknown_step")
                 relevant_failures = entry.get("relevant_failures", [])
                 relevant_files = entry.get("relevant_files", [])
+                full_error_context = entry.get("full_error_context", [])
             else:
                 # fallback if something weird is passed
                 step_name = "unknown_step"
                 relevant_failures = []
                 relevant_files = []
+                full_error_context = []
 
             # Convert relevant_failures to text for token estimate + chunking
             failures_text = json.dumps(relevant_failures, indent=2, ensure_ascii=False)
@@ -331,7 +380,7 @@ class CILogAnalyzerBM25:
             # Decide whether to chunk or not
             if token_count > MAX_TOKENS or len(failures_text) > CHUNK_SIZE:
                 log_chunks = [
-                    failures_text[i : i + CHUNK_SIZE]
+                    failures_text[i: i + CHUNK_SIZE]
                     for i in range(0, len(failures_text), CHUNK_SIZE)
                 ]
             else:
@@ -342,98 +391,151 @@ class CILogAnalyzerBM25:
 
             for idx, chunk in enumerate(log_chunks):
                 prompt = f"""
-You are a CI log analyzer.
+    You are a CI failure summarization agent for a single CI log CHUNK.
 
-You receive pre-processed CI log information for a FAILED CI RUN, which contains entries like:
-- "step_name"
-- "relevant_failures": list of failures with fields such as
-    - "line_number"
-    - "error_type"
-    - "message"
-    - optionally "context_lines"
-- "relevant_files": list of candidate source files with fields such as
-    - "file"
-    - "score"
-    - "reason"
+    You receive pre-processed CI log information for a FAILED CI RUN, which contains, for this step:
+    - "step_name"
+    - "relevant_failures": list of failures with fields such as
+        - "line_number"
+        - "error_type"
+        - "message"
+        - optionally "context_lines"
+    - "relevant_files": list of candidate source files with fields such as
+        - "file"
+        - "score"
+        - "reason"
+    - "full_error_context": additional lines from the same CI step
 
-IMPORTANT: The `relevant_files` list contains **BM25 candidate files only**.
-You MUST NOT automatically treat them as truly related to the failure. You must cross-check
-every candidate file against the log evidence in THIS CHUNK. Only files with clear, direct
-evidence in THIS CHUNK may appear in the final `relevant_files` output. If no file has
-strong evidence, you MUST return an empty list for `relevant_files`.
+    Your task for THIS CHUNK ONLY:
+    Produce a **structured, evidence-based JSON summary** that explains what went wrong in this chunk
+    and identifies the most likely failing Python file(s), if any.
 
-For THIS CHUNK ONLY, extract a **partial summary** of the CI failure using
-the following STRICT JSON schema (do not add or remove keys):
+    IMPORTANT:  
+    There are **two sources of file path evidence**:
 
-{{
-"step_name": {step_name_json},
-"chunk_index": {idx},
-"sha_fail": "{self.sha_fail}",
-"error_context": [
-    "English explanation(s) of the root cause(s) visible in THIS CHUNK, supported by log evidence."
-],
-"relevant_files": [
+    ### (A) BM25 Candidate Files (under this entry's "relevant_files")
+    These are *possible* matches only.  
+    Do **NOT** treat them as correct unless the CI log text or error context for THIS STEP also supports them.
+    Do **NOT** include them blindly.
+
+    ### (B) Log-Derived File Paths (HIGHEST PRIORITY)
+    You MUST scan both:
+    - the chunked failure text (shown below as "LOG DETAILS: ..."), and
+    - the "full_error_context"
+    for any file paths in error messages, context lines, or stack traces.
+
+    If a Python file path appears in CI log evidence (this chunk or full_error_context):
+    - It is considered **strong proof** of involvement in this step's failure.
+    - It SHOULD be included in "relevant_files" for this chunk, even if BM25 did not rank it.
+    - Extract both the normalized file path and the exact line number when visible.
+
+    If a file appears only in BM25 candidates but **not** in any log text (this chunk or full_error_context),
+    you MUST NOT include it.
+
+    ---
+
+    ## HOW TO SELECT relevant_files (IMPORTANT LOGIC FOR THIS CHUNK)
+
+    1. **Extract all `.py` paths mentioned in error messages**, context lines, or stack traces
+    in THIS CHUNK and in full_error_context:
+    - Example patterns:
+        - "examples/foo/bar.py:15:1: error"
+        - "path/to/file.py:42: ..."
+        - "File \"path/to/file.py\", line 99"
+    - Normalize the path:
+        - remove trailing ":line:col" segments,
+        - keep the ".py" path only (e.g., "examples/foo/bar.py").
+
+    2. **Pick the file(s) that show the clearest evidence of causing the CI failure in THIS CHUNK.**  
+    Evidence includes:
+    - ruff errors (I001, F401, etc.),
+    - flake8/mypy errors,
+    - Python traceback paths,
+    - test failure assertions,
+    - "File ... line ..." patterns or similar.
+
+    3. **If multiple error files appear**, include all of them in "relevant_files" for this chunk.
+
+    4. **If no explicit file appears in logs for THIS CHUNK and full_error_context**:
+    - Return an empty "relevant_files" list for this chunk.
+
+    5. For each selected file:
+        - "file" = normalized Python file path,
+        - "line_number" = first line number extracted from logs for that file, or null if unknown,
+        - "reason" = short explanation quoting or paraphrasing the specific log line that links THIS CHUNK'S failure to this file.
+
+    ---
+
+    For THIS CHUNK ONLY, extract a **partial summary** of the CI failure using
+    the following STRICT JSON schema (do not add or remove keys):
+
     {{
-    "file": "path/to/file.py",
-    "line_number": 123,
-    "reason": "Short explanation of why this file is tied to the failure in THIS CHUNK."
+    "step_name": {step_name_json},
+    "chunk_index": {idx},
+    "sha_fail": "{self.sha_fail}",
+    "error_context": [
+        "English explanation(s) of the root cause(s) visible in THIS CHUNK, supported by log evidence."
+    ],
+    "relevant_files": [
+        {{
+        "file": "path/to/file.py",
+        "line_number": 123,
+        "reason": "Short explanation of why this file is tied to the failure in THIS CHUNK."
+        }}
+    ],
+    "error_types": [
+        {{
+        "category": "High-level category, e.g. 'Test Failure', 'Runtime Error', 'Dependency Error', 'Configuration Error', 'Code Formatting', 'Type Checking'",
+        "subcategory": "More specific description, e.g. 'Code Formatting – ruff I001 unsorted imports', 'Test Failure – AssertionError in unit test', 'Dependency Error – missing package x'",
+        "evidence": "Short quote or paraphrase from THIS CHUNK or full_error_context that justifies this classification."
+        }}
+    ]
     }}
-],
-"error_types": [
-    {{
-    "category": "High-level category, e.g. 'Test Failure', 'Runtime Error', 'Dependency Error', 'Configuration Error', 'Code Formatting', 'Type Checking'",
-    "subcategory": "More specific description, e.g. 'Runtime Error – ValueError in Optuna objective', 'Test Failure – AssertionError in unit test', 'Dependency Error – missing package x'",
-    "evidence": "Short quote or paraphrase from THIS CHUNK that justifies this classification."
-    }}
-]
-}}
 
-### Rules (IMPORTANT)
+    ### Rules (IMPORTANT)
 
-1. Use ONLY the information from the chunk shown below.
+    1. Use ONLY the information provided in this prompt:
+    - the chunked relevant_failures text ("LOG DETAILS" below),
+    - the BM25 candidate "relevant_files" for this step,
+    - the "full_error_context" for this step,
+    - and the workflow_text (if useful for context).
 
-2. **error_context**:
-- Summarize the root cause(s) found in THIS CHUNK.
-- If nothing meaningful appears, use an empty list [].
+    2. **error_context**:
+    - Summarize the root cause(s) found in THIS CHUNK in 1–3 short sentences.
+    - If nothing meaningful appears, use an empty list [].
 
-3. **relevant_files**:
-- Treat the `relevant_files` list provided in this chunk as **BM25 candidate files only**.
-- You MUST NOT assume a file is relevant just because it appears in this list.
-- A file may appear in the final `relevant_files` array ONLY if:
-    - it is explicitly mentioned in the failure messages, stack traces, or context in THIS CHUNK, OR
-    - the errors in THIS CHUNK clearly occur in, or are described as coming from, that file.
-- You may also use file paths that are explicitly mentioned in the failure text in THIS CHUNK
-    (for example, in stack traces or error messages), even if they were not in the candidate list.
-- If you are not sure that a file is truly related to the failure in THIS CHUNK, DO NOT include it.
-- Only select files that have STRONG evidence linking them to the failure in THIS CHUNK.
-- If no file clearly meets these conditions, return `"relevant_files": []`.
-- For each returned file:
-    - use the exact path from the input or from the failure text,
-    - set `"line_number"` to the failing line if visible; otherwise null,
-    - provide a short, evidence-based `"reason"` explaining how THIS CHUNK links the failure to that file.
-- Do NOT include all the candidate files unless they are all clearly and explicitly tied to the failure
-    in THIS CHUNK.
+    3. **relevant_files** (STRICT RULES):
+    - Extract file paths from logs first (this chunk + full_error_context).
+    - Normalize paths (remove trailing ":line:col" segments).
+    - Use "line_number": null if the line is not visible.
+    - Only include files that have STRONG evidence linking them to the failure
+        in THIS CHUNK or its full_error_context.
+    - Do NOT include any file that appears only as a BM25 candidate without log evidence.
+    - If no file clearly meets these conditions, set "relevant_files": [].
 
-4. **error_types**:
-- Provide entries that best describe the errors visible in THIS CHUNK.
-- Choose categories/subcategories that match the actual errors (exceptions, test failures, dependency errors, configuration errors, formatting, etc.).
-- Each `evidence` must be supported by text from THIS CHUNK.
+    4. **error_types**:
+    - Provide entries that best describe the errors visible in THIS CHUNK.
+    - Categories/subcategories must match actual errors (tests, runtime, dependencies, formatting, type checking, etc.).
+    - Each "evidence" must be clearly supported by text from THIS CHUNK or full_error_context.
 
-5. Use null for any unknown scalar values.
+    5. Use null for any unknown scalar values.
 
-6. Do NOT add extra top-level keys.
+    6. Do NOT add extra top-level keys, and do NOT change the schema.
 
-7. Return STRICT JSON ONLY — no markdown, no comments, no natural language outside JSON.
+    7. Return STRICT JSON ONLY — no markdown, no comments, no natural language outside JSON.
 
---- LOG DETAILS: relevant failure info from Log CHUNK (JSON/TEXT) ---
-{chunk}
+    --- LOG DETAILS: relevant failure info from Log CHUNK (JSON/TEXT) ---
+    {chunk}
 
---- Relevant Files from Log (JSON/TEXT) ---
-{json.dumps(relevant_files, indent=2, ensure_ascii=False)}
+    --- BM25 Candidate Relevant Files for this Step (JSON/TEXT) ---
+    {json.dumps(relevant_files, indent=2, ensure_ascii=False)}
 
---- CI LOG INFORMATION FOR FAILED RUN ---
-{workflow_text}
-"""
+    --- Full Error Context from Log for this Step (JSON/TEXT) ---
+    {json.dumps(full_error_context, indent=2, ensure_ascii=False)}
+
+    --- CI WORKFLOW / RUN CONTEXT (JSON/TEXT) ---
+    {workflow_text}
+    """
 
                 try:
                     response = self.llm.invoke([HumanMessage(content=prompt)]).content
@@ -441,6 +543,7 @@ the following STRICT JSON schema (do not add or remove keys):
                         summary = json.loads(response)
                     except json.JSONDecodeError:
                         summary = demjson3.decode(response)
+                        
                     log_chunk_summaries.append(summary)
                 except Exception as e:
                     # If one chunk fails, log and continue
@@ -449,6 +552,7 @@ the following STRICT JSON schema (do not add or remove keys):
                         error=e,
                         step=f"entry_{entry_idx}_chunk_{idx}",
                     )
+                    
                     log_chunk_summaries.append(
                         {
                             "step_name": step_name,
@@ -463,143 +567,144 @@ the following STRICT JSON schema (do not add or remove keys):
 
         return log_chunk_summaries
 
+
             
     # ------------------------------------------------------------------
-    def _summarize_workflow_if_large(self) -> Any:
-        """
-        If the workflow content is > 500_000 characters, summarize it chunk by chunk
-        using the LLM. Otherwise, return the original workflow object.
-        """
-        workflow_details = self.workflow
-        try:
-            workflow_text = json.dumps(
-                workflow_details, indent=2, ensure_ascii=False
-            )
-        except TypeError:
-            workflow_text = str(workflow_details)
+#     def _summarize_workflow_if_large(self) -> Any:
+#         """
+#         If the workflow content is > 500_000 characters, summarize it chunk by chunk
+#         using the LLM. Otherwise, return the original workflow object.
+#         """
+#         workflow_details = self.workflow
+#         try:
+#             workflow_text = json.dumps(
+#                 workflow_details, indent=2, ensure_ascii=False
+#             )
+#         except TypeError:
+#             workflow_text = str(workflow_details)
 
-        MAX_CHARS = 500_000
-        if len(workflow_text) <= MAX_CHARS:
-            return workflow_details
+#         MAX_CHARS = 500_000
+#         if len(workflow_text) <= MAX_CHARS:
+#             return workflow_details
 
-        print("Workflow content is large; summarizing chunk by chunk with LLM...")
+#         print("Workflow content is large; summarizing chunk by chunk with LLM...")
 
-        CHUNK_SIZE = 300_000
-        workflow_chunks = [
-            workflow_text[i : i + CHUNK_SIZE]
-            for i in range(0, len(workflow_text), CHUNK_SIZE)
-        ]
+#         CHUNK_SIZE = 300_000
+#         workflow_chunks = [
+#             workflow_text[i : i + CHUNK_SIZE]
+#             for i in range(0, len(workflow_text), CHUNK_SIZE)
+#         ]
 
-        chunk_summaries = []
-        for idx, chunk in enumerate(workflow_chunks):
-            prompt = f"""
-You are a CI workflow analyzer. Your goal is to understand which CI jobs are
-responsible for a FAILED CI RUN and what validation they perform.
+#         chunk_summaries = []
+#         for idx, chunk in enumerate(workflow_chunks):
+#             prompt = f"""
+# You are a CI workflow analyzer. Your goal is to understand which CI jobs are
+# responsible for a FAILED CI RUN and what validation they perform.
 
-You will receive:
-- A fragment (chunk) of a CI workflow file (YAML/JSON/text).
-- CI log information for the failed run.
+# You will receive:
+# - A fragment (chunk) of a CI workflow file (YAML/JSON/text).
+# - CI log information for the failed run.
 
-Your tasks for THIS CHUNK ONLY:
+# Your tasks for THIS CHUNK ONLY:
 
-1. Identify **validation jobs** in this chunk:
-   - Jobs that run tests, linting, static analysis, type checking, build steps,
-     packaging, or coverage.
-   - For each such job, record:
-     - Its name / id
-     - What kind of validation it does (e.g. "tests", "lint", "type-check", "build", "coverage")
-     - Which tools it uses (pytest, ruff, black, mypy, coverage, etc.)
-     - Key steps and their commands.
+# 1. Identify **validation jobs** in this chunk:
+#    - Jobs that run tests, linting, static analysis, type checking, build steps,
+#      packaging, or coverage.
+#    - For each such job, record:
+#      - Its name / id
+#      - What kind of validation it does (e.g. "tests", "lint", "type-check", "build", "coverage")
+#      - Which tools it uses (pytest, ruff, black, mypy, coverage, etc.)
+#      - Key steps and their commands.
 
-2. From those jobs, determine which ones actually **failed** or are clearly
-   responsible for the CI failure using the CI logs.
+# 2. From those jobs, determine which ones actually **failed** or are clearly
+#    responsible for the CI failure using the CI logs.
 
-Return STRICT JSON ONLY (no markdown, no comments) with this shape:
+# Return STRICT JSON ONLY (no markdown, no comments) with this shape:
 
-{{
-  "chunk_index": {idx},
-  "jobs": [
-    {{
-      "job_id_or_name": "string or null",   // from jobs.<id> or 'name' if available
-      "is_validation_job": true,            // always true here; only list validation jobs
-      "validation_kind": [
-        "tests", "lint", "type-check", "build", "coverage"
-        // choose one or more that apply, or [] if unclear
-      ],
-      "validation_tools": [
-        // e.g. "pytest", "ruff", "black", "mypy", "coverage"
-      ],
-      "key_steps": [
-        {{
-          "step_name": "name if available, else null",
-          "command": "main command if present, else null"
-        }}
-      ]
-    }}
-  ],
+# {{
+#   "chunk_index": {idx},
+#   "jobs": [
+#     {{
+#       "job_id_or_name": "string or null",   // from jobs.<id> or 'name' if available
+#       "is_validation_job": true,            // always true here; only list validation jobs
+#       "validation_kind": [
+#         "tests", "lint", "type-check", "build", "coverage"
+#         // choose one or more that apply, or [] if unclear
+#       ],
+#       "validation_tools": [
+#         // e.g. "pytest", "ruff", "black", "mypy", "coverage"
+#       ],
+#       "key_steps": [
+#         {{
+#           "step_name": "name if available, else null",
+#           "command": "main command if present, else null"
+#         }}
+#       ]
+#     }}
+#   ],
 
-  "failed_jobs": [
-    {{
-      "job_id_or_name": "name or id of the job that failed or caused failure, or null",
-      "validation_kind": [
-        "tests", "lint", "type-check", "build", "coverage"
-      ],
-      "validation_tools": [
-        // tools used by this failed job, e.g. "pytest", "ruff"
-      ],
-      "failed_step": {{
-        "step_name": "step name that failed, if known, else null",
-        "command": "command that failed, if known, else null"
-      }},
-      "evidence_from_logs": "short quote or paraphrase from CI logs that proves this job failed",
-      "reason": "why this job is considered failed or directly related to the CI failure"
-    }}
-  ],
+#   "failed_jobs": [
+#     {{
+#       "job_id_or_name": "name or id of the job that failed or caused failure, or null",
+#       "validation_kind": [
+#         "tests", "lint", "type-check", "build", "coverage"
+#       ],
+#       "validation_tools": [
+#         // tools used by this failed job, e.g. "pytest", "ruff"
+#       ],
+#       "failed_step": {{
+#         "step_name": "step name that failed, if known, else null",
+#         "command": "command that failed, if known, else null"
+#       }},
+#       "evidence_from_logs": "short quote or paraphrase from CI logs that proves this job failed",
+#       "reason": "why this job is considered failed or directly related to the CI failure"
+#     }}
+#   ],
 
-  "notes": "any other important CI behavior in this chunk that explains validation or failure"
-}}
+#   "notes": "any other important CI behavior in this chunk that explains validation or failure"
+# }}
 
-Rules:
+# Rules:
 
-- In "jobs":
-  - Include **only validation jobs** found in this chunk.
-  - They can be successful or failed; list all validation jobs you can identify.
+# - In "jobs":
+#   - Include **only validation jobs** found in this chunk.
+#   - They can be successful or failed; list all validation jobs you can identify.
 
-- In "failed_jobs":
-  - **Only** include jobs that actually failed or are clearly responsible for the CI failure.
-  - If there is **no failed job in this chunk**, set "failed_jobs" to an empty array: [].
-  - Do NOT list successful jobs here.
+# - In "failed_jobs":
+#   - **Only** include jobs that actually failed or are clearly responsible for the CI failure.
+#   - If there is **no failed job in this chunk**, set "failed_jobs" to an empty array: [].
+#   - Do NOT list successful jobs here.
 
-- Use the CI logs to decide which jobs failed. If uncertain, leave "failed_jobs" as [].
+# - Use the CI logs to decide which jobs failed. If uncertain, leave "failed_jobs" as [].
 
---- CI Workflow Chunk ---
-{chunk}
+# --- CI Workflow Chunk ---
+# {chunk}
 
---- CI Log information for failed jobs ---
-{self.ci_log}
-"""
-            try:
-                response = self.llm.invoke([HumanMessage(content=prompt)]).content
-                try:
-                    summary = json.loads(response)
-                except json.JSONDecodeError:
-                    summary = demjson3.decode(response)
-                chunk_summaries.append(summary)
-            except Exception as e:
-                # If one chunk fails, log and continue
-                self._log_error(
-                    method="_summarize_workflow_if_large",
-                    error=e,
-                    step=f"chunk_{idx}",
-                )
-                chunk_summaries.append({
-                    "chunk_index": idx,
-                    "jobs": [],
-                    "failed_jobs": [],
-                    "notes": f"Failed to summarize chunk: {str(e)}"
-                })
+# --- CI Log information for failed jobs ---
+# {self.ci_log}
+# """
+#             try:
+#                 response = self.llm.invoke([HumanMessage(content=prompt)]).content
+#                 try:
+#                     summary = json.loads(response)
+#                 except json.JSONDecodeError:
+#                     summary = demjson3.decode(response)
+#                 chunk_summaries.append(summary)
+#             except Exception as e:
+#                 # If one chunk fails, log and continue
+#                 self._log_error(
+#                     method="_summarize_workflow_if_large",
+#                     error=e,
+#                     step=f"chunk_{idx}",
+#                 )
+#                 chunk_summaries.append({
+#                     "chunk_index": idx,
+#                     "jobs": [],
+#                     "failed_jobs": [],
+#                     "notes": f"Failed to summarize chunk: {str(e)}"
+#                 })
 
-        return {"chunk_summaries": chunk_summaries}
+#         return {"chunk_summaries": chunk_summaries}
 
     # ------------------------------------------------------------------
     def full_content_summary(
@@ -611,11 +716,47 @@ You are a CI failure summarization agent.
 Your task:
 Read CI job logs and workflow details, then produce a **structured, evidence-based JSON summary** that classifies the errors clearly by category and subcategory.
 
-IMPORTANT: The Python files you see inside `log_details` (under `relevant_files`) are
-**BM25 candidate files only**. You MUST NOT automatically treat them as truly related.
-You must cross-check every file against the CI log evidence. Only files that are clearly
-supported by the logs/stack traces as being involved in the failure may appear in the
-final `relevant_files` output. If no file has strong evidence, output an empty list.
+IMPORTANT:  
+There are **two sources of file path evidence**:
+
+### (A) BM25 Candidate Files (under log_details → relevant_files)
+These are *possible* matches only.  
+Do **NOT** treat them as correct unless the CI log text or error context or CI failure reason also supports them. Do **NOT** include them blindly. 
+
+### (B) Log-Derived File Paths (highest priority)
+You MUST scan all `context_lines` and `full_error_context` to define any file paths mentioned which files caused the CI failure.
+
+If a file appears in CI log evidence:
+- It is considered **strong proof** of involvement.
+- It MUST be included in `relevant_files` (even if BM25 did not rank it).
+- Extract both the normalized file path and the exact line number.
+
+If a file appears only in BM25 candidates but **not** in log text, you MUST NOT include it.
+
+---
+
+## HOW TO SELECT relevant_files (IMPORTANT LOGIC)
+
+1. **Extract all `.py` paths mentioned in error messages**, context lines, or stack traces:
+   - Example: `examples/foo/bar.py:15:1: error`
+   - Normalize the path (remove line/column suffix, keep `.py` path).
+
+2. **Pick the file(s) that show the clearest evidence of causing the CI failure.**  
+   Evidence includes:
+   - ruff errors (I001, F401, etc.)
+   - flake8/mypy errors
+   - Python traceback paths
+   - test failure assertions
+   - “File ... line ...” patterns
+
+3. **If multiple error files appear**, include all of them.
+
+4. **If no explicit file appears in logs**, return an empty `relevant_files` list.
+
+5. For each file:
+   - `"file"` = normalized Python file path
+   - `"line_number"` = first line number extracted from logs, or `null`
+   - `"reason"` = short explanation quoting the specific log line
 
 ---
 
@@ -664,26 +805,31 @@ final `relevant_files` output. If no file has strong evidence, output an empty l
 ## INSTRUCTIONS
 
 1. **Derive — do not assume.**
-   - Infer both `category` and `subcategory` based on log and workflow evidence.
-   - Each subcategory must be concrete and justifiable.
+   - Infer both `category` and `subcategory` based only on CI log evidence.
+   - Every classification must quote or paraphrase log lines.
 
 2. **Error Context**
-   - Use 1–3 short English sentences summarizing root causes.
-   - Include exception type, file, and line if available.
+   - Use 1–3 short English sentences summarizing the true root cause(s).
+   - Include file name and line numbers when available.
 
-3. **Relevant Files**
-   - Include only files explicitly tied to the failure.
-   - Use `"line_number": null` if the line is not specified.
-   - Each must have a `"reason"` summarizing the file’s relation to the failure.
+3. **Relevant Files — STRICT RULES**
+   - Extract file paths from logs first (highest priority).
+   - Normalize paths (remove trailing `:line:col` segments).
+   - Use `"line_number": null` if missing.
+   - For each file, explain the exact log message that proves it is involved.
+   - BM25 candidates should be used only to support ranking—not as evidence.
 
 4. **Failed Job**
-   - Identify the CI job and step that failed, and its triggering command.
+   - Identify the exact CI job and step that failed.
+   - Identify the command/tool that produced the error (e.g., ruff, pytest, mypy).
 
 5. **Output Rules**
    - Return **only valid JSON** — no markdown, commentary, or code fences.
    - Do not hallucinate; use `null` for unknowns.
-   - Merge duplicates and ensure each item is concise, evidence-based, and traceable to the logs.
+   - Merge duplicates; ensure items are concise, evidence-based, and traceable.
+
 """
+
         try:
             response = self.llm.invoke([HumanMessage(content=prompt)]).content
             try:
@@ -752,3 +898,30 @@ final `relevant_files` output. If no file has strong evidence, output an empty l
                 indent=2,
             )
         print(f"[ERROR LOGGED] {file_path}")
+
+    def filter_chunks(raw_chunks):
+        n_chunks = len(raw_chunks)
+
+        # Always keep last 6 chunks (unconditionally)
+        last_start = max(0, n_chunks - 6)
+        last_chunks = raw_chunks[last_start:]
+
+        filtered_chunks = []
+
+        # 1. Check all chunks BEFORE the last 6
+        for chunk in raw_chunks[:last_start]:
+            text_lower = chunk.lower()
+
+            # If any keyword found → keep this chunk
+            if any(kw.lower() in text_lower for kw in ERROR_KEYWORDS):
+                filtered_chunks.append(chunk)
+
+        # 2. Add the last 6 chunks without keyword checking
+        filtered_chunks.extend(last_chunks)
+
+        chunks = filtered_chunks
+
+        print(
+            f"Filtered from {len(raw_chunks)} ➝ {len(chunks)} chunks "
+            f"(kept {len(last_chunks)} last-chunks + keywords matches)"
+        )
