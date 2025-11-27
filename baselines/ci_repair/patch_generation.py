@@ -571,6 +571,11 @@ Each fault entry describes a specific issue detected by CI validation tools.
         for faults in faults_data:
             file_path = faults["file_path"]
             full_path = faults["full_file_path"]
+            faults = faults["faults"]
+            
+            if faults == []:
+                logger.info(f"No faults listed for {file_path}, skipping.")
+                continue
 
             if not os.path.exists(full_path):
                 logger.warning(f"Invalid file path: {full_path}")

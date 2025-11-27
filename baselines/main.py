@@ -23,7 +23,7 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
     generated_patches = []
     results = []
     
-    subset = dataset[0:]
+    subset = dataset[318:]
     # target_ids = {241, 243, 281, 323}
     # subset = [dp for dp in dataset if dp.get("id") in target_ids]
     for datapoint in subset:
@@ -57,6 +57,10 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
 
             with open(os.path.join(result_dir, "log_details.json"), "w") as f:
                 json.dump(error_details, f, indent=4)
+                
+            if log_analysis_result ["relevant_files"] == []:
+                print(f" No relevant files found for {sha_fail}, skipping...")
+                continue
 
         except Exception as e:
             print(f" Failed processing {sha_fail} during error extraction: {e}")
@@ -75,6 +79,10 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
 
             with open(os.path.join(result_dir, "fault_localization.json"), "w") as f:
                 json.dump(fault_localization, f, indent=4)
+                
+            if fault_localizer["fault_localization_data"] == []:
+                print(f" No suspicious files found for {sha_fail}, skipping...")
+                continue
 
         except Exception as e:
             print(f" Failed processing {sha_fail} during error extraction: {e}")
@@ -106,7 +114,7 @@ if __name__ == "__main__":
     # Construct dataset path dynamically
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # one level up from ci-build-repair-project
     dataset_path = os.path.join(base_dir, "dataset", "lca_dataset.parquet")
-    model_key = "gpt-4o-mini"   # or "gpt4o", "deepseek-chat", etc.
+    model_key = "gpt-5-mini"   # or "gpt4o", "deepseek-chat", etc.
     llm = get_llm(model_key)
     # Load dataset
     dataset_df = pd.read_parquet(dataset_path)
