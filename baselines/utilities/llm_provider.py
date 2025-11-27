@@ -53,9 +53,9 @@ LLM_REGISTRY: Dict[str, LLMInfo] = {
         api_key=OPENAI_API_KEY,
     ),
     
-    "gpt5o-mini": LLMInfo(
+    "gpt5-mini": LLMInfo(
         provider="openai",
-        model_name="gpt-5o-mini",
+        model_name="gpt-5-mini",
         temperature=0.0,
         api_key=OPENAI_API_KEY,
     ),
