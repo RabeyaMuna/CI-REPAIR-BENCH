@@ -106,7 +106,7 @@ if __name__ == "__main__":
     # Construct dataset path dynamically
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # one level up from ci-build-repair-project
     dataset_path = os.path.join(base_dir, "dataset", "lca_dataset.parquet")
-    model_key = "gpt-4o-mini"   # or "gpt4o", "deepseek-chat", etc.
+    model_key = "gpt5-mini"   # or "gpt4o", "deepseek-chat", etc.
     llm = get_llm(model_key)
     # Load dataset
     dataset_df = pd.read_parquet(dataset_path)

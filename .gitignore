@@ -8,3 +8,4 @@ baselines/repo_cloned
 baselines/.venv/
 scripts/
 generated_patches_list/
+scripts
