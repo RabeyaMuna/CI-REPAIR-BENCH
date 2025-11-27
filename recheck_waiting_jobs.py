@@ -296,7 +296,7 @@ for job in pushed_jobs:
 enriched = []
 for row in checked:
     c = (row.get("conclusion") or "").lower()
-    if c in ("", "waiting", "queued", "in_progress"):
+    if c in ("", "waiting", "queued", "in_progress", "invalid", "notfound"):
         inferred = infer_conclusion_from_api(row, bench.credentials)
         if inferred:
             row["conclusion"] = inferred
