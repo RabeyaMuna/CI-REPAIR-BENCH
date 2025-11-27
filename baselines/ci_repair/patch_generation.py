@@ -1,5 +1,7 @@
 import os
 import re
+import sys
+from pathlib import Path
 import json
 import subprocess
 import logging
@@ -611,7 +613,7 @@ Each fault entry describes a specific issue detected by CI validation tools.
                         # 2) Run Ruff on the *applied* file only
                         #    We use full_path; ruff can handle absolute paths.
                         
-                    if full_path.suffix == ".py":
+                    if Path(full_path).suffix == ".py":
                         for cmd in (
                             ["ruff", "check", "--fix", full_path],
                             ["ruff", "format", full_path],

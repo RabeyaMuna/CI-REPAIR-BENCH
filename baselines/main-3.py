@@ -23,7 +23,7 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
     generated_patches = []
     results = []
     
-    subset = dataset[4:5]
+    subset = dataset[0:]
     # target_ids = {241, 243, 281, 323}
     # subset = [dp for dp in dataset if dp.get("id") in target_ids]
     for datapoint in subset:
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     # Construct dataset path dynamically
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # one level up from ci-build-repair-project
     dataset_path = os.path.join(base_dir, "dataset", "lca_dataset.parquet")
-    model_key = "gpt-5-mini"   # or "gpt4o", "deepseek-chat", etc.
+    model_key = "gpt-4o-mini"   # or "gpt4o", "deepseek-chat", etc.
     llm = get_llm(model_key)
     # Load dataset
     dataset_df = pd.read_parquet(dataset_path)

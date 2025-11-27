@@ -1,92 +1,413 @@
 [
     {
-        "sha_fail": null,
+        "sha_fail": "765e73a72a039f446a3e0d8194d26370e8ff0cbe",
         "error_context": [
-            "The CI run failed because the 'Check quality' step in the 'check_code_quality' job ran ruff and found a lint/formatting error which caused the step to exit with code 1. In step 'check_code_quality/5_Check quality.txt' the commands 'ruff check examples tests src utils scripts' and 'ruff format examples tests src utils scripts --check' reported: \"examples/community/ip_adapter_face_id.py:15:1: I001 [*] Import block is un-sorted or un-formatted\" and \"Found 1 error.\" The log also notes the issue is fixable with '--fix'. Because ruff returned a non-zero status, the CI step terminated with 'Process completed with exit code 1.'"
+            "The CI failed because the mypy type check in the 'Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)' step (executing ./framework/dev/test.sh) reported a type error and exited with code 1. Log evidence: \"py/flwr/server/serverapp/app.py:253: error: Incompatible types in assignment (expression has type \\\"None\\\", variable has type \\\"Context\\\")\" and \"Found 1 error in 1 file... Process completed with exit code 1.\"",
+            "Earlier steps completed successfully: dependencies were installed in the 'Install dependencies (mandatory only)' step (poetry install finished), and the 'Check if protos need recompilation' step (./framework/dev/check-protos.sh) ran and produced only warnings about unused imports (did not cause failure). Evidence for warnings: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" and \"flwr/proto/clientappio.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\""
         ],
         "relevant_files": [
             {
-                "file": "examples/community/ip_adapter_face_id.py",
-                "line_number": 15,
-                "reason": "Ruff directly reported a formatting lint error at this file and line: \"examples/community/ip_adapter_face_id.py:15:1: I001 [*] Import block is un-sorted or un-formatted\", which is the cause of the 'Found 1 error.' that failed the quality check."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Code Formatting",
-                "subcategory": "Import sorting/formatting (ruff I001)",
-                "evidence": "\"examples/community/ip_adapter_face_id.py:15:1: I001 [*] Import block is un-sorted or un-formatted\" and \"[*] 1 fixable with the `--fix` option.\""
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "check_code_quality",
-                "step": "Check quality",
-                "command": "ruff check examples tests src utils scripts\nruff format examples tests src utils scripts --check"
-            }
-        ]
-    },
-    {
-        "sha_fail": null,
-        "error_context": [
-            "The CI run failed because the code quality check step reported a linting error and exited with a nonzero status. In step 'check_code_quality/5_Check quality.txt' (workflow step 'Check quality' in job 'check_code_quality'), the ruff commands ran: \"ruff check examples tests src utils scripts\" and \"ruff format examples tests src utils scripts --check\". Ruff reported a single F401 lint: \"src/diffusers/loaders/ip_adapter.py:15:26: F401 `typing.Optional` imported but unused\", noted \"Found 1 error.\" and \"[*] 1 fixable with the `--fix` option.\", and the process completed with exit code 1. Because the quality step enforces ruff --check, this unused-import lint caused the step and thus the job to fail."
-        ],
-        "relevant_files": [
-            {
-                "file": "src/diffusers/loaders/ip_adapter.py",
-                "line_number": 15,
-                "reason": "Ruff reported an F401 unused-import at this file and line: \"src/diffusers/loaders/ip_adapter.py:15:26: F401 `typing.Optional` imported but unused\", which directly caused the code-quality step to fail."
-            }
-        ],
-        "error_types": [
-            {
-                "category": "Code Formatting",
-                "subcategory": "Unused Import",
-                "evidence": "Log: \"src/diffusers/loaders/ip_adapter.py:15:26: F401 `typing.Optional` imported but unused\" and \"Found 1 error. [*] 1 fixable with the `--fix` option.\""
-            }
-        ],
-        "failed_job": [
-            {
-                "job": "check_code_quality",
-                "step": "check_code_quality/5_Check quality.txt",
-                "command": "ruff check examples tests src utils scripts\nruff format examples tests src utils scripts --check"
-            }
-        ]
-    },
-    {
-        "sha_fail": null,
-        "error_context": [
-            "The failure was caused by the requirements-check script detecting an unused dependency in requirements/requirements.txt and returning a non-zero exit code. In the check_requirements/4_Check main requirements.txt step, the workflow first installed dev dependencies successfully (pip install -r requirements/requirements-dev.txt completed and many packages were \"Successfully installed\"). Then the script tests/scripts/check_requirements.py ran and reported: \"- requirements/requirements.txt    None:None: DEP002 'type_infer' defined as a dependency but not used in the codebase\". That DEP002 diagnostic caused the script to exit with a non-zero status and the CI step to fail (log shows \"##[error]Process completed with exit code 1.\")."
-        ],
-        "relevant_files": [
-            {
-                "file": "requirements/requirements.txt",
-                "line_number": null,
-                "reason": "The check script reported a DEP002 diagnostic for this file: \"DEP002 'type_infer' defined as a dependency but not used in the codebase\", indicating an unused dependency listed here that caused the failure."
+                "file": "py/flwr/server/serverapp/app.py",
+                "line_number": 253,
+                "reason": "Mypy reported an incompatible-assignment error here: \"py/flwr/server/serverapp/app.py:253: error: Incompatible types in assignment (expression has type \\\"None\\\", variable has type \\\"Context\\\")\" \u2014 this type error is the direct cause of the CI exit code 1."
             },
             {
-                "file": "tests/scripts/check_requirements.py",
-                "line_number": null,
-                "reason": "This script was executed by the failing step and produced the DEP002 diagnostic and non-zero exit code (it prints the checks and the unused-dependency message), directly triggering the CI step failure."
+                "file": "flwr/proto/run.proto",
+                "line_number": 20,
+                "reason": "Protoc check produced a warning at this line: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" \u2014 a build warning generated during proto checking (did not cause job failure)."
+            },
+            {
+                "file": "flwr/proto/clientappio.proto",
+                "line_number": 20,
+                "reason": "Protoc check produced a warning at this line: \"flwr/proto/clientappio.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" \u2014 a build warning generated during proto checking (did not cause job failure)."
             }
         ],
         "error_types": [
             {
-                "category": "Dependency Error",
-                "subcategory": "Unused dependency (DEP002)",
-                "evidence": "Log shows: \"- requirements/requirements.txt    None:None: DEP002 'type_infer' defined as a dependency but not used in the codebase\"."
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "py/flwr/server/serverapp/app.py:253: error: Incompatible types in assignment (expression has type \"None\", variable has type \"Context\"); Found 1 error in 1 file; Process completed with exit code 1."
+            },
+            {
+                "category": "Build Warning",
+                "subcategory": "Proto unused import",
+                "evidence": "flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused. and flwr/proto/clientappio.proto:20:1: warning: Import flwr/proto/fab.proto is unused."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Python 3.11",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "bc2c4f13bf35afedfdfc9c1552e397afabd48b3d",
+        "error_context": [
+            "The CI run failed because the linting step inside the test script returned a non-zero exit code: ruff detected an unused import (F401) in a test file, causing the script ./framework/dev/test.sh to exit with code 1. Evidence: \"py/flwr/supernode/servicer/clientappio/clientappio_servicer_test.py:38:5: F401 [*] `flwr.proto.message_pb2.ObjectIDs` imported but unused\" followed by \"Found 1 error.\" and \"##[error]Process completed with exit code 1.\"",
+            "Earlier in the job, the proto check step (./framework/dev/check-protos.sh) emitted non-fatal warnings about unused imports in proto files: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" and \"flwr/proto/clientappio.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" Those warnings did not cause the failure but are relevant diagnostics that appeared before the lint failure.",
+            "The failing job corresponds to the test_core matrix job for Python 3.11 (job name displayed as \"Python 3.11\"), and the failing step is the Lint + Test step which runs the repository test script. The workflow step that ran the script is defined as: run: ./framework/dev/test.sh."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/supernode/servicer/clientappio/clientappio_servicer_test.py",
+                "line_number": 38,
+                "reason": "Ruff reported an unused import at this file and line: \"py/.../clientappio_servicer_test.py:38:5: F401 ... `flwr.proto.message_pb2.ObjectIDs` imported but unused\". This lint error was reported as \"Found 1 error.\" and caused the test script to exit with code 1."
+            },
+            {
+                "file": "flwr/proto/run.proto",
+                "line_number": 20,
+                "reason": "Protobuf compiler emitted a non-fatal warning: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" This did not stop the job but is a recorded warning from the check-protos step."
+            },
+            {
+                "file": "flwr/proto/clientappio.proto",
+                "line_number": 20,
+                "reason": "Protobuf compiler emitted a non-fatal warning: \"flwr/proto/clientappio.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" This was reported by the check-protos step but did not cause the CI to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Linting",
+                "subcategory": "Unused Import (F401)",
+                "evidence": "\"py/flwr/supernode/servicer/clientappio/clientappio_servicer_test.py:38:5: F401 [*] `flwr.proto.message_pb2.ObjectIDs` imported but unused\" and \"Found 1 error.\""
+            },
+            {
+                "category": "Build Warning",
+                "subcategory": "Protobuf unused import",
+                "evidence": "\"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" and \"flwr/proto/clientappio.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" (emitted by ./framework/dev/check-protos.sh)"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test_core (matrix: python=3.11) / displayed as \"Python 3.11\"",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "2fad75a215353d4ca29f44cf8d0e81589bce0351",
+        "error_context": [
+            "The CI run failed during the lint/test stage. The workflow ran 'Install dependencies (mandatory only)' and 'Check if protos need recompilation' successfully, then executed the 'Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)' step by running ./framework/dev/test.sh. Within that script pylint was executed and reported a lint error: \"py/flwr/client/start_client_internal.py:93:0: R0913: Too many arguments (15/5) (too-many-arguments)\", causing the test script to exit non\u2011zero and the job to end with \"Process completed with exit code 8.\" All earlier checks (isort, black, ruff, mypy, proto checks) completed successfully, so the failure is a pylint/code\u2011quality violation in py/flwr/client/start_client_internal.py that made the CI job fail."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/client/start_client_internal.py",
+                "line_number": 93,
+                "reason": "Pylint reported a violation at this file/location: \"py/flwr/client/start_client_internal.py:93:0: R0913: Too many arguments (15/5) (too-many-arguments)\", which is the lint error that caused the job to exit with code 8."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Linting",
+                "subcategory": "Too many arguments (pylint R0913)",
+                "evidence": "\"py/flwr/client/start_client_internal.py:93:0: R0913: Too many arguments (15/5) (too-many-arguments)\" from the pylint output."
+            },
+            {
+                "category": "CI / Execution",
+                "subcategory": "Non-zero exit (script failed)",
+                "evidence": "\"##[error]Process completed with exit code 8.\" reported after the pylint failure, indicating the job terminated due to the linter error."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test_core (Python 3.9)",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "bf36654f7ba4c99125f37435acdea489c1e012c8",
+        "error_context": [
+            "The CI run completed checkout, bootstrap, dependency installation (poetry install) and proto checks, but failed during the Lint + Test step when running mypy as part of ./framework/dev/test.sh. Mypy reported a type-check error in the test file py/flwr/server/grid/inmemory_grid_test.py:84 \u2014 \"Missing positional argument \\\"flwr_aid\\\" in call to \\\"Run\\\"\" \u2014 and then mypy exited with a non-zero status (\"Found 1 error in 1 file (checked 375 source files)\"), causing the GitHub Actions job to terminate with exit code 1. A proto-related warning (\"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\") was present earlier during the \"Check if protos need recompilation\" step but was non-fatal and did not cause the job to fail. Thus the blocking root cause is a mypy type-check failure in the test file called from the Lint + Test step on the Python 3.10 job."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/server/grid/inmemory_grid_test.py",
+                "line_number": 84,
+                "reason": "Mypy reported a missing positional argument 'flwr_aid' at this location: \"py/flwr/server/grid/inmemory_grid_test.py:84: error: Missing positional argument \\\"flwr_aid\\\" in call to \\\"Run\\\"\" \u2014 this single mypy error caused the CI job to fail (Found 1 error ... and process exited with code 1)."
+            },
+            {
+                "file": "flwr/proto/run.proto",
+                "line_number": 20,
+                "reason": "Proto check emitted a warning: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" This is a non-fatal warning recorded during the 'Check if protos need recompilation' step and did not cause the job to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy missing positional argument / call-arg",
+                "evidence": "py/flwr/server/grid/inmemory_grid_test.py:84: error: Missing positional argument \"flwr_aid\" in call to \"Run\"  [call-arg]; Found 1 error in 1 file (checked 375 source files)"
+            },
+            {
+                "category": "Code Generation / Lint Warning",
+                "subcategory": "Proto unused import warning",
+                "evidence": "flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused. (emitted during ./framework/dev/check-protos.sh)"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test_core",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "7532d148bee3ee2a63f0492f89acae099082f5d7",
+        "error_context": [
+            "The CI run failed because the lint step in the 'Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)' stage (invoked by ./framework/dev/test.sh) reported unused-import lint errors and exited non\u2011zero, causing the job to fail. Evidence: ruff produced three F401 errors pointing to py/flwr/server/superlink/serverappio/serverappio_servicer.py and then the process exited with code 1 (\"Found 3 errors.\" and \"##[error]Process completed with exit code 1.\").",
+            "A non-blocking warning occurred earlier in the proto check step (./framework/dev/check-protos.sh): protoc emitted \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" This is a diagnostic but did not cause the job to exit. Dependency installation (poetry/pip) and proto stub generation succeeded and are incidental to the failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/server/superlink/serverappio/serverappio_servicer.py",
+                "line_number": 25,
+                "reason": "CI-blocking lint errors reported by ruff: \"py/flwr/server/superlink/serverappio/serverappio_servicer.py:25:25: F401 `flwr.common.ConfigRecord` imported but unused\" (and two additional F401s in the same file at lines 32 and 39). Ruff reported \"Found 3 errors.\" which caused the job to exit with code 1."
+            },
+            {
+                "file": "flwr/proto/run.proto",
+                "line_number": 20,
+                "reason": "Protobuf compilation warning recorded by check-protos: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" This is a documented warning in the log (non-fatal)."
+            },
+            {
+                "file": "flwr/proto/fab.proto",
+                "line_number": null,
+                "reason": "Referenced by the protoc warning as the unused import: \"Import flwr/proto/fab.proto is unused.\" Included as relevant context for proto diagnostics."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting / Linting",
+                "subcategory": "Unused Import",
+                "evidence": "ruff output: \"py/flwr/server/superlink/serverappio/serverappio_servicer.py:25:25: F401 `flwr.common.ConfigRecord` imported but unused\"; \"Found 3 errors.\" and \"[*] 3 fixable with the `--fix` option.\""
+            },
+            {
+                "category": "Compilation Warning",
+                "subcategory": "Unused Proto Import",
+                "evidence": "protoc warning: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\""
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Python 3.10",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            },
+            {
+                "job": "Python 3.11",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            },
+            {
+                "job": "Python 3.12",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "da4ffd3018dbc705f2a969f08eeccf77c6683db1",
+        "error_context": [
+            "The CI run failed because the Black code formatter encountered a parse error while formatting a repository file during the 'Lint + Test' step (invoked via ./framework/dev/test.sh). Prior steps (checkout, Python setup via bootstrap, dependency installation with poetry, and proto stub generation) completed successfully, but when test.sh ran formatting checks Black reported: \"error: cannot format /home/runner/work/flower/flower/framework/py/flwr/common/message.py: Cannot parse: 406:12:             error = None\" and then exited non\u2011zero. Black summarized \"382 files would be left unchanged, 1 file would fail to reformat,\" and the job ended with \"Process completed with exit code 123.\" Both matrix jobs for Python (3.10 and 3.11) show the same Black failure on the same file, causing the overall workflow failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "framework/py/flwr/common/message.py",
+                "line_number": 406,
+                "reason": "Black reported a parse/formatting error at this file and location: \"Cannot parse: 406:12:             error = None\" \u2014 the formatter failure on this file caused Black to exit with code 123 and the CI job to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Formatter parse error (Black)",
+                "evidence": "\"error: cannot format .../framework/py/flwr/common/message.py: Cannot parse: 406:12:             error = None\""
             },
             {
                 "category": "CI Failure",
-                "subcategory": "Non-zero exit code",
-                "evidence": "The step ended with a failing exit: \"##[error]Process completed with exit code 1.\" after the requirements check script ran."
+                "subcategory": "Non-zero exit code from formatting step",
+                "evidence": "\"382 files would be left unchanged, 1 file would fail to reformat.\" and \"##[error]Process completed with exit code 123.\""
             }
         ],
         "failed_job": [
             {
-                "job": "check_requirements",
-                "step": "Check main requirements",
-                "command": "pip install -r requirements/requirements-dev.txt\n\npython tests/scripts/check_requirements.py"
+                "job": "Python 3.10",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            },
+            {
+                "job": "Python 3.11",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "aabb64c14648acacf3f881b2a84f68db96de84e9",
+        "error_context": [
+            "The CI run failed during the 'Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)' step invoked by the command './framework/dev/test.sh' in the test_core job for Python 3.9. The script executed mypy which reported four syntax errors in py/flwr/common/inflatable_rest_utils.py: \"error: X | Y syntax for unions requires Python 3.10\" at lines 32, 57, 70, and 97. Because the job used CPython 3.9.22 (actions/setup-python set up Python 3.9), mypy flagged the newer union syntax as invalid and exited with a non-zero status, causing the overall job to terminate with \"Process completed with exit code 1.\"",
+            "A non-fatal protobuf warning was produced earlier in the 'Check if protos need recompilation' step (./framework/dev/check-protos.sh): \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" This warning did not cause the job to fail but is present in the logs and ties to flwr/proto/run.proto."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/common/inflatable_rest_utils.py",
+                "line_number": 32,
+                "reason": "Mypy reported four syntax errors in this file (lines 32, 57, 70, 97) stating: \"X | Y syntax for unions requires Python 3.10\". The log summary: \"Found 4 errors in 1 file (checked 375 source files)\" and the job failed with exit code 1, so this file directly caused the CI failure."
+            },
+            {
+                "file": "flwr/proto/run.proto",
+                "line_number": 20,
+                "reason": "The proto check step emitted a warning: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\" This is a logged proto-level warning (did not fail the job) tied to this file."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy syntax error (union 'X | Y' requires Python 3.10)",
+                "evidence": "Log: \"py/flwr/common/inflatable_rest_utils.py:32: error: X | Y syntax for unions requires Python 3.10  [syntax]\" and similar errors at lines 57, 70, 97; \"Found 4 errors in 1 file (checked 375 source files)\"."
+            },
+            {
+                "category": "Configuration Error",
+                "subcategory": "Python version mismatch (code uses Python 3.10 syntax but job runs Python 3.9)",
+                "evidence": "actions/setup-python set up CPython 3.9.22 (\"Successfully set up CPython (3.9.22)\") while mypy reported that the 'X | Y' union syntax requires Python 3.10."
+            },
+            {
+                "category": "Code Generation / Proto Warning",
+                "subcategory": "Unused import in .proto file",
+                "evidence": "Log from check-protos.sh: \"flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.\""
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test_core (Python 3.9)",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "6500a61cd35926f96c6dda6b9f0b81e3da559b71",
+        "error_context": [
+            "The CI run failed because static type checking (mypy) reported a type/attribute error during the 'Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)' step. In the job 'Python 3.11' the workflow executed './framework/dev/test.sh', which runs mypy; mypy produced: \"py/flwr/server/app.py:76: error: Module \\\"flwr.superexec\\\" has no attribute \\\"load_executor\\\"  [attr-defined]\" and then exited non\u2011zero, causing the CI job to fail (exit code 1).",
+            "Prior steps (checkout, bootstrap, installing dependencies via poetry, and protoc checks) completed successfully: dependencies were installed, protobuf stubs were generated, and formatters/linters (clang-format, isort, black, ruff, docformatter, docsig) passed. Protoc emitted warnings about unused proto imports but reported no changes; those warnings did not cause the job to fail. The single blocking failure is the mypy attribute error in py/flwr/server/app.py referenced above.",
+            "Additional non-fatal tooling warnings were emitted (mypy DeprecationWarning about numpy.typing.mypy_plugin and protoc unused-import warnings). These are informational and did not directly cause the CI failure, but they are present in the logs and may indicate areas to review."
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/server/app.py",
+                "line_number": 76,
+                "reason": "Mypy reported a blocking type error at this file/line: \"py/flwr/server/app.py:76: error: Module \\\"flwr.superexec\\\" has no attribute \\\"load_executor\\\"  [attr-defined]\", and mypy's failure caused the job to exit with code 1."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy attribute error (missing attribute)",
+                "evidence": "py/flwr/server/app.py:76: error: Module \"flwr.superexec\" has no attribute \"load_executor\"  [attr-defined]; Found 1 error in 1 file (checked 398 source files)."
+            },
+            {
+                "category": "Tooling Warning",
+                "subcategory": "DeprecationWarning (mypy plugin)",
+                "evidence": "/opt/hostedtoolcache/.../site-packages/mypy/__main__.py:37: DeprecationWarning: `numpy.typing.mypy_plugin` is deprecated... (from mypy run prior to the error)."
+            },
+            {
+                "category": "Protobuf Warning",
+                "subcategory": "Unused import in .proto",
+                "evidence": "flwr/proto/run.proto:20:1: warning: Import flwr/proto/fab.proto is unused.; flwr/proto/clientappio.proto:20:1: warning: Import flwr/proto/fab.proto is unused."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test_core",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "a18d138dec4118b2e00daac321d9a744ea7da0d4",
+        "error_context": [
+            "The CI run completed setup and dependency installation (actions/setup-python, poetry install) successfully, then executed the Lint + Test step by running ./framework/dev/test.sh. That script ran formatters and linters (clang-format, isort, black, ruff, etc.) which passed, but mypy (invoked inside test.sh) reported a type-checking error: an unused \"type: ignore\" comment in py/flwr/common/record/recorddict_test.py at line 277. Mypy then exited non\u2011zero (\"Found 1 error in 1 file (checked 340 source files)\"), causing the Lint + Test step (./framework/dev/test.sh) to exit with code 1 and the job (Python 3.9 matrix run) to fail. Log evidence: \"py/flwr/common/record/recorddict_test.py:277: error: Unused \\\"type: ignore\\\" comment  [unused-ignore]\" and \"Found 1 error in 1 file (checked 340 source files)\" followed by \"##[error]Process completed with exit code 1.\""
+        ],
+        "relevant_files": [
+            {
+                "file": "py/flwr/common/record/recorddict_test.py",
+                "line_number": 277,
+                "reason": "Mypy reported the failing error pointing directly to this file and line: \"py/flwr/common/record/recorddict_test.py:277: error: Unused \\\"type: ignore\\\" comment  [unused-ignore]\" \u2014 this single mypy error caused the test.sh step to exit with code 1 and the job to fail."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy unused-ignore (Unused \"type: ignore\" comment)",
+                "evidence": "\"py/flwr/common/record/recorddict_test.py:277: error: Unused \\\"type: ignore\\\" comment  [unused-ignore]\" and \"Found 1 error in 1 file (checked 340 source files)\""
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Python 3.9",
+                "step": "Lint + Test (isort/black/docformatter/mypy/pylint/flake8/pytest)",
+                "command": "./framework/dev/test.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "885753bde5b2521a68fd35ee8d0b041cff849171",
+        "error_context": [
+            "The failing run installed dependencies and built the e2e-bare and flwr packages successfully, then executed the e2e test harness (step 'Framework / e2e-bare'). During the test run the Flower server started but one or more clients failed to establish gRPC connections to the server: the client process raised grpc._channel._MultiThreadedRendezvous with StatusCode.UNAVAILABLE reporting \"failed to connect to all addresses; ... ipv4:127.0.0.1:8080: Failed to connect to remote host: connect: Connection refused (111)\". Later, after the server terminated, clients raised a second gRPC UNAVAILABLE error with details \"Cancelling all calls\". The immediate root cause is a runtime network/IPC failure where the client could not connect to the server on 127.0.0.1:8080 (connection refused), followed by RPC cancellation when the server shut down. The job then terminated with exit code 124 (runner timeout/forced termination). Relevant steps involved: 'Framework / e2e-bare' (the test invocation ./../../test_legacy.sh \"e2e-bare\" which started both server and client processes) and underlying library code in flwr and grpc that raised the network errors."
+        ],
+        "relevant_files": [
+            {
+                "file": "framework/e2e/e2e-bare/e2e_bare/client_app.py",
+                "line_number": 65,
+                "reason": "Tracebacks in the logs originate here where start_client(...) is invoked (line 65) \u2014 this is the e2e client entry point that triggered the failing gRPC calls."
+            },
+            {
+                "file": "flwr/client/app.py",
+                "line_number": 201,
+                "reason": "flwr client library invoked start_client() / start_client_internal (stack frames at lines shown in the logs), and the call into the gRPC receive loop originated here before the exception."
+            },
+            {
+                "file": "flwr/client/grpc_client/connection.py",
+                "line_number": 142,
+                "reason": "The exception occurred while executing 'proto = next(server_message_iterator)' (line 142 in connection.py), i.e., while receiving messages from the server over gRPC."
+            },
+            {
+                "file": "grpc/_channel.py",
+                "line_number": 543,
+                "reason": "gRPC internals raised the _MultiThreadedRendezvous exception (logs show __next__/_next frames around line 543) with StatusCode.UNAVAILABLE and the connection refusal / cancellation details."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Runtime Error",
+                "subcategory": "Network Connection Failure (gRPC UNAVAILABLE / connection refused)",
+                "evidence": "grpc._channel._MultiThreadedRendezvous: status = StatusCode.UNAVAILABLE details = \"failed to connect to all addresses; last error: UNKNOWN: ipv4:127.0.0.1:8080: Failed to connect to remote host: connect: Connection refused (111)\""
+            },
+            {
+                "category": "Runtime Error",
+                "subcategory": "RPC Cancelled (server shutdown)",
+                "evidence": "grpc._channel._MultiThreadedRendezvous: status = StatusCode.UNAVAILABLE details = \"Cancelling all calls\" (debug_error_string shows cancellation after server termination)"
+            },
+            {
+                "category": "Infrastructure Error",
+                "subcategory": "Job Timeout / Forced termination",
+                "evidence": "##[error]Process completed with exit code 124."
+            },
+            {
+                "category": "Configuration Warning",
+                "subcategory": "Deprecated API usage",
+                "evidence": "Deprecation warnings in logs: \"flwr.server.start_server() is deprecated\" and \"flwr.client.start_client() is deprecated\" (non-fatal warnings observed during the run)."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test_core",
+                "step": "Framework / e2e-bare",
+                "command": "./../../test_legacy.sh \"e2e-bare\""
             }
         ]
     }

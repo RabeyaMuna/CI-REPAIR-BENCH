@@ -1,0 +1,195 @@
+[
+    {
+        "sha_fail": "992b9a36ee14ce62ac8639c1ec88ba83e375e525",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/server/serverapp/app.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/server/serverapp/app.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/server/serverapp/app.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/server/serverapp/app.py",
+                        "line_range": [
+                            103,
+                            263
+                        ],
+                        "reason": "Mypy type error reported: \"py/flwr/server/serverapp/app.py:253: error: Incompatible types in assignment (expression has type \\\"None\\\", variable has type \\\"Context\\\")\". In run_serverapp (lines 103-263) the local variable `context` is assigned from context_from_proto(res.context) at line 137 (inferred as type Context) and later unconditionally set to None at line 253 (`context = None`). Assigning None to a variable inferred as non-Optional Context triggers the incompatible-assignment mypy error. The fault is in the run_serverapp method scope where `context` lacks an Optional annotation or the None assignment is invalid.",
+                        "issue_type": "type_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def run_serverapp(  # pylint: disable=R0914, disable=W0212, disable=R0915\n    serverappio_api_address: str,\n    log_queue: Queue[Optional[str]],\n    run_once: bool,\n    flwr_dir: Optional[str] = None,\n    certificates: Optional[bytes] = None,\n) -> None:\n    \"\"\"Run Flower ServerApp process.\"\"\"\n    # Resolve directory where FABs are installed\n    flwr_dir_ = get_flwr_dir(flwr_dir)\n    log_uploader = None\n    success = True\n    hash_run_id = None\n    run_status = None\n    heartbeat_sender = None\n    grid = None\n    while True:\n\n        try:\n            # Initialize the GrpcGrid\n            grid = GrpcGrid(\n                serverappio_service_address=serverappio_api_address,\n                root_certificates=certificates,\n            )\n\n            # Pull ServerAppInputs from LinkState\n            req = PullAppInputsRequest()\n            log(DEBUG, \"[flwr-serverapp] Pull ServerAppInputs\")\n            res: PullAppInputsResponse = grid._stub.PullAppInputs(req)\n            if not res.HasField(\"run\"):\n                sleep(3)\n                run_status = None\n                continue\n\n            context = context_from_proto(res.context)\n            run = run_from_proto(res.run)\n            fab = fab_from_proto(res.fab)\n\n            hash_run_id = get_sha256_hash(run.run_id)\n\n            grid.set_run(run.run_id)\n\n            # Start log uploader for this run\n            log_uploader = start_log_uploader(\n                log_queue=log_queue,\n                node_id=0,\n                run_id=run.run_id,\n                stub=grid._stub,\n            )\n\n            log(DEBUG, \"[flwr-serverapp] Start FAB installation.\")\n            install_from_fab(fab.content, flwr_dir=flwr_dir_, skip_prompt=True)\n\n            fab_id, fab_version = get_fab_metadata(fab.content)\n\n            app_path = str(\n                get_project_dir(fab_id, fab_version, fab.hash_str, flwr_dir_)\n            )\n            config = get_project_config(app_path)\n\n            # Obtain server app reference and the run config\n            server_app_attr = config[\"tool\"][\"flwr\"][\"app\"][\"components\"][\"serverapp\"]\n            server_app_run_config = get_fused_config_from_dir(\n                Path(app_path), run.override_config\n            )\n\n            # Update run_config in context\n            context.run_config = server_app_run_config\n\n            log(\n                DEBUG,\n                \"[flwr-serverapp] Will load ServerApp `%s` in %s\",\n                server_app_attr,\n                app_path,\n            )\n\n            # Change status to Running\n            run_status_proto = run_status_to_proto(RunStatus(Status.RUNNING, \"\", \"\"))\n            grid._stub.UpdateRunStatus(\n                UpdateRunStatusRequest(run_id=run.run_id, run_status=run_status_proto)\n            )\n\n            event(\n                EventType.FLWR_SERVERAPP_RUN_ENTER,\n                event_details={\"run-id-hash\": hash_run_id},\n            )\n\n            # Set up heartbeat sender\n            heartbeat_fn = get_grpc_app_heartbeat_fn(\n                grid._stub,\n                run.run_id,\n                failure_message=\"Heartbeat failed unexpectedly. The SuperLink could \"\n                \"not find the provided run ID, or the run status is invalid.\",\n            )\n            heartbeat_sender = HeartbeatSender(heartbeat_fn)\n            heartbeat_sender.start()\n\n            # Load and run the ServerApp with the Grid\n            updated_context = run_(\n                grid=grid,\n                server_app_dir=app_path,\n                server_app_attr=server_app_attr,\n                context=context,\n            )\n\n            # Send resulting context\n            context_proto = context_to_proto(updated_context)\n            log(DEBUG, \"[flwr-serverapp] Will push ServerAppOutputs\")\n            out_req = PushAppOutputsRequest(run_id=run.run_id, context=context_proto)\n            _ = grid._stub.PushAppOutputs(out_req)\n\n            run_status = RunStatus(Status.FINISHED, SubStatus.COMPLETED, \"\")\n        except RunNotRunningException:\n            log(INFO, \"\")\n            log(INFO, \"Run ID %s stopped.\", run.run_id)\n            log(INFO, \"\")\n            run_status = None\n            success = False\n\n        except Exception as ex:  # pylint: disable=broad-exception-caught\n            exc_entity = \"ServerApp\"\n            log(ERROR, \"%s raised an exception\", exc_entity, exc_info=ex)\n            run_status = RunStatus(Status.FINISHED, SubStatus.FAILED, str(ex))\n            success = False\n\n        finally:\n            # Stop heartbeat sender\n            if heartbeat_sender:\n                heartbeat_sender.stop()\n                heartbeat_sender = None\n\n            # Stop log uploader for this run and upload final logs\n            if log_uploader:\n                stop_log_uploader(log_queue, log_uploader)\n                log_uploader = None\n\n            # Update run status\n            if run_status and grid:\n                run_status_proto = run_status_to_proto(run_status)\n                grid._stub.UpdateRunStatus(\n                    UpdateRunStatusRequest(\n                        run_id=run.run_id, run_status=run_status_proto\n                    )\n                )\n\n            # Close the Grpc connection\n            if grid:\n                grid.close()\n\n            # Clean up the Context\n            context = None\n            gc.collect()\n\n            event(\n                EventType.FLWR_SERVERAPP_RUN_LEAVE,\n                event_details={\"run-id-hash\": hash_run_id, \"success\": success},\n            )\n\n        # Stop the loop if `flwr-serverapp` is expected to process a single run\n        if run_once:\n            break"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "a02c53a0eed80e7332e03b39bac351260afde289",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/supernode/servicer/clientappio/clientappio_servicer_test.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/supernode/servicer/clientappio/clientappio_servicer_test.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/supernode/servicer/clientappio/clientappio_servicer_test.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/supernode/servicer/clientappio/clientappio_servicer_test.py",
+                        "line_range": [
+                            18,
+                            49
+                        ],
+                        "reason": "CI lint failure: ruff/flake8 reported F401 (unused import) for ObjectIDs. Evidence from CI: \"py/flwr/supernode/servicer/clientappio/clientappio_servicer_test.py:38:5: F401 [*] `flwr.proto.message_pb2.ObjectIDs` imported but unused\". In the import block (lines 37-42) ObjectIDs is present on line 38 but is not referenced elsewhere in this file. Other names in the same import tuple are used (PullObjectResponse is instantiated at lines 85-87; PushObjectRequest appears as a type annotation at line 138; PushObjectResponse is used as a return annotation and returned at line 141), confirming that only ObjectIDs is unused. Remove the unused ObjectIDs import to resolve F401.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import unittest\nfrom unittest.mock import Mock\n\nfrom flwr.common import Context, typing\nfrom flwr.common.inflatable import (\n    get_all_nested_objects,\n    get_object_tree,\n    iterate_object_tree,\n)\nfrom flwr.common.message import make_message\nfrom flwr.common.serde import fab_to_proto, message_to_proto\nfrom flwr.common.serde_test import RecordMaker\nfrom flwr.proto.appio_pb2 import (  # pylint:disable=E0611\n    PullAppInputsResponse,\n    PullAppMessagesResponse,\n    PushAppMessagesResponse,\n    PushAppOutputsResponse,\n)\nfrom flwr.proto.message_pb2 import Context as ProtoContext  # pylint:disable=E0611\nfrom flwr.proto.message_pb2 import (  # pylint:disable=E0611\n    ObjectIDs,\n    PullObjectResponse,\n    PushObjectRequest,\n    PushObjectResponse,\n)\nfrom flwr.proto.run_pb2 import Run as ProtoRun  # pylint:disable=E0611\nfrom flwr.supernode.runtime.run_clientapp import (\n    pull_clientappinputs,\n    push_clientappoutputs,\n)\n\nfrom .clientappio_servicer import ClientAppIoServicer"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "a6517d5fc23bbb6be3424924264025b961df3fe2",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/client/start_client_internal.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/client/start_client_internal.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "a7a139ca8f5d0acdebb205d469166fbe034c2372",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/server/grid/inmemory_grid_test.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/server/grid/inmemory_grid_test.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/server/grid/inmemory_grid_test.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/server/grid/inmemory_grid_test.py",
+                        "line_range": [
+                            72,
+                            99
+                        ],
+                        "reason": "Mypy failure as reported by CI: \"Missing positional argument \\\"flwr_aid\\\" in call to \\\"Run\\\"\" at py/flwr/server/grid/inmemory_grid_test.py:84. The failing call is the Run(...) expression inside TestInMemoryGrid.setUp (lines 72-99). The test constructs Run using keyword arguments including 'run_id', 'fab_id', 'fab_version', 'fab_hash', etc. (lines ~84-95) but the Run type signature (per mypy) requires a positional 'flwr_aid' argument that is not supplied. This type-check error causes mypy to exit non-zero and fails the Lint + Test job. (CI evidence: mypy error message shown in job logs; file/line referenced: py/flwr/server/grid/inmemory_grid_test.py:84.)",
+                        "issue_type": "type_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "    def setUp(self) -> None:\n        \"\"\"Initialize State and Grid instance before each test.\n\n        Grid uses the default StateFactory (i.e. SQLite)\n        \"\"\"\n        # Create grid\n        self.num_nodes = 42\n        self.state = MagicMock()\n        self.state.get_nodes.return_value = [\n            generate_rand_int_from_bytes(NODE_ID_NUM_BYTES)\n            for _ in range(self.num_nodes)\n        ]\n        self.state.get_run.return_value = Run(\n            run_id=61016,\n            fab_id=\"mock/mock\",\n            fab_version=\"v1.0.0\",\n            fab_hash=\"9f86d08\",\n            override_config={\"test_key\": \"test_value\"},\n            pending_at=now().isoformat(),\n            starting_at=\"\",\n            running_at=\"\",\n            finished_at=\"\",\n            status=RunStatus(status=Status.PENDING, sub_status=\"\", details=\"\"),\n        )\n        state_factory = MagicMock(state=lambda: self.state)\n        self.grid = InMemoryGrid(state_factory=state_factory)\n        self.grid.set_run(run_id=61016)\n        self.grid.state = self.state"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "af6a0b457a537777e1e18111b49dbe9abfffb2cd",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/server/superlink/serverappio/serverappio_servicer.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/server/superlink/serverappio/serverappio_servicer.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/server/superlink/serverappio/serverappio_servicer.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/server/superlink/serverappio/serverappio_servicer.py",
+                        "line_range": [
+                            18,
+                            84
+                        ],
+                        "reason": "CI lint failure (ruff F401) reported three unused-import errors in this import block (see ruff output: \"py/flwr/server/superlink/serverappio/serverappio_servicer.py:25:25: F401 `flwr.common.ConfigRecord` imported but unused\" and \"Found 3 errors.\"). The file imports multiple symbols that are not referenced anywhere in the code: (1) ConfigRecord imported on line 25 (from flwr.common import ConfigRecord, Message) is unused; (2) fab_from_proto imported on line 32 (from flwr.common.serde import fab_from_proto) is unused; (3) user_config_from_proto imported on line 39 (from flwr.common.serde import user_config_from_proto) is unused. These three unused imports directly explain the ruff F401 errors that caused the CI lint step to fail.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import threading\nfrom logging import DEBUG, INFO\nfrom typing import Optional\nfrom uuid import UUID\n\nimport grpc\n\nfrom flwr.common import ConfigRecord, Message\nfrom flwr.common.constant import SUPERLINK_NODE_ID, Status\nfrom flwr.common.inflatable import check_body_len_consistency\nfrom flwr.common.logger import log\nfrom flwr.common.serde import (\n    context_from_proto,\n    context_to_proto,\n    fab_from_proto,\n    fab_to_proto,\n    message_from_proto,\n    message_to_proto,\n    run_status_from_proto,\n    run_status_to_proto,\n    run_to_proto,\n    user_config_from_proto,\n)\nfrom flwr.common.typing import Fab, RunStatus\nfrom flwr.proto import serverappio_pb2_grpc  # pylint: disable=E0611\nfrom flwr.proto.fab_pb2 import GetFabRequest, GetFabResponse  # pylint: disable=E0611\nfrom flwr.proto.heartbeat_pb2 import (  # pylint: disable=E0611\n    SendAppHeartbeatRequest,\n    SendAppHeartbeatResponse,\n)\nfrom flwr.proto.log_pb2 import (  # pylint: disable=E0611\n    PushLogsRequest,\n    PushLogsResponse,\n)\nfrom flwr.proto.message_pb2 import (  # pylint: disable=E0611\n    PullObjectRequest,\n    PullObjectResponse,\n    PushObjectRequest,\n    PushObjectResponse,\n)\nfrom flwr.proto.node_pb2 import Node  # pylint: disable=E0611\nfrom flwr.proto.run_pb2 import (  # pylint: disable=E0611\n    GetRunRequest,\n    GetRunResponse,\n    GetRunStatusRequest,\n    GetRunStatusResponse,\n    UpdateRunStatusRequest,\n    UpdateRunStatusResponse,\n)\nfrom flwr.proto.serverappio_pb2 import (  # pylint: disable=E0611\n    GetNodesRequest,\n    GetNodesResponse,\n    PullResMessagesRequest,\n    PullResMessagesResponse,\n    PullServerAppInputsRequest,\n    PullServerAppInputsResponse,\n    PushInsMessagesRequest,\n    PushInsMessagesResponse,\n    PushServerAppOutputsRequest,\n    PushServerAppOutputsResponse,\n)\nfrom flwr.server.superlink.ffs.ffs import Ffs\nfrom flwr.server.superlink.ffs.ffs_factory import FfsFactory\nfrom flwr.server.superlink.linkstate import LinkState, LinkStateFactory\nfrom flwr.server.superlink.utils import abort_if\nfrom flwr.server.utils.validator import validate_message\nfrom flwr.supercore.object_store import ObjectStoreFactory"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "b2a09db583937f76160cef9629dc7d172b86dbed",
+        "fault_localization_data": [
+            {
+                "file_path": "framework/py/flwr/common/message.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/common/message.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "c3a3944a6d50067aa5937e22e97eac0a64631f47",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/common/inflatable_rest_utils.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/common/inflatable_rest_utils.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/common/inflatable_rest_utils.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/common/inflatable_rest_utils.py",
+                        "line_range": [
+                            31,
+                            66
+                        ],
+                        "reason": "Type-checking syntax errors reported by mypy: the file uses Python 3.10 union annotation syntax ('X | Y') inside make_pull_object_fn_rest at lines 32 and 57. CI mypy log: \"py/flwr/common/inflatable_rest_utils.py:32: error: X | Y syntax for unions requires Python 3.10  [syntax]\" and similarly at line 57; overall \"Found 4 errors in 1 file (checked 375 source files)\". The job ran under Python 3.9.22 (actions/setup-python), causing mypy to flag the '|'-union syntax as invalid. Concrete occurrences in this method: the parameter annotation at line 32 (PullObjectResponse | None) and the local variable annotation at line 57 (PullObjectResponse | None).",
+                        "issue_type": "type_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def make_pull_object_fn_rest(\n    pull_object_rest: Callable[[PullObjectRequest], PullObjectResponse | None],\n    node: Node,\n    run_id: int,\n) -> Callable[[str], bytes]:\n    \"\"\"Create a pull object function that uses REST to pull objects.\n\n    Parameters\n    ----------\n    pull_object_rest : Callable[[PullObjectRequest], PullObjectResponse]\n        A function that makes a POST request against the `/push-object` REST endpoint\n    node : Node\n        The node making the request.\n    run_id : int\n        The run ID for the current operation.\n\n    Returns\n    -------\n    Callable[[str], bytes]\n        A function that takes an object ID and returns the object content as bytes.\n        The function raises `ObjectIdNotPreregisteredError` if the object ID is not\n        pre-registered, or `ObjectUnavailableError` if the object is not yet available.\n    \"\"\"\n\n    def pull_object_fn(object_id: str) -> bytes:\n        request = PullObjectRequest(node=node, run_id=run_id, object_id=object_id)\n        response: PullObjectResponse | None = pull_object_rest(request)\n        if response is None:\n            raise ValueError(\"PullObjectResponse is None.\")\n        if not response.object_found:\n            raise ObjectIdNotPreregisteredError(object_id)\n        if not response.object_available:\n            raise ObjectUnavailableError(object_id)\n        return response.object_content\n\n    return pull_object_fn"
+                    },
+                    {
+                        "file_path": "py/flwr/common/inflatable_rest_utils.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/common/inflatable_rest_utils.py",
+                        "line_range": [
+                            69,
+                            103
+                        ],
+                        "reason": "Type-checking syntax errors reported by mypy: the file uses Python 3.10 union annotation syntax ('X | Y') inside make_push_object_fn_rest at lines 70 and 97. CI mypy log: \"py/flwr/common/inflatable_rest_utils.py:70: error: X | Y syntax for unions requires Python 3.10  [syntax]\" and similarly at line 97; overall \"Found 4 errors in 1 file (checked 375 source files)\". The job ran under Python 3.9.22 (actions/setup-python), causing mypy to flag the '|'-union syntax as invalid. Concrete occurrences in this method: the parameter annotation at line 70 (PushObjectResponse | None) and the local variable annotation at line 97 (PushObjectResponse | None).",
+                        "issue_type": "type_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def make_push_object_fn_rest(\n    push_object_rest: Callable[[PushObjectRequest], PushObjectResponse | None],\n    node: Node,\n    run_id: int,\n) -> Callable[[str, bytes], None]:\n    \"\"\"Create a push object function that uses REST to push objects.\n\n    Parameters\n    ----------\n    push_object_rest : Callable[[PushObjectRequest], PushObjectResponse]\n        A function that makes a POST request against the `/pull-object` REST endpoint\n    node : Node\n        The node making the request.\n    run_id : int\n        The run ID for the current operation.\n\n    Returns\n    -------\n    Callable[[str, bytes], None]\n        A function that takes an object ID and its content as bytes, and pushes it\n        to the servicer. The function raises `ObjectIdNotPreregisteredError` if\n        the object ID is not pre-registered.\n    \"\"\"\n\n    def push_object_fn(object_id: str, object_content: bytes) -> None:\n        request = PushObjectRequest(\n            node=node, run_id=run_id, object_id=object_id, object_content=object_content\n        )\n        response: PushObjectResponse | None = push_object_rest(request)\n        if response is None:\n            raise ValueError(\"PushObjectResponse is None.\")\n        if not response.stored:\n            raise ObjectIdNotPreregisteredError(object_id)\n\n    return push_object_fn"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "cbb7561e4e0d81a027fbd7ff6482fea13ee17398",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/server/app.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/server/app.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/server/app.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/server/app.py",
+                        "line_range": [
+                            18,
+                            84
+                        ],
+                        "reason": "Mypy reported: \"py/flwr/server/app.py:76: error: Module \\\"flwr.superexec\\\" has no attribute \\\"load_executor\\\"  [attr-defined]\". The import statement at line 76 ('from flwr.superexec import load_executor') resides in the file's import block (lines 18\u201384). This indicates a missing attribute/export in the module 'flwr.superexec' or an incorrect import name. CI mypy failure directly points to this import as the blocking type error.",
+                        "issue_type": "type_error",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import argparse\nimport csv\nimport importlib.util\nimport multiprocessing\nimport multiprocessing.context\nimport os\nimport sys\nimport threading\nfrom collections.abc import Sequence\nfrom logging import DEBUG, INFO, WARN\nfrom pathlib import Path\nfrom time import sleep\nfrom typing import Any, Callable, Optional, TypeVar\n\nimport grpc\nimport yaml\nfrom cryptography.hazmat.primitives.asymmetric import ec\nfrom cryptography.hazmat.primitives.serialization import load_ssh_public_key\n\nfrom flwr.common import GRPC_MAX_MESSAGE_LENGTH, EventType, event\nfrom flwr.common.address import parse_address\nfrom flwr.common.args import try_obtain_server_certificates\nfrom flwr.common.auth_plugin import ExecAuthPlugin, ExecAuthzPlugin\nfrom flwr.common.config import get_flwr_dir, parse_config_args\nfrom flwr.common.constant import (\n    AUTH_TYPE_YAML_KEY,\n    AUTHZ_TYPE_YAML_KEY,\n    CLIENT_OCTET,\n    EXEC_API_DEFAULT_SERVER_ADDRESS,\n    FLEET_API_GRPC_RERE_DEFAULT_ADDRESS,\n    FLEET_API_REST_DEFAULT_ADDRESS,\n    ISOLATION_MODE_PROCESS,\n    ISOLATION_MODE_SUBPROCESS,\n    SERVER_OCTET,\n    SERVERAPPIO_API_DEFAULT_SERVER_ADDRESS,\n    SIMULATIONIO_API_DEFAULT_SERVER_ADDRESS,\n    TRANSPORT_TYPE_GRPC_ADAPTER,\n    TRANSPORT_TYPE_GRPC_RERE,\n    TRANSPORT_TYPE_REST,\n    EventLogWriterType,\n)\nfrom flwr.common.event_log_plugin import EventLogWriterPlugin\nfrom flwr.common.exit import ExitCode, flwr_exit\nfrom flwr.common.exit_handlers import register_exit_handlers\nfrom flwr.common.grpc import generic_create_grpc_server\nfrom flwr.common.logger import log\nfrom flwr.common.secure_aggregation.crypto.symmetric_encryption import (\n    public_key_to_bytes,\n)\nfrom flwr.proto.fleet_pb2_grpc import (  # pylint: disable=E0611\n    add_FleetServicer_to_server,\n)\nfrom flwr.proto.grpcadapter_pb2_grpc import add_GrpcAdapterServicer_to_server\nfrom flwr.server.fleet_event_log_interceptor import FleetEventLogInterceptor\nfrom flwr.server.serverapp.app import flwr_serverapp\nfrom flwr.simulation.app import flwr_simulation\nfrom flwr.supercore.ffs import FfsFactory\nfrom flwr.supercore.object_store import ObjectStoreFactory\nfrom flwr.superexec import load_executor\nfrom flwr.superlink.servicer.exec import run_exec_api_grpc\n\nfrom .superlink.fleet.grpc_adapter.grpc_adapter_servicer import GrpcAdapterServicer\nfrom .superlink.fleet.grpc_rere.fleet_servicer import FleetServicer\nfrom .superlink.fleet.grpc_rere.server_interceptor import AuthenticateServerInterceptor\nfrom .superlink.linkstate import LinkStateFactory\nfrom .superlink.serverappio.serverappio_grpc import run_serverappio_api_grpc\nfrom .superlink.simulation.simulationio_grpc import run_simulationio_api_grpc"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "d4593aedbc14dbd885f63009dcb0a4b962a04be6",
+        "fault_localization_data": [
+            {
+                "file_path": "py/flwr/common/record/recorddict_test.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/common/record/recorddict_test.py",
+                "faults": [
+                    {
+                        "file_path": "py/flwr/common/record/recorddict_test.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/flower/framework/py/flwr/common/record/recorddict_test.py",
+                        "line_range": [
+                            263,
+                            285
+                        ],
+                        "reason": "Mypy reported an unused \"type: ignore\" comment (CI error: \"py/flwr/common/record/recorddict_test.py:277: error: Unused \\\"type: ignore\\\" comment  [unused-ignore]\"). The offending comment is the \"# type: ignore\" appended to the MetricRecord construction in this test method (assignment: m_record = MetricRecord(my_metrics, keep_input=keep_input)  # type: ignore). This \"type: ignore\" is unnecessary per mypy and caused the type-check to fail. Scope: entire test_set_metrics_to_metricrecord_with_and_without_keeping_input function (lines 263-285).",
+                        "issue_type": "type_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def test_set_metrics_to_metricrecord_with_and_without_keeping_input(\n    keep_input: bool,\n) -> None:\n    \"\"\"Test keep_input functionality for MetricRecord.\"\"\"\n    # constructing a valid input\n    labels = [1, 2.0]\n    arrays = get_ndarrays()\n    my_metrics = OrderedDict(\n        {str(label): arr.flatten().tolist() for label, arr in zip(labels, arrays)}\n    )\n\n    my_metrics_copy = my_metrics.copy()\n\n    # Add metric\n    m_record = MetricRecord(my_metrics, keep_input=keep_input)  # type: ignore\n\n    # Check metrics are actually added\n    # Check that input dict has been emptied when enabled such behaviour\n    if keep_input:\n        assert my_metrics == m_record\n    else:\n        assert my_metrics_copy == m_record\n        assert len(my_metrics) == 0"
+                    }
+                ]
+            }
+        ]
+    }
+]

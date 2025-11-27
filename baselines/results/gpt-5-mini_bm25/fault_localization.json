@@ -1,0 +1,776 @@
+[
+    {
+        "sha_fail": "2c06ffa4c9d2c37846c60ad75899b4d72f214ff9",
+        "fault_localization_data": [
+            {
+                "file_path": "examples/community/ip_adapter_face_id.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/ip_adapter_face_id.py",
+                "faults": [
+                    {
+                        "file_path": "examples/community/ip_adapter_face_id.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/examples/community/ip_adapter_face_id.py",
+                        "line_range": [
+                            15,
+                            43
+                        ],
+                        "reason": "CI ruff failure: ruff reported an import-block formatting issue (I001) at examples/community/ip_adapter_face_id.py:15:1. The import block spanning lines 15\u201343 is flagged as un-sorted / un-formatted by ruff and the log notes this is fixable with `--fix` (\"I001 ... Import block is un-sorted or un-formatted\" and \"1 fixable with the `--fix` option\"). The repository's quality step runs `ruff check ...` and `ruff format ... --check`, causing the job to fail when imports are not ordered/formatted per ruff/isort rules. Fix: reorder/format the imports in this import block or run ruff --fix/ruff format.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import inspect\nfrom typing import Any, Callable, Dict, List, Optional, Union\nfrom safetensors import safe_open\n\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom packaging import version\nfrom transformers import CLIPImageProcessor, CLIPTextModel, CLIPTokenizer, CLIPVisionModelWithProjection\n\nfrom diffusers.configuration_utils import FrozenDict\nfrom diffusers.image_processor import VaeImageProcessor\nfrom diffusers.loaders import FromSingleFileMixin, IPAdapterMixin, LoraLoaderMixin, TextualInversionLoaderMixin\nfrom diffusers.models import AutoencoderKL, UNet2DConditionModel\nfrom diffusers.models.attention_processor import FusedAttnProcessor2_0\nfrom diffusers.models.lora import adjust_lora_scale_text_encoder, LoRALinearLayer\nfrom diffusers.schedulers import KarrasDiffusionSchedulers\nfrom diffusers.utils import (\n    _get_model_file,\n    USE_PEFT_BACKEND,\n    deprecate,\n    logging,\n    scale_lora_layers,\n    unscale_lora_layers,\n)\nfrom diffusers.utils.torch_utils import randn_tensor\nfrom diffusers.pipelines.pipeline_utils import DiffusionPipeline\nfrom diffusers.pipelines.stable_diffusion.pipeline_output import StableDiffusionPipelineOutput\nfrom diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "db6550a228941b538f340fb5b65ed16c43a21b88",
+        "fault_localization_data": [
+            {
+                "file_path": "src/diffusers/loaders/ip_adapter.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/loaders/ip_adapter.py",
+                "faults": [
+                    {
+                        "file_path": "src/diffusers/loaders/ip_adapter.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/loaders/ip_adapter.py",
+                        "line_range": [
+                            14,
+                            25
+                        ],
+                        "reason": "CI lint failure reported by ruff: F401 'typing.Optional' imported but unused (src/diffusers/loaders/ip_adapter.py:15). The import statement on line 15 reads 'from typing import Dict, Optional, Union', but 'Optional' is never referenced in this file (Dict and Union are used; Optional is not). The CI log notes 'Found 1 error.' and that it is fixable with '--fix'. This is a linting/code-quality violation (ruff F401) in the import block.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import os\nfrom typing import Dict, Optional, Union\n\nimport torch\nfrom huggingface_hub.utils import validate_hf_hub_args\nfrom safetensors import safe_open\n\nfrom ..utils import (\n    _get_model_file,\n    is_transformers_available,\n    logging,\n)"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "102f918deb2532bb7b825f00258f2c1414cf94da",
+        "fault_localization_data": [
+            {
+                "file_path": "tests/scripts/check_requirements.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/mindsdb/tests/scripts/check_requirements.py",
+                "faults": [
+                    {
+                        "file_path": "tests/scripts/check_requirements.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/mindsdb/tests/scripts/check_requirements.py",
+                        "line_range": [
+                            1,
+                            6
+                        ],
+                        "reason": "CI reported: \"None:None: DEP002 'type_infer' defined as a dependency but not used in the codebase\" (unused dependency, DEP002) located in requirements/requirements.txt. This script invokes deptry on the main requirements set (see MAIN_REQS_PATH at line 23 and check_requirements_imports calling run_deptry for the main codebase at lines 258-265). run_deptry builds and runs deptry via subprocess (lines 144-147) and reads deptry.json results (lines 152-155), so an unused dependency reported by deptry becomes an error printed by this script and causes success to be set to False and sys.exit(1) (see print_errors affecting global success at lines 123-130 and final exit at lines 287-288). MAIN_RULE_IGNORES (lines 39-44) does not include 'type_infer', so the DEP002 for 'type_infer' is not suppressed and correctly fails the CI. Summary of related code locations: MAIN_REQS_PATH constant (line 23); MAIN_RULE_IGNORES (lines 39-44); run_deptry implementation (lines 139-159); check_requirements_imports orchestration (lines 258-274); final exit behavior (lines 287-288).",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "file",
+                        "code_snippet": "import glob\nimport re\nimport sys\nimport subprocess\nimport os\nimport json"
+                    }
+                ]
+            },
+            {
+                "file_path": "requirements/requirements.txt",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/mindsdb/requirements/requirements.txt",
+                "faults": [
+                    {
+                        "file_path": "requirements/requirements.txt",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/mindsdb/requirements/requirements.txt",
+                        "line_range": [
+                            1,
+                            39
+                        ],
+                        "reason": "CI check reported DEP002: \"type_infer' defined as a dependency but not used in the codebase\". The requirements file declares the package on line 27: \"type_infer==0.0.17\" which the requirements-checking script flagged as unused. This is a dependency error (unused dependency) that caused the requirements check to exit with code 1. Remediation options: remove the unused entry on line 27 or add usages/imports in the codebase so the checker no longer reports DEP002.",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "file",
+                        "code_snippet": "packaging\nwerkzeug==2.2.2\npandas >=2.0.0, <2.1.0\nflask-restx >= 1.0.1, < 2.0.0\nflask == 2.2.2\npython-multipart >= 0.0.5\npyparsing >= 2.3.1\ncryptography>=35.0\npsycopg[binary]\nwaitress >= 1.4.4\npymongo[srv] >= 4.1.1\npsutil\nsqlalchemy >= 2.0.0, < 3.0.0\npsycopg2-binary  # This is required for using sqlalchemy with postgres\nalembic >= 1.3.3\nredis >=5.0.0, < 6.0.0\nwalrus==0.9.3\nflask-compress >= 1.0.0\nappdirs >= 1.0.0\nmindsdb-sql ~= 0.9.0\nmindsdb-evaluator >= 0.0.7, < 0.1.0\nchecksumdir >= 1.2.0\nduckdb == 0.9.1\nrequests >= 2.30.0\npydateinfer==0.3.0\ndataprep_ml==0.0.21\ntype_infer==0.0.17\ndill == 0.3.6\nnumpy\npytz\nbotocore\nboto3\npython-dateutil\ngunicorn\nscikit-learn==1.3.2\nprotobuf==3.20.3\nhierarchicalforecast~=0.4.0\nlangchain==0.0.347\ngoogle-auth-oauthlib"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "2e41e783672597e2e0c7b2842b5934d879374028",
+        "fault_localization_data": [
+            {
+                "file_path": "tests/test_websockets.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/sanic/tests/test_websockets.py",
+                "faults": [
+                    {
+                        "file_path": "tests/test_websockets.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/sanic/tests/test_websockets.py",
+                        "line_range": [
+                            212,
+                            223
+                        ],
+                        "reason": "Test failure matches CI error: AttributeError: 'has_calls' is not a valid assertion (seen in CI log for tests/test_websockets.py::test_ws_frame_put_message_into_queue). The test at lines 212-223 creates assembler.chunks_queue = AsyncMock(spec=Queue) (line 214) and then, after awaiting assembler.put(...), calls assembler.chunks_queue.put.has_calls(...) (lines 220-223). 'has_calls' is not a valid unittest.mock API; the test likely intended to call a mock assertion method such as assert_has_calls (or for async calls, assert_has_awaits / assert_has_calls on the mock) but instead calls a non-existent attribute on the mock, which raises AttributeError and causes the three parameterized failures reported by CI.",
+                        "issue_type": "test_failure",
+                        "fault_localization_level": "method",
+                        "code_snippet": "async def test_ws_frame_put_message_into_queue(opcode):\n    assembler = WebsocketFrameAssembler(Mock())\n    assembler.chunks_queue = AsyncMock(spec=Queue)\n    assembler.message_fetched = AsyncMock()\n    assembler.message_fetched.is_set = Mock(return_value=False)\n\n    await assembler.put(Frame(opcode, b\"foo\"))\n\n    assembler.chunks_queue.put.has_calls(\n        call(b\"foo\"),\n        call(None),\n    )"
+                    }
+                ]
+            },
+            {
+                "file_path": "/home/runner/work/sanic/sanic/sanic/server/websockets/frame.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/sanic/sanic/server/websockets/frame.py",
+                "faults": [
+                    {
+                        "file_path": "/home/runner/work/sanic/sanic/sanic/server/websockets/frame.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/sanic/sanic/server/websockets/frame.py",
+                        "line_range": [
+                            88,
+                            164
+                        ],
+                        "reason": "Test failures in tests/test_websockets.py::test_ws_frame_put_message_into_queue indicate incorrect get() behavior. In get() the code does `completed = await self.message_complete.wait()` (line 115) but asyncio.Event.wait() returns None (not a boolean). Later the code checks `if not completed:` (line 142) which treats the awaited result as falsy and will return None even when the event was set. This causes get() to exit prematurely (and prevents it from setting message_fetched), which explains the failing tests and the related put()/get() synchronization problems (put() waiting on message_fetched.wait() at lines ~290). CI evidence: tests failed (3 failed in tests/test_websockets.py) and behavior matches a logical error in get()'s handling of Event.wait().",
+                        "issue_type": "test_failure",
+                        "fault_localization_level": "method",
+                        "code_snippet": "    async def get(self, timeout: Optional[float] = None) -> Optional[Data]:\n        \"\"\"\n        Read the next message.\n        :meth:`get` returns a single :class:`str` or :class:`bytes`.\n        If the :message was fragmented, :meth:`get` waits until the last frame\n        is received, then it reassembles the message.\n        If ``timeout`` is set and elapses before a complete message is\n        received, :meth:`get` returns ``None``.\n        \"\"\"\n        completed: bool\n        async with self.read_mutex:\n            if timeout is not None and timeout <= 0:\n                if not self.message_complete.is_set():\n                    return None\n            if self.get_in_progress:\n                # This should be guarded against with the read_mutex,\n                # exception is only here as a failsafe\n                raise ServerError(\n                    \"Called get() on Websocket frame assembler \"\n                    \"while asynchronous get is already in progress.\"\n                )\n            self.get_in_progress = True\n\n            # If the message_complete event isn't set yet, release the lock to\n            # allow put() to run and eventually set it.\n            # Locking with get_in_progress ensures only one task can get here.\n            if timeout is None:\n                completed = await self.message_complete.wait()\n            elif timeout <= 0:\n                completed = self.message_complete.is_set()\n            else:\n                try:\n                    await asyncio.wait_for(\n                        self.message_complete.wait(), timeout=timeout\n                    )\n                except asyncio.TimeoutError:\n                    ...\n                finally:\n                    completed = self.message_complete.is_set()\n\n            # Unpause the transport, if its paused\n            if self.paused:\n                self.protocol.resume_frames()\n                self.paused = False\n            if not self.get_in_progress:  # no cov\n                # This should be guarded against with the read_mutex,\n                # exception is here as a failsafe\n                raise ServerError(\n                    \"State of Websocket frame assembler was modified while an \"\n                    \"asynchronous get was in progress.\"\n                )\n            self.get_in_progress = False\n\n            # Waiting for a complete message timed out.\n            if not completed:\n                return None\n            if not self.message_complete.is_set():\n                return None\n\n            self.message_complete.clear()\n\n            joiner: Data = b\"\" if self.decoder is None else \"\"\n            # mypy cannot figure out that chunks have the proper type.\n            message: Data = joiner.join(self.chunks)  # type: ignore\n            if self.message_fetched.is_set():\n                # This should be guarded against with the read_mutex,\n                # and get_in_progress check, this exception is here\n                # as a failsafe\n                raise ServerError(\n                    \"Websocket get() found a message when \"\n                    \"state was already fetched.\"\n                )\n            self.message_fetched.set()\n            self.chunks = []\n            # this should already be None, but set it here for safety\n            self.chunks_queue = None\n            return message"
+                    },
+                    {
+                        "file_path": "/home/runner/work/sanic/sanic/sanic/server/websockets/frame.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/sanic/sanic/server/websockets/frame.py",
+                        "line_range": [
+                            18,
+                            292
+                        ],
+                        "reason": "RuntimeWarning observed in CI: \"coroutine 'AsyncMockMixin._execute_mock_call' was never awaited\" reported at sanic/server/websockets/frame.py:291. The class calls protocol methods without awaiting them: `self.protocol.resume_frames()` is called without await in get() (line 130) and get_iter() (line 203), and `self.paused = self.protocol.pause_frames()` is called without await in put() (line 270). If the protocol methods are asynchronous (or are AsyncMocks in tests), invoking them without `await` produces un-awaited coroutine warnings and test instability. CI evidence: runtime warning about un-awaited coroutine at the file and the line referenced above.",
+                        "issue_type": "runtime_error",
+                        "fault_localization_level": "class",
+                        "code_snippet": "class WebsocketFrameAssembler:\n    \"\"\"\n    Assemble a message from frames.\n    Code borrowed from aaugustin/websockets project:\n    https://github.com/aaugustin/websockets/blob/6eb98dd8fa5b2c896b9f6be7e8d117708da82a39/src/websockets/sync/messages.py\n    \"\"\"\n\n    __slots__ = (\n        \"protocol\",\n        \"read_mutex\",\n        \"write_mutex\",\n        \"message_complete\",\n        \"message_fetched\",\n        \"get_in_progress\",\n        \"decoder\",\n        \"completed_queue\",\n        \"chunks\",\n        \"chunks_queue\",\n        \"paused\",\n        \"get_id\",\n        \"put_id\",\n    )\n    if TYPE_CHECKING:\n        protocol: \"WebsocketImplProtocol\"\n        read_mutex: asyncio.Lock\n        write_mutex: asyncio.Lock\n        message_complete: asyncio.Event\n        message_fetched: asyncio.Event\n        completed_queue: asyncio.Queue\n        get_in_progress: bool\n        decoder: Optional[codecs.IncrementalDecoder]\n        # For streaming chunks rather than messages:\n        chunks: List[Data]\n        chunks_queue: Optional[asyncio.Queue[Optional[Data]]]\n        paused: bool\n\n    def __init__(self, protocol) -> None:\n        self.protocol = protocol\n\n        self.read_mutex = asyncio.Lock()\n        self.write_mutex = asyncio.Lock()\n\n        self.completed_queue = asyncio.Queue(maxsize=1)  # type: asyncio.Queue[Data]\n\n        # put() sets this event to tell get() that a message can be fetched.\n        self.message_complete = asyncio.Event()\n        # get() sets this event to let put()\n        self.message_fetched = asyncio.Event()\n\n        # This flag prevents concurrent calls to get() by user code.\n        self.get_in_progress = False\n\n        # Decoder for text frames, None for binary frames.\n        self.decoder = None\n\n        # Buffer data from frames belonging to the same message.\n        self.chunks = []\n\n        # When switching from \"buffering\" to \"streaming\", we use a thread-safe\n        # queue for transferring frames from the writing thread (library code)\n        # to the reading thread (user code). We're buffering when chunks_queue\n        # is None and streaming when it's a Queue. None is a sentinel\n        # value marking the end of the stream, superseding message_complete.\n\n        # Stream data from frames belonging to the same message.\n        self.chunks_queue = None\n\n        # Flag to indicate we've paused the protocol\n        self.paused = False\n\n    async def get(self, timeout: Optional[float] = None) -> Optional[Data]:\n        \"\"\"\n        Read the next message.\n        :meth:`get` returns a single :class:`str` or :class:`bytes`.\n        If the :message was fragmented, :meth:`get` waits until the last frame\n        is received, then it reassembles the message.\n        If ``timeout`` is set and elapses before a complete message is\n        received, :meth:`get` returns ``None``.\n        \"\"\"\n        completed: bool\n        async with self.read_mutex:\n            if timeout is not None and timeout <= 0:\n                if not self.message_complete.is_set():\n                    return None\n            if self.get_in_progress:\n                # This should be guarded against with the read_mutex,\n                # exception is only here as a failsafe\n                raise ServerError(\n                    \"Called get() on Websocket frame assembler \"\n                    \"while asynchronous get is already in progress.\"\n                )\n            self.get_in_progress = True\n\n            # If the message_complete event isn't set yet, release the lock to\n            # allow put() to run and eventually set it.\n            # Locking with get_in_progress ensures only one task can get here.\n            if timeout is None:\n                completed = await self.message_complete.wait()\n            elif timeout <= 0:\n                completed = self.message_complete.is_set()\n            else:\n                try:\n                    await asyncio.wait_for(\n                        self.message_complete.wait(), timeout=timeout\n                    )\n                except asyncio.TimeoutError:\n                    ...\n                finally:\n                    completed = self.message_complete.is_set()\n\n            # Unpause the transport, if its paused\n            if self.paused:\n                self.protocol.resume_frames()\n                self.paused = False\n            if not self.get_in_progress:  # no cov\n                # This should be guarded against with the read_mutex,\n                # exception is here as a failsafe\n                raise ServerError(\n                    \"State of Websocket frame assembler was modified while an \"\n                    \"asynchronous get was in progress.\"\n                )\n            self.get_in_progress = False\n\n            # Waiting for a complete message timed out.\n            if not completed:\n                return None\n            if not self.message_complete.is_set():\n                return None\n\n            self.message_complete.clear()\n\n            joiner: Data = b\"\" if self.decoder is None else \"\"\n            # mypy cannot figure out that chunks have the proper type.\n            message: Data = joiner.join(self.chunks)  # type: ignore\n            if self.message_fetched.is_set():\n                # This should be guarded against with the read_mutex,\n                # and get_in_progress check, this exception is here\n                # as a failsafe\n                raise ServerError(\n                    \"Websocket get() found a message when \"\n                    \"state was already fetched.\"\n                )\n            self.message_fetched.set()\n            self.chunks = []\n            # this should already be None, but set it here for safety\n            self.chunks_queue = None\n            return message\n\n    async def get_iter(self) -> AsyncIterator[Data]:\n        \"\"\"\n        Stream the next message.\n        Iterating the return value of :meth:`get_iter` yields a :class:`str`\n        or :class:`bytes` for each frame in the message.\n        \"\"\"\n        async with self.read_mutex:\n            if self.get_in_progress:\n                # This should be guarded against with the read_mutex,\n                # exception is only here as a failsafe\n                raise ServerError(\n                    \"Called get_iter on Websocket frame assembler \"\n                    \"while asynchronous get is already in progress.\"\n                )\n            self.get_in_progress = True\n\n            chunks = self.chunks\n            self.chunks = []\n            self.chunks_queue = asyncio.Queue()\n\n            # Sending None in chunk_queue supersedes setting message_complete\n            # when switching to \"streaming\". If message is already complete\n            # when the switch happens, put() didn't send None, so we have to.\n            if self.message_complete.is_set():\n                await self.chunks_queue.put(None)\n\n            # Locking with get_in_progress ensures only one task can get here\n            for c in chunks:\n                yield c\n            while True:\n                chunk = await self.chunks_queue.get()\n                if chunk is None:\n                    break\n                yield chunk\n\n            # Unpause the transport, if its paused\n            if self.paused:\n                self.protocol.resume_frames()\n                self.paused = False\n            if not self.get_in_progress:  # no cov\n                # This should be guarded against with the read_mutex,\n                # exception is here as a failsafe\n                raise ServerError(\n                    \"State of Websocket frame assembler was modified while an \"\n                    \"asynchronous get was in progress.\"\n                )\n            self.get_in_progress = False\n            if not self.message_complete.is_set():  # no cov\n                # This should be guarded against with the read_mutex,\n                # exception is here as a failsafe\n                raise ServerError(\n                    \"Websocket frame assembler chunks queue ended before \"\n                    \"message was complete.\"\n                )\n            self.message_complete.clear()\n            if self.message_fetched.is_set():  # no cov\n                # This should be guarded against with the read_mutex,\n                # and get_in_progress check, this exception is\n                # here as a failsafe\n                raise ServerError(\n                    \"Websocket get_iter() found a message when state was \"\n                    \"already fetched.\"\n                )\n\n            self.message_fetched.set()\n            # this should already be empty, but set it here for safety\n            self.chunks = []\n            self.chunks_queue = None\n\n    async def put(self, frame: Frame) -> None:\n        \"\"\"\n        Add ``frame`` to the next message.\n        When ``frame`` is the final frame in a message, :meth:`put` waits\n        until the message is fetched, either by calling :meth:`get` or by\n        iterating the return value of :meth:`get_iter`.\n        :meth:`put` assumes that the stream of frames respects the protocol.\n        If it doesn't, the behavior is undefined.\n        \"\"\"\n\n        async with self.write_mutex:\n            if frame.opcode is Opcode.TEXT:\n                self.decoder = UTF8Decoder(errors=\"strict\")\n            elif frame.opcode is Opcode.BINARY:\n                self.decoder = None\n            elif frame.opcode is Opcode.CONT:\n                pass\n            else:\n                # Ignore control frames.\n                return\n            data: Data\n            if self.decoder is not None:\n                data = self.decoder.decode(frame.data, frame.fin)\n            else:\n                data = frame.data\n            if self.chunks_queue is None:\n                self.chunks.append(data)\n            else:\n                await self.chunks_queue.put(data)\n\n            if not frame.fin:\n                return\n            if not self.get_in_progress:\n                # nobody is waiting for this frame, so try to pause subsequent\n                # frames at the protocol level\n                self.paused = self.protocol.pause_frames()\n            # Message is complete. Wait until it's fetched to return.\n\n            if self.chunks_queue is not None:\n                await self.chunks_queue.put(None)\n            if self.message_complete.is_set():\n                # This should be guarded against with the write_mutex\n                raise ServerError(\n                    \"Websocket put() got a new message when a message was \"\n                    \"already in its chamber.\"\n                )\n            self.message_complete.set()  # Signal to get() it can serve the\n            if self.message_fetched.is_set():\n                # This should be guarded against with the write_mutex\n                raise ServerError(\n                    \"Websocket put() got a new message when the previous \"\n                    \"message was not yet fetched.\"\n                )\n\n            # Allow get() to run and eventually set the event.\n            await self.message_fetched.wait()\n            self.message_fetched.clear()\n            self.decoder = None"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "d1b0280fb92d0d8590cf403ca46af3550507d4d2",
+        "fault_localization_data": []
+    },
+    {
+        "sha_fail": "f18f82de3e0270f6dfddf22f1f487104b2428e35",
+        "fault_localization_data": [
+            {
+                "file_path": "tests/unittests/sources/test_wsl.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/tests/unittests/sources/test_wsl.py",
+                "faults": [
+                    {
+                        "file_path": "tests/unittests/sources/test_wsl.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/tests/unittests/sources/test_wsl.py",
+                        "line_range": [
+                            7,
+                            14
+                        ],
+                        "reason": "Ruff reported F401 (unused import): \"typing.Optional imported but unused\" at tests/unittests/sources/test_wsl.py:10:20. The import block (lines 7-14) contains `from typing import Optional, cast` but only `cast` is used in the file (lines 248, 277, 320, 329); `Optional` is never referenced. This causes the ruff check (tox TOXENV=ruff) to fail with exit code 1 as shown in CI logs.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import os\nfrom copy import deepcopy\nfrom email.mime.multipart import MIMEMultipart\nfrom typing import Optional, cast\n\nfrom cloudinit import helpers, util\nfrom cloudinit.sources import DataSourceWSL as wsl\nfrom tests.unittests.helpers import CiTestCase, mock"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "55d2e8d4abb024997be878797d5625effad65d43",
+        "fault_localization_data": [
+            {
+                "file_path": "tests/unittests/test_net_activators.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/tests/unittests/test_net_activators.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "385c14d0ae500918cff5565ea836884bfaa2bfa5",
+        "fault_localization_data": [
+            {
+                "file_path": "cloudinit/net/dhcp.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/cloudinit/net/dhcp.py",
+                "faults": [
+                    {
+                        "file_path": "cloudinit/net/dhcp.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/cloudinit/net/dhcp.py",
+                        "line_range": [
+                            547,
+                            595
+                        ],
+                        "reason": "Pylint reported an unused-variable in Dhcpcd.dhcp_discovery: \"cloudinit/net/dhcp.py:575: [W0612(unused-variable), Dhcpcd.dhcp_discovery] Unused variable 'out'\". In the Dhcpcd.dhcp_discovery method (lines 547-595) the code assigns \"out, err = subp.subp([...])\" (around line 575) but neither 'out' nor 'err' are used afterwards (the method immediately returns self.parse_dhcp_lease_file(interface)). This unused assignment triggers W0612 and causes the pylint invocation to fail. The fault is localized to the Dhcpcd.dhcp_discovery method (outline range 547\u2013595).",
+                        "issue_type": "linting",
+                        "fault_localization_level": "method",
+                        "code_snippet": "    def dhcp_discovery(\n        self,\n        interface,\n        dhcp_log_func=None,\n        distro=None,\n    ):\n        \"\"\"Run dhclient on the interface without scripts/filesystem artifacts.\n\n        @param dhclient_cmd_path: Full path to the dhclient used.\n        @param interface: Name of the network interface on which to dhclient.\n        @param dhcp_log_func: A callable accepting the dhclient output and\n            error streams.\n\n        @return: A list of dicts of representing the dhcp leases parsed from\n            the dhclient.lease file or empty list.\n        \"\"\"\n        LOG.debug(\"Performing a dhcp discovery on %s\", interface)\n\n        # ISC dhclient needs the interface up to send initial discovery packets\n        # Generally dhclient relies on dhclient-script PREINIT action to bring\n        # the link up before attempting discovery. Since we are using\n        # -sf /bin/true, we need to do that \"link up\" ourselves first.\n        distro.net_ops.link_up(interface)\n\n        # TODO: disabling hooks means we need to get all of the files in\n        # /lib/dhcpcd/dhcpcd-hooks/ and pass each of those with the --nohook\n        # argument to dhcpcd\n        try:\n            out, err = subp.subp(\n                [\n                    \"dhcpcd\",\n                    \"--oneshot\",  # get lease then exit\n                    \"--nobackground\",  # don't fork\n                    \"--ipv4only\",  # only attempt configuring ipv4\n                    \"--waitip=4\",  # wait for ipv4 to be configured\n                    \"--persistent\",  # don't deconfigure when dhcpcd exits\n                    \"--noarp\",  # don't be slow\n                    interface,\n                ]\n            )\n        except subp.ProcessExecutionError as error:\n            LOG.debug(\n                \"dhclient exited with code: %s stderr: %r stdout: %r\",\n                error.exit_code,\n                error.stderr,\n                error.stdout,\n            )\n            raise NoDHCPLeaseError from error\n        return self.parse_dhcp_lease_file(interface)"
+                    }
+                ]
+            },
+            {
+                "file_path": "tests/unittests/net/test_dhcp.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/tests/unittests/net/test_dhcp.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "4d5898b8a73c93e1ed4434744c2fa7c3f7fbd501",
+        "fault_localization_data": [
+            {
+                "file_path": "cloudinit/net/dhcp.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/cloudinit/net/dhcp.py",
+                "faults": [
+                    {
+                        "file_path": "cloudinit/net/dhcp.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/cloudinit/net/dhcp.py",
+                        "line_range": [
+                            538,
+                            539
+                        ],
+                        "reason": "Pylint reported W0235 (useless-super-delegation) at cloudinit/net/dhcp.py:538 in Dhcpcd.__init__. CI evidence: 'cloudinit/net/dhcp.py:538: [W0235(useless-super-delegation), Dhcpcd.__init__] Useless super delegation in method \"__init__\"' and the tox/pylint run failed (InvocationError exit code 4), causing the job to fail. Lines 538-539 show Dhcpcd.__init__ contains only 'super().__init__()' and no additional logic, which triggers W0235 and should be removed or extended with meaningful behavior.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "method",
+                        "code_snippet": "    def __init__(self):\n        super().__init__()"
+                    }
+                ]
+            },
+            {
+                "file_path": "conftest.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/conftest.py",
+                "faults": [
+                    {
+                        "file_path": "conftest.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/conftest.py",
+                        "line_range": [
+                            1,
+                            226
+                        ],
+                        "reason": "CI lint job failed due to a pylint linting issue reported outside this file: 'cloudinit/net/dhcp.py:538: [W0235(useless-super-delegation), Dhcpcd.__init__] Useless super delegation in method \"__init__\"' (pylint W0235). That pylint finding caused the tox/pylint run to exit non-zero (InvocationError) as shown by: 'ERROR: InvocationError for command ... -m pylint ... (exited with code 4)' and the workflow failure 'Process completed with exit code 1'. Summary of related faults: 1) Linting fault \u2014 pylint W0235 reported for cloudinit/net/dhcp.py:538 (explicit CI evidence). 2) CI invocation fault \u2014 tox/pylint returned non-zero (exit code 4) causing the Check pylint job to fail. Note: there is no evidence in the provided conftest.py contents (lines 1\u2013226) that would explain or duplicate the W0235 warning; the failing pylint message points to a different file in the repository.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "file",
+                        "code_snippet": "\"\"\"Global conftest.py\n\nThis conftest is used for unit tests in ``cloudinit/`` and ``tests/unittests/``\nas well as the integration tests in ``tests/integration_tests/``.\n\nAny imports that are performed at the top-level here must be installed wherever\nany of these tests run: that is to say, they must be listed in\n``integration-requirements.txt`` and in ``test-requirements.txt``.\n\"\"\"\n# If we don't import this early, lru_cache may get applied before we have the\n# chance to patch. This is also too early for the pytest-antilru plugin\n# to work.\n# isort: off\nfrom tests.unittests.early_patches import get_cached_functions  # noqa: E402\n\n# isort: on\nfrom unittest import mock\n\nimport pytest\n\nfrom cloudinit import helpers, subp, util\n\n\n@pytest.fixture(autouse=True, scope=\"function\")\ndef cleanup_lru_cache():\n    yield\n\n    for func in get_cached_functions():\n        func.cache_clear()\n\n\nclass _FixtureUtils:\n    \"\"\"A namespace for fixture helper functions, used by fixture_utils.\n\n    These helper functions are all defined as staticmethods so they are\n    effectively functions; they are defined in a class only to give us a\n    namespace so calling them can look like\n    ``fixture_utils.fixture_util_function()`` in test code.\n    \"\"\"\n\n    @staticmethod\n    def closest_marker_args_or(request, marker_name: str, default):\n        \"\"\"Get the args for closest ``marker_name`` or return ``default``\n\n        :param request:\n            A pytest request, as passed to a fixture.\n        :param marker_name:\n            The name of the marker to look for\n        :param default:\n            The value to return if ``marker_name`` is not found.\n\n        :return:\n            The args for the closest ``marker_name`` marker, or ``default``\n            if no such marker is found.\n        \"\"\"\n        try:\n            marker = request.node.get_closest_marker(marker_name)\n        except AttributeError:\n            # Older versions of pytest don't have the new API\n            marker = request.node.get_marker(marker_name)\n        if marker is not None:\n            return marker.args\n        return default\n\n    @staticmethod\n    def closest_marker_first_arg_or(request, marker_name: str, default):\n        \"\"\"Get the first arg for closest ``marker_name`` or return ``default``\n\n        This is a convenience wrapper around closest_marker_args_or, see there\n        for full details.\n        \"\"\"\n        result = _FixtureUtils.closest_marker_args_or(\n            request, marker_name, [default]\n        )\n        if not result:\n            raise TypeError(\n                \"Missing expected argument to {} marker\".format(marker_name)\n            )\n        return result[0]\n\n\nclass UnexpectedSubpError(BaseException):\n    \"\"\"Error thrown when subp.subp is unexpectedly used.\n\n    We inherit from BaseException so it doesn't get silently swallowed\n    by other error handlers.\n    \"\"\"\n\n\n@pytest.fixture(autouse=True)\ndef disable_subp_usage(request, fixture_utils):\n    \"\"\"\n    Across all (pytest) tests, ensure that subp.subp is not invoked.\n\n    Note that this can only catch invocations where the ``subp`` module is\n    imported and ``subp.subp(...)`` is called.  ``from cloudinit.subp import\n    subp`` imports happen before the patching here (or the CiTestCase\n    monkey-patching) happens, so are left untouched.\n\n    While ``disable_subp_usage`` unconditionally patches\n    ``cloudinit.subp.subp``, any test-local patching will override this\n    patching (i.e. the mock created for that patch call will replace the mock\n    created by ``disable_subp_usage``), allowing tests to be written normally.\n    One important exception: if ``autospec=True`` is passed to such an\n    overriding patch call it will fail: autospeccing introspects the object\n    being patched and as ``subp.subp`` will always be a mock when that\n    autospeccing happens, the introspection fails.  (The specific error is:\n    ``TypeError: name must be a str, not a MagicMock``.)\n\n    To allow a particular test method or class to use ``subp.subp`` you can\n    mark it as such::\n\n        @pytest.mark.allow_all_subp\n        def test_whoami(self):\n            subp.subp([\"whoami\"])\n\n    To instead allow ``subp.subp`` usage for a specific command, you can use\n    the ``allow_subp_for`` mark::\n\n        @pytest.mark.allow_subp_for(\"bash\")\n        def test_bash(self):\n            subp.subp([\"bash\"])\n\n    You can pass multiple commands as values; they will all be permitted::\n\n        @pytest.mark.allow_subp_for(\"bash\", \"whoami\")\n        def test_several_things(self):\n            subp.subp([\"bash\"])\n            subp.subp([\"whoami\"])\n\n    This fixture (roughly) mirrors the functionality of\n    ``CiTestCase.allowed_subp``.  N.B. While autouse fixtures do affect\n    non-pytest tests, CiTestCase's ``allowed_subp`` does take precedence (and\n    we have ``TestDisableSubpUsageInTestSubclass`` to confirm that).\n    \"\"\"\n    allow_subp_for = fixture_utils.closest_marker_args_or(\n        request, \"allow_subp_for\", None\n    )\n    # Because the mark doesn't take arguments, `allow_all_subp` will be set to\n    # [] if the marker is present, so explicit None checks are required\n    allow_all_subp = fixture_utils.closest_marker_args_or(\n        request, \"allow_all_subp\", None\n    )\n\n    if allow_all_subp is not None and allow_subp_for is None:\n        # Only allow_all_subp specified, don't mock subp.subp\n        yield\n        return\n\n    if allow_all_subp is None and allow_subp_for is None:\n        # No marks, default behaviour; disallow all subp.subp usage\n        def side_effect(args, *other_args, **kwargs):\n            raise UnexpectedSubpError(\"Unexpectedly used subp.subp\")\n\n    elif allow_all_subp is not None and allow_subp_for is not None:\n        # Both marks, ambiguous request; raise an exception on all subp usage\n        def side_effect(args, *other_args, **kwargs):\n            raise UnexpectedSubpError(\n                \"Test marked both allow_all_subp and allow_subp_for: resolve\"\n                \" this either by modifying your test code, or by modifying\"\n                \" disable_subp_usage to handle precedence.\"\n            )\n\n    else:\n        # Look this up before our patch is in place, so we have access to\n        # the real implementation in side_effect\n        real_subp = subp.subp\n\n        def side_effect(args, *other_args, **kwargs):\n            cmd = args[0]\n            if cmd not in allow_subp_for:\n                raise UnexpectedSubpError(\n                    \"Unexpectedly used subp.subp to call {} (allowed:\"\n                    \" {})\".format(cmd, \",\".join(allow_subp_for))\n                )\n            return real_subp(args, *other_args, **kwargs)\n\n    with mock.patch(\"cloudinit.subp.subp\", autospec=True) as m_subp:\n        m_subp.side_effect = side_effect\n        yield\n\n\n@pytest.fixture(scope=\"session\")\ndef fixture_utils():\n    \"\"\"Return a namespace containing fixture utility functions.\n\n    See :py:class:`_FixtureUtils` for further details.\"\"\"\n    return _FixtureUtils\n\n\n@pytest.fixture\ndef mocked_responses():\n    import responses as _responses\n\n    with _responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:\n        yield rsps\n\n\n@pytest.fixture\ndef paths(tmpdir):\n    \"\"\"\n    Return a helpers.Paths object configured to use a tmpdir.\n\n    (This uses the builtin tmpdir fixture.)\n    \"\"\"\n    dirs = {\n        \"cloud_dir\": tmpdir.mkdir(\"cloud_dir\").strpath,\n        \"run_dir\": tmpdir.mkdir(\"run_dir\").strpath,\n    }\n    return helpers.Paths(dirs)\n\n\n@pytest.fixture(autouse=True, scope=\"session\")\ndef monkeypatch_system_info():\n    def my_system_info():\n        return {\n            \"platform\": \"invalid\",\n            \"system\": \"invalid\",\n            \"release\": \"invalid\",\n            \"python\": \"invalid\",\n            \"uname\": [\"invalid\"] * 6,\n            \"dist\": (\"Distro\", \"-1.1\", \"Codename\"),\n            \"variant\": \"ubuntu\",\n        }\n\n    util.system_info = my_system_info"
+                    }
+                ]
+            },
+            {
+                "file_path": "setup.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/setup.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "ecb486addc70aecc9b28f2b30a77eaf2fd587091",
+        "fault_localization_data": [
+            {
+                "file_path": "cloudinit/distros/__init__.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/cloud-init/cloudinit/distros/__init__.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "cced5b5d68a3fe1a02d8ac1186e9d12b6c75dc8d",
+        "fault_localization_data": [
+            {
+                "file_path": "sky/resources.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/skypilot/sky/resources.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "edaf59b69f96acdf155c4514061ea648ea6df122",
+        "fault_localization_data": [
+            {
+                "file_path": "sky/data/storage.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/skypilot/sky/data/storage.py",
+                "faults": [
+                    {
+                        "file_path": "sky/data/storage.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/skypilot/sky/data/storage.py",
+                        "line_range": [
+                            811,
+                            841
+                        ],
+                        "reason": "CI formatting job 'Running yapf' detected a formatting diff in ./sky/data/storage.py: log shows '+++ ./sky/data/storage.py\\t(reformatted)' and a diff hunk header '@@ -819,7 +819,7 @@' indicating a style/whitespace change. The hunk is inside the Storage.from_metadata classmethod (defined at lines 811-841). Concrete code in this method includes the conditional 'if not isinstance(source, list): ' (line 822) and subsequent lines that yapf reformatted; the CI evidence (yapf --diff output) directly implicates this method as the location of the formatting difference.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "method",
+                        "code_snippet": "    def from_metadata(cls, metadata: StorageMetadata,\n                      **override_args) -> 'Storage':\n        \"\"\"Create Storage from StorageMetadata object.\n\n        Used when reconstructing Storage object and AbstractStore objects from\n        global_user_state.\n        \"\"\"\n        # Name should not be specified if the source is a cloud store URL.\n        source = override_args.get('source', metadata.source)\n        name = override_args.get('name', metadata.storage_name)\n        # If the source is a list, it consists of local paths\n        if not isinstance(source, list): \n            if data_utils.is_cloud_store_url(source):\n                name = None\n\n        storage_obj = cls(name=name,\n                          source=source,\n                          sync_on_reconstruction=override_args.get(\n                              'sync_on_reconstruction', True))\n\n        # For backward compatibility\n        # TODO(Doyoung): Implement __setstate__ to resolve backwards\n        # compatibility issue\n        if hasattr(metadata, 'interval_seconds'):\n            storage_obj.interval_seconds = metadata.interval_seconds\n\n        if hasattr(metadata, 'mode'):\n            if metadata.mode:\n                storage_obj.mode = override_args.get('mode', metadata.mode)\n\n        return storage_obj"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "b639adb71066410b3b12d97a674ee7fcb51e9980",
+        "fault_localization_data": [
+            {
+                "file_path": "sky/resources.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/skypilot/sky/resources.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "d2f64daf7608d00cb7a8659cfd1dee42c54bb12c",
+        "fault_localization_data": [
+            {
+                "file_path": "docs/source/conf.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/skypilot/docs/source/conf.py",
+                "faults": [
+                    {
+                        "file_path": "docs/source/conf.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/skypilot/docs/source/conf.py",
+                        "line_range": [
+                            1,
+                            107
+                        ],
+                        "reason": "CI formatting step failed: yapf reported formatting differences for docs/source/conf.py (evidence in CI log: '--- ./docs/source/conf.py\\t(original)' / '+++ ./docs/source/conf.py\\t(reformatted)' and diff hunk header '@@ -94,7 +94,6 @@'), causing the 'Running yapf' job to exit with code 1. The reported diff location is around line 94 of this file; nearby lines in the file include html_show_sourcelink = False (line 91), the comment block describing the sidebar image (lines 93-95), html_logo = '_static/SkyPilot_wide_light.svg' (line 95) and html_favicon = '_static/favicon.ico' (line 100). Because the yapf diff spans the region between multiple adjacent constants/comments (not confined to a single outlined constant), the fault is a file-level formatting issue flagged by yapf.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "file",
+                        "code_snippet": "# Configuration file for the Sphinx documentation builder.\n\nimport os\nimport sys\n\nsys.path.insert(0, os.path.abspath('.'))\nsys.path.insert(0, os.path.abspath('../'))\nsys.path.insert(0, os.path.abspath('../../'))\n\n# -- Project information\n\nproject = 'SkyPilot'\ncopyright = '2024, SkyPilot Team'\nauthor = 'the SkyPilot authors'\n\n# The version info for the project you're documenting, acts as replacement for\n# |version| and |release|, also used in various other places throughout the\n# built documents.\nfrom sky import __version__ as version\n\n# The full version, including alpha/beta/rc tags.\nrelease = version\n\n# -- General configuration\n\nextensions = [\n    'sphinxemoji.sphinxemoji',\n    'sphinx.ext.autodoc',\n    'sphinx.ext.autosummary',\n    'sphinx.ext.duration',\n    'sphinx.ext.doctest',\n    'sphinx.ext.intersphinx',\n    'sphinx.ext.napoleon',\n    'sphinx.ext.viewcode',\n    'sphinx_autodoc_typehints',\n    'sphinx_click',\n    'sphinx_copybutton',\n    'sphinx_design',\n    'myst_parser',\n]\n\nintersphinx_mapping = {\n    'python': ('https://docs.python.org/3/', None),\n    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),\n}\nintersphinx_disabled_domains = ['std']\n\ntemplates_path = ['_templates']\n\n# The main toctree document.\nmain_doc = 'index'\n\nautosummary_generate = True\nnapolean_use_rtype = False\n\n# -- Options for autodoc\n\n# Python methods should be presented in source code order\nautodoc_member_order = 'bysource'\n\n# -- Options for HTML output\n\nhtml_theme = 'sphinx_book_theme'\nhtml_theme_options = {\n    # 'show_toc_level': 2,\n    'logo': {\n        'image_dark': '_static/SkyPilot_wide_dark.svg',\n    },\n    'repository_url': 'https://github.com/skypilot-org/skypilot',\n    'use_repository_button': True,\n    'use_issues_button': True,\n    'use_edit_page_button': True,\n    'repository_branch': 'master',\n    'path_to_docs': 'docs/source',\n    'pygment_light_style': 'tango',\n    'pygment_dark_style': 'monokai',\n    'primary_sidebar_end': [],\n}\n\n# The name for this set of Sphinx documents.  If None, it defaults to\n# \"<project> v<release> documentation\".\nhtml_title = 'SkyPilot documentation'\n\n# -- Options for EPUB output\nepub_show_urls = 'footnote'\n\n# -- Options for sphinx-copybutton\ncopybutton_prompt_text = r'\\$ '\ncopybutton_prompt_is_regexp = True\n\nhtml_show_sourcelink = False\n\n# The name of an image file (relative to this directory) to place at the top\n# of the sidebar.\nhtml_logo = '_static/SkyPilot_wide_light.svg'\n\n\n# The name of an image file (within the static path) to use as favicon of the\n# docs. This file should be a Windows icon file (.ico), 16x16 or 32x32 pixels.\nhtml_favicon = '_static/favicon.ico'\n\n# Add any paths that contain custom static files (such as style sheets) here,\n# relative to this directory. They are copied after the builtin static files,\n# so a file named 'default.css' will overwrite the builtin 'default.css'.\nhtml_static_path = ['_static']\nhtml_js_files = ['custom.js']\nhtml_css_files = ['custom.css']"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "c3f4fe9eefdb297183b6d51bfc305e40feeec358",
+        "fault_localization_data": [
+            {
+                "file_path": "sky/resources.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/skypilot/sky/resources.py",
+                "faults": []
+            }
+        ]
+    },
+    {
+        "sha_fail": "0d26cc1482ff5080ec579b17b29f22657a20c562",
+        "fault_localization_data": [
+            {
+                "file_path": "beets/beetsplug/edit.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/beetsplug/edit.py",
+                "faults": [
+                    {
+                        "file_path": "beets/beetsplug/edit.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/beetsplug/edit.py",
+                        "line_range": [
+                            18,
+                            29
+                        ],
+                        "reason": "CI formatting_check failed running isort: \"Imports are incorrectly sorted and/or formatted.\" (formatting_check: isort ... --check). In this import block (lines 18-29) isort reports unsorted import members: (1) line 26: `from beets import plugins, ui, util, config` \u2014 the imported names are not alphabetized (expected e.g. `config, plugins, ui, util`); (2) line 29: `from beets.ui.commands import PromptChoice, _do_query` \u2014 the names are not alphabetized (expected `_do_query, PromptChoice`). These misordered from-import members directly explain the isort failure.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import codecs\nimport os\nimport shlex\nimport subprocess\nfrom tempfile import NamedTemporaryFile\n\nimport yaml\n\nfrom beets import plugins, ui, util, config\nfrom beets.dbcore import types\nfrom beets.importer import action\nfrom beets.ui.commands import PromptChoice, _do_query"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "7440ca51fb0ff3fb94a725fcd278f7fd5ea77c04",
+        "fault_localization_data": [
+            {
+                "file_path": "beets/beetsplug/listenbrainz.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/beetsplug/listenbrainz.py",
+                "faults": [
+                    {
+                        "file_path": "beets/beetsplug/listenbrainz.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/beetsplug/listenbrainz.py",
+                        "line_range": [
+                            1,
+                            247
+                        ],
+                        "reason": "CI formatting check failed: Black reported that this file needs reformatting (CI evidence: \"would reformat /home/runner/work/beets/beets/beetsplug/listenbrainz.py\" and \"1 file would be reformatted\"). The tox format_check environment exited non\u2011zero (\"format_check: FAIL code 1\", \"child process exited with code 1\"), causing the formatting_check job to fail. This is a file-level formatting fault \u2014 the entire file (lines 1-247) does not conform to the project's Black style and must be reformatted (the GitHub Actions step ran: black beets beetsplug test --check).",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "file",
+                        "code_snippet": "\"\"\"Adds Listenbrainz support to Beets.\"\"\"\n\nimport datetime\n\nimport musicbrainzngs\nimport requests\n\nfrom beets import config, ui\nfrom beets.plugins import BeetsPlugin\nfrom beetsplug.lastimport import process_tracks\n\n\nclass ListenBrainzPlugin(BeetsPlugin):\n    \"\"\"A Beets plugin for interacting with ListenBrainz.\"\"\"\n\n    data_source = \"ListenBrainz\"\n    ROOT = \"http://api.listenbrainz.org/1/\"\n\n    def __init__(self):\n        \"\"\"Initialize the plugin.\"\"\"\n        super().__init__()\n        self.token = self.config[\"token\"].get()\n        self.username = self.config[\"username\"].get()\n        self.AUTH_HEADER = {\"Authorization\": f\"Token {self.token}\"}\n        config[\"listenbrainz\"][\"token\"].redact = True\n\n    def commands(self):\n        \"\"\"Add beet UI commands to interact with ListenBrainz.\"\"\"\n        lbupdate_cmd = ui.Subcommand(\n            \"lbimport\", help=f\"Import {self.data_source} history\"\n        )\n\n        def func(lib, opts, args):\n            self._lbupdate(lib, self._log)\n\n        lbupdate_cmd.func = func\n        return [lbupdate_cmd]\n\n    def _lbupdate(self, lib, log):\n        \"\"\"Obtain view count from Listenbrainz.\"\"\"\n        found_total = 0\n        unknown_total = 0\n        ls = self.get_listens()\n        tracks = self.get_tracks_from_listens(ls)\n        log.info(f\"Found {len(ls)} listens\")\n        if tracks:\n            found, unknown = process_tracks(lib, tracks, log)\n            found_total += found\n            unknown_total += unknown\n        log.info(\"... done!\")\n        log.info(\"{0} unknown play-counts\", unknown_total)\n        log.info(\"{0} play-counts imported\", found_total)\n\n    def _make_request(self, url, params=None):\n        \"\"\"Makes a request to the ListenBrainz API.\"\"\"\n        try:\n            response = requests.get(\n                url=url,\n                headers=self.AUTH_HEADER,\n                timeout=10,\n                params=params,\n            )\n            response.raise_for_status()\n            return response.json()\n        except requests.exceptions.RequestException as e:\n            self._log.debug(f\"Invalid Search Error: {e}\")\n            return None\n\n    def get_listens(self, min_ts=None, max_ts=None, count=None):\n        \"\"\"Gets the listen history of a given user.\n\n        Args:\n            username: User to get listen history of.\n            min_ts: History before this timestamp will not be returned.\n                    DO NOT USE WITH max_ts.\n            max_ts: History after this timestamp will not be returned.\n                    DO NOT USE WITH min_ts.\n            count: How many listens to return. If not specified,\n                uses a default from the server.\n\n        Returns:\n            A list of listen info dictionaries if there's an OK status.\n\n        Raises:\n            An HTTPError if there's a failure.\n            A ValueError if the JSON in the response is invalid.\n            An IndexError if the JSON is not structured as expected.\n        \"\"\"\n        url = f\"{self.ROOT}/user/{self.username}/listens\"\n        params = {\n            k: v\n            for k, v in {\n                \"min_ts\": min_ts,\n                \"max_ts\": max_ts,\n                \"count\": count,\n            }.items()\n            if v is not None\n        }\n        response = self._make_request(url, params)\n\n        if response is not None:\n            return response[\"payload\"][\"listens\"]\n        else:\n            return None\n\n    def get_tracks_from_listens(self, listens):\n        \"\"\"Returns a list of tracks from a list of listens.\"\"\"\n        tracks = []\n        for track in listens:\n            if track[\"track_metadata\"].get(\"release_name\") is None:\n                continue\n            mbid_mapping = track[\"track_metadata\"].get(\"mbid_mapping\", {})\n            # print(json.dumps(track, indent=4, sort_keys=True))\n            if mbid_mapping.get(\"recording_mbid\") is None:\n                # search for the track using title and release\n                mbid = self.get_mb_recording_id(track)\n            tracks.append(\n                {\n                    \"album\": {\n                        \"name\": track[\"track_metadata\"].get(\"release_name\")\n                    },\n                    \"name\": track[\"track_metadata\"].get(\"track_name\"),\n                    \"artist\": {\n                        \"name\": track[\"track_metadata\"].get(\"artist_name\")\n                    },\n                    \"mbid\": mbid,\n                    \"release_mbid\": mbid_mapping.get(\"release_mbid\"),\n                    \"listened_at\": track.get(\"listened_at\"),\n                }\n            )\n        return tracks\n\n    def get_mb_recording_id(self, track):\n        \"\"\"Returns the MusicBrainz recording ID for a track.\"\"\"\n        resp = musicbrainzngs.search_recordings(\n            query=track[\"track_metadata\"].get(\"track_name\"),\n            release=track[\"track_metadata\"].get(\"release_name\"),\n            strict=True,\n        )\n        if resp.get(\"recording-count\") == \"1\":\n            return resp.get(\"recording-list\")[0].get(\"id\")\n        else:\n            return None\n\n    def get_playlists_createdfor(self, username):\n        \"\"\"Returns a list of playlists created by a user.\"\"\"\n        url = f\"{self.ROOT}/user/{username}/playlists/createdfor\"\n        return self._make_request(url)\n\n    def get_listenbrainz_playlists(self):\n        \"\"\"Returns a list of playlists created by ListenBrainz.\"\"\"\n        resp = self.get_playlists_createdfor(self.username)\n        playlists = resp.get(\"playlists\")\n        listenbrainz_playlists = []\n\n        for playlist in playlists:\n            playlist_info = playlist.get(\"playlist\")\n            if playlist_info.get(\"creator\") == \"listenbrainz\":\n                title = playlist_info.get(\"title\")\n                playlist_type = (\n                    \"Exploration\" if \"Exploration\" in title else \"Jams\"\n                )\n                if \"week of \" in title:\n                    date_str = title.split(\"week of \")[1].split(\" \")[0]\n                    date = datetime.datetime.strptime(date_str, \"%Y-%m-%d\").date()\n                else:\n                    date = None\n                identifier = playlist_info.get(\"identifier\")\n                id = identifier.split(\"/\")[-1]\n                listenbrainz_playlists.append(\n                    {\"type\": playlist_type, \"date\": date, \"identifier\": id}\n                )\n        return listenbrainz_playlists\n\n    def get_playlist(self, identifier):\n        \"\"\"Returns a playlist.\"\"\"\n        url = f\"{self.ROOT}/playlist/{identifier}\"\n        return self._make_request(url)\n\n    def get_tracks_from_playlist(self, playlist):\n        \"\"\"This function returns a list of tracks in the playlist.\"\"\"\n        tracks = []\n        for track in playlist.get(\"playlist\").get(\"track\"):\n            tracks.append(\n                {\n                    \"artist\": track.get(\"creator\"),\n                    \"identifier\": track.get(\"identifier\").split(\"/\")[-1],\n                    \"title\": track.get(\"title\"),\n                }\n            )\n        return self.get_track_info(tracks)\n\n    def get_track_info(self, tracks):\n        \"\"\"Returns a list of track info.\"\"\"\n        track_info = []\n        for track in tracks:\n            identifier = track.get(\"identifier\")\n            resp = musicbrainzngs.get_recording_by_id(\n                identifier, includes=[\"releases\", \"artist-credits\"]\n            )\n            recording = resp.get(\"recording\")\n            title = recording.get(\"title\")\n            artist_credit = recording.get(\"artist-credit\", [])\n            if artist_credit:\n                artist = artist_credit[0].get(\"artist\", {}).get(\"name\")\n            else:\n                artist = None\n            releases = recording.get(\"release-list\", [])\n            if releases:\n                album = releases[0].get(\"title\")\n                date = releases[0].get(\"date\")\n                year = date.split(\"-\")[0] if date else None\n            else:\n                album = None\n                year = None\n            track_info.append(\n                {\n                    \"identifier\": identifier,\n                    \"title\": title,\n                    \"artist\": artist,\n                    \"album\": album,\n                    \"year\": year,\n                }\n            )\n        return track_info\n\n    def get_weekly_playlist(self, index):\n        \"\"\"Returns a list of weekly playlists based on the index.\"\"\"\n        playlists = self.get_listenbrainz_playlists()\n        playlist = self.get_playlist(playlists[index].get(\"identifier\"))\n        return self.get_tracks_from_playlist(playlist)\n\n    def get_weekly_exploration(self):\n        \"\"\"Returns a list of weekly exploration.\"\"\"\n        return self.get_weekly_playlist(0)\n\n    def get_weekly_jams(self):\n        \"\"\"Returns a list of weekly jams.\"\"\"\n        return self.get_weekly_playlist(1)\n\n    def get_last_weekly_exploration(self):\n        \"\"\"Returns a list of weekly exploration.\"\"\"\n        return self.get_weekly_playlist(3)\n\n    def get_last_weekly_jams(self):\n        \"\"\"Returns a list of weekly jams.\"\"\"\n        return self.get_weekly_playlist(3)"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "b94b7e71f74eb6e8c4ef7f299c24a20f5cded2f8",
+        "fault_localization_data": [
+            {
+                "file_path": "beets/test/plugins/test_smartplaylist.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/test/plugins/test_smartplaylist.py",
+                "faults": [
+                    {
+                        "file_path": "beets/test/plugins/test_smartplaylist.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/test/plugins/test_smartplaylist.py",
+                        "line_range": [
+                            1,
+                            331
+                        ],
+                        "reason": "Formatting failure reported by CI: Black would reformat beets/test/plugins/test_smartplaylist.py (stderr: \"would reformat /home/runner/work/beets/beets/test/plugins/test_smartplaylist.py\"); the formatting_check tox env exited non\u2011zero (stdout: \"format_check: exit 1\"), causing the workflow step 'Run formatting check' to fail and Tox to error (##[error]Tox failed). This is a file-level formatting issue (Black rules) affecting the entire file (lines 1-331).",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "file",
+                        "code_snippet": "# This file is part of beets.\n# Copyright 2016, Bruno Cauet.\n#\n# Permission is hereby granted, free of charge, to any person obtaining\n# a copy of this software and associated documentation files (the\n# \"Software\"), to deal in the Software without restriction, including\n# without limitation the rights to use, copy, modify, merge, publish,\n# distribute, sublicense, and/or sell copies of the Software, and to\n# permit persons to whom the Software is furnished to do so, subject to\n# the following conditions:\n#\n# The above copyright notice and this permission notice shall be\n# included in all copies or substantial portions of the Software.\n\n\nimport unittest\nfrom os import path, remove\nfrom shutil import rmtree\nfrom tempfile import mkdtemp\nfrom test import _common\nfrom test.helper import TestHelper\nfrom unittest.mock import MagicMock, Mock, PropertyMock\n\nfrom beets import config\nfrom beets.dbcore import OrQuery\nfrom beets.dbcore.query import FixedFieldSort, MultipleSort, NullSort\nfrom beets.library import Album, Item, parse_query_string\nfrom beets.ui import UserError\nfrom beets.util import CHAR_REPLACE, bytestring_path, py3_path, syspath\nfrom beetsplug.smartplaylist import SmartPlaylistPlugin\n\n\nclass SmartPlaylistTest(_common.TestCase):\n    def test_build_queries(self):\n        spl = SmartPlaylistPlugin()\n        self.assertEqual(spl._matched_playlists, None)\n        self.assertEqual(spl._unmatched_playlists, None)\n\n        config[\"smartplaylist\"][\"playlists\"].set([])\n        spl.build_queries()\n        self.assertEqual(spl._matched_playlists, set())\n        self.assertEqual(spl._unmatched_playlists, set())\n\n        config[\"smartplaylist\"][\"playlists\"].set(\n            [\n                {\"name\": \"foo\", \"query\": \"FOO foo\"},\n                {\"name\": \"bar\", \"album_query\": [\"BAR bar1\", \"BAR bar2\"]},\n                {\"name\": \"baz\", \"query\": \"BAZ baz\", \"album_query\": \"BAZ baz\"},\n            ]\n        )\n        spl.build_queries()\n        self.assertEqual(spl._matched_playlists, set())\n        foo_foo = parse_query_string(\"FOO foo\", Item)\n        baz_baz = parse_query_string(\"BAZ baz\", Item)\n        baz_baz2 = parse_query_string(\"BAZ baz\", Album)\n        bar_bar = OrQuery(\n            (\n                parse_query_string(\"BAR bar1\", Album)[0],\n                parse_query_string(\"BAR bar2\", Album)[0],\n            )\n        )\n        self.assertEqual(\n            spl._unmatched_playlists,\n            {\n                (\"foo\", foo_foo, (None, None)),\n                (\"baz\", baz_baz, baz_baz2),\n                (\"bar\", (None, None), (bar_bar, None)),\n            },\n        )\n\n    def test_build_queries_with_sorts(self):\n        spl = SmartPlaylistPlugin()\n        config[\"smartplaylist\"][\"playlists\"].set(\n            [\n                {\"name\": \"no_sort\", \"query\": \"foo\"},\n                {\"name\": \"one_sort\", \"query\": \"foo year+\"},\n                {\"name\": \"only_empty_sorts\", \"query\": [\"foo\", \"bar\"]},\n                {\"name\": \"one_non_empty_sort\", \"query\": [\"foo year+\", \"bar\"]},\n                {\n                    \"name\": \"multiple_sorts\",\n                    \"query\": [\"foo year+\", \"bar genre-\"],\n                },\n                {\n                    \"name\": \"mixed\",\n                    \"query\": [\"foo year+\", \"bar\", \"baz genre+ id-\"],\n                },\n            ]\n        )\n\n        spl.build_queries()\n        sorts = {name: sort for name, (_, sort), _ in spl._unmatched_playlists}\n\n        asseq = self.assertEqual  # less cluttered code\n        sort = FixedFieldSort  # short cut since we're only dealing with this\n        asseq(sorts[\"no_sort\"], NullSort())\n        asseq(sorts[\"one_sort\"], sort(\"year\"))\n        asseq(sorts[\"only_empty_sorts\"], None)\n        asseq(sorts[\"one_non_empty_sort\"], sort(\"year\"))\n        asseq(\n            sorts[\"multiple_sorts\"],\n            MultipleSort([sort(\"year\"), sort(\"genre\", False)]),\n        )\n        asseq(\n            sorts[\"mixed\"],\n            MultipleSort([sort(\"year\"), sort(\"genre\"), sort(\"id\", False)]),\n        )\n\n    def test_matches(self):\n        spl = SmartPlaylistPlugin()\n\n        a = MagicMock(Album)\n        i = MagicMock(Item)\n\n        self.assertFalse(spl.matches(i, None, None))\n        self.assertFalse(spl.matches(a, None, None))\n\n        query = Mock()\n        query.match.side_effect = {i: True}.__getitem__\n        self.assertTrue(spl.matches(i, query, None))\n        self.assertFalse(spl.matches(a, query, None))\n\n        a_query = Mock()\n        a_query.match.side_effect = {a: True}.__getitem__\n        self.assertFalse(spl.matches(i, None, a_query))\n        self.assertTrue(spl.matches(a, None, a_query))\n\n        self.assertTrue(spl.matches(i, query, a_query))\n        self.assertTrue(spl.matches(a, query, a_query))\n\n    def test_db_changes(self):\n        spl = SmartPlaylistPlugin()\n\n        nones = None, None\n        pl1 = \"1\", (\"q1\", None), nones\n        pl2 = \"2\", (\"q2\", None), nones\n        pl3 = \"3\", (\"q3\", None), nones\n\n        spl._unmatched_playlists = {pl1, pl2, pl3}\n        spl._matched_playlists = set()\n\n        spl.matches = Mock(return_value=False)\n        spl.db_change(None, \"nothing\")\n        self.assertEqual(spl._unmatched_playlists, {pl1, pl2, pl3})\n        self.assertEqual(spl._matched_playlists, set())\n\n        spl.matches.side_effect = lambda _, q, __: q == \"q3\"\n        spl.db_change(None, \"matches 3\")\n        self.assertEqual(spl._unmatched_playlists, {pl1, pl2})\n        self.assertEqual(spl._matched_playlists, {pl3})\n\n        spl.matches.side_effect = lambda _, q, __: q == \"q1\"\n        spl.db_change(None, \"matches 3\")\n        self.assertEqual(spl._matched_playlists, {pl1, pl3})\n        self.assertEqual(spl._unmatched_playlists, {pl2})\n\n    def test_playlist_update(self):\n        spl = SmartPlaylistPlugin()\n\n        i = Mock(path=b\"/tagada.mp3\")\n        i.evaluate_template.side_effect = lambda pl, _: pl.replace(\n            b\"$title\", b\"ta:ga:da\"\n        ).decode()\n\n        lib = Mock()\n        lib.replacements = CHAR_REPLACE\n        lib.items.return_value = [i]\n        lib.albums.return_value = []\n\n        q = Mock()\n        a_q = Mock()\n        pl = b\"$title-my<playlist>.m3u\", (q, None), (a_q, None)\n        spl._matched_playlists = [pl]\n\n        dir = bytestring_path(mkdtemp())\n        config[\"smartplaylist\"][\"relative_to\"] = False\n        config[\"smartplaylist\"][\"playlist_dir\"] = py3_path(dir)\n        try:\n            spl.update_playlists(lib)\n        except Exception:\n            rmtree(syspath(dir))\n            raise\n\n        lib.items.assert_called_once_with(q, None)\n        lib.albums.assert_called_once_with(a_q, None)\n\n        m3u_filepath = path.join(dir, b\"ta_ga_da-my_playlist_.m3u\")\n        self.assertExists(m3u_filepath)\n        with open(syspath(m3u_filepath), \"rb\") as f:\n            content = f.read()\n        rmtree(syspath(dir))\n\n        self.assertEqual(content, b\"/tagada.mp3\\n\")\n\n    def test_playlist_update_extm3u(self):\n        spl = SmartPlaylistPlugin()\n\n        i = MagicMock()\n        type(i).artist = PropertyMock(return_value=\"fake artist\")\n        type(i).title = PropertyMock(return_value=\"fake title\")\n        type(i).length = PropertyMock(return_value=300.123)\n        type(i).path = PropertyMock(return_value=b\"/tagada.mp3\")\n        i.evaluate_template.side_effect = lambda pl, _: pl.replace(\n            b\"$title\",\n            b\"ta:ga:da\",\n        ).decode()\n\n        lib = Mock()\n        lib.replacements = CHAR_REPLACE\n        lib.items.return_value = [i]\n        lib.albums.return_value = []\n\n        q = Mock()\n        a_q = Mock()\n        pl = b\"$title-my<playlist>.m3u\", (q, None), (a_q, None)\n        spl._matched_playlists = [pl]\n\n        dir = bytestring_path(mkdtemp())\n        config[\"smartplaylist\"][\"extm3u\"] = True\n        config[\"smartplaylist\"][\"prefix\"] = \"http://beets:8337/files\"\n        config[\"smartplaylist\"][\"relative_to\"] = False\n        config[\"smartplaylist\"][\"playlist_dir\"] = py3_path(dir)\n        try:\n            spl.update_playlists(lib)\n        except Exception:\n            rmtree(syspath(dir))\n            raise\n\n        lib.items.assert_called_once_with(q, None)\n        lib.albums.assert_called_once_with(a_q, None)\n\n        m3u_filepath = path.join(dir, b\"ta_ga_da-my_playlist_.m3u\")\n        self.assertExists(m3u_filepath)\n        with open(syspath(m3u_filepath), \"rb\") as f:\n            content = f.read()\n        rmtree(syspath(dir))\n\n        self.assertEqual(\n            content,\n            b\"#EXTM3U\\n\"\n            + b\"#EXTINF:300,fake artist - fake title\\n\"\n            + b\"http://beets:8337/files/tagada.mp3\\n\",\n        )\n\n\n    def test_playlist_update_uri_template(self):\n        spl = SmartPlaylistPlugin()\n\n        i = MagicMock()\n        type(i).id = PropertyMock(return_value=3)\n        type(i).path = PropertyMock(return_value=b\"/tagada.mp3\")\n        i.evaluate_template.side_effect = lambda pl, _: pl.replace(\n            b\"$title\", b\"ta:ga:da\"\n        ).decode()\n\n        lib = Mock()\n        lib.replacements = CHAR_REPLACE\n        lib.items.return_value = [i]\n        lib.albums.return_value = []\n\n        q = Mock()\n        a_q = Mock()\n        pl = b\"$title-my<playlist>.m3u\", (q, None), (a_q, None)\n        spl._matched_playlists = [pl]\n\n        dir = bytestring_path(mkdtemp())\n        config[\"smartplaylist\"][\"uri_template\"] = \"http://beets:8337/item/$id/file\"\n        config[\"smartplaylist\"][\"playlist_dir\"] = py3_path(dir)\n        try:\n            spl.update_playlists(lib)\n        except Exception:\n            rmtree(syspath(dir))\n            raise\n\n        lib.items.assert_called_once_with(q, None)\n        lib.albums.assert_called_once_with(a_q, None)\n\n        m3u_filepath = path.join(dir, b\"ta_ga_da-my_playlist_.m3u\")\n        self.assertExists(m3u_filepath)\n        with open(syspath(m3u_filepath), \"rb\") as f:\n            content = f.read()\n        rmtree(syspath(dir))\n\n        self.assertEqual(content, b\"http://beets:8337/item/3/file\\n\")\n\n\nclass SmartPlaylistCLITest(_common.TestCase, TestHelper):\n    def setUp(self):\n        self.setup_beets()\n\n        self.item = self.add_item()\n        config[\"smartplaylist\"][\"playlists\"].set(\n            [\n                {\"name\": \"my_playlist.m3u\", \"query\": self.item.title},\n                {\"name\": \"all.m3u\", \"query\": \"\"},\n            ]\n        )\n        config[\"smartplaylist\"][\"playlist_dir\"].set(py3_path(self.temp_dir))\n        self.load_plugins(\"smartplaylist\")\n\n    def tearDown(self):\n        self.unload_plugins()\n        self.teardown_beets()\n\n    def test_splupdate(self):\n        with self.assertRaises(UserError):\n            self.run_with_output(\"splupdate\", \"tagada\")\n\n        self.run_with_output(\"splupdate\", \"my_playlist\")\n        m3u_path = path.join(self.temp_dir, b\"my_playlist.m3u\")\n        self.assertExists(m3u_path)\n        with open(syspath(m3u_path), \"rb\") as f:\n            self.assertEqual(f.read(), self.item.path + b\"\\n\")\n        remove(syspath(m3u_path))\n\n        self.run_with_output(\"splupdate\", \"my_playlist.m3u\")\n        with open(syspath(m3u_path), \"rb\") as f:\n            self.assertEqual(f.read(), self.item.path + b\"\\n\")\n        remove(syspath(m3u_path))\n\n        self.run_with_output(\"splupdate\")\n        for name in (b\"my_playlist.m3u\", b\"all.m3u\"):\n            with open(path.join(self.temp_dir, name), \"rb\") as f:\n                self.assertEqual(f.read(), self.item.path + b\"\\n\")\n\n\ndef suite():\n    return unittest.TestLoader().loadTestsFromName(__name__)\n\n\nif __name__ == \"__main__\":\n    unittest.main(defaultTest=\"suite\")"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "454164496177fd8b9d6aad4f106e68e816becb6c",
+        "fault_localization_data": [
+            {
+                "file_path": "beets/beetsplug/listenbrainz.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/beetsplug/listenbrainz.py",
+                "faults": [
+                    {
+                        "file_path": "beets/beetsplug/listenbrainz.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/beetsplug/listenbrainz.py",
+                        "line_range": [
+                            3,
+                            9
+                        ],
+                        "reason": "CI formatting check failed with isort: \"stderr: ERROR: /home/runner/work/beets/beets/beetsplug/listenbrainz.py Imports are incorrectly sorted and/or formatted.\" Inspecting the import block (lines 3-9) shows improper import grouping/formatting: standard-library import at line 3 (datetime) and third-party imports at lines 5-6 (musicbrainzngs, requests) are present, but there is no separating blank line between the third-party imports (lines 5-6) and the local/project imports (lines 7-9: from beets ..., from beets.plugins ..., from beetsplug...). isort expects distinct groups (stdlib, third-party, first-party) separated by blank lines; the missing blank line between lines 6 and 7 is a concrete formatting fault that matches the CI error. (Import block expanded per import_block rule to include contiguous imports plus two following lines.)",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import datetime\n\nimport musicbrainzngs\nimport requests\nfrom beets import config, ui\nfrom beets.plugins import BeetsPlugin\nfrom beetsplug.lastimport import process_tracks"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "537b57d99d10ecbcf8a9835bda18a73ee284d88f",
+        "fault_localization_data": [
+            {
+                "file_path": "/home/runner/work/beets/beets/beetsplug/listenbrainz.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/beetsplug/listenbrainz.py",
+                "faults": [
+                    {
+                        "file_path": "/home/runner/work/beets/beets/beetsplug/listenbrainz.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/beets/beetsplug/listenbrainz.py",
+                        "line_range": [
+                            1,
+                            257
+                        ],
+                        "reason": "CI formatting check failed: Black reported \"would reformat /home/runner/work/beets/beets/beetsplug/listenbrainz.py\" causing the format_check tox env to exit with non-zero status (evidence: \"stderr: would reformat ... listenbrainz.py\" and \"format_check: FAIL code 1\"). This indicates the file does not meet Black formatting rules. Concrete, visible formatting anomaly in the file that Black would change: the multi-line listenbrainz_playlists.append(...) block is mis-indented (lines 179-182 show the dict literal not indented consistently with the open parenthesis). Because Black would reformat multiple locations across the file (the CI message is for the whole file), the scope is the entire file [1-257].",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "file",
+                        "code_snippet": "\"\"\"Adds Listenbrainz support to Beets.\"\"\"\n\nimport datetime\n\nimport musicbrainzngs\nimport requests\n\nfrom beets import config, ui\nfrom beets.plugins import BeetsPlugin\nfrom beetsplug.lastimport import process_tracks\n\n\nclass ListenBrainzPlugin(BeetsPlugin):\n    \"\"\"A Beets plugin for interacting with ListenBrainz.\"\"\"\n\n    data_source = \"ListenBrainz\"\n    ROOT = \"http://api.listenbrainz.org/1/\"\n\n    def __init__(self):\n        \"\"\"Initialize the plugin.\"\"\"\n        super().__init__()\n        self.token = self.config[\"token\"].get()\n        self.username = self.config[\"username\"].get()\n        self.AUTH_HEADER = {\"Authorization\": f\"Token {self.token}\"}\n        config[\"listenbrainz\"][\"token\"].redact = True\n\n    def commands(self):\n        \"\"\"Add beet UI commands to interact with ListenBrainz.\"\"\"\n        lbupdate_cmd = ui.Subcommand(\n            \"lbimport\", help=f\"Import {self.data_source} history\"\n        )\n\n        def func(lib, opts, args):\n            self._lbupdate(lib, self._log)\n\n        lbupdate_cmd.func = func\n        return [lbupdate_cmd]\n\n    def _lbupdate(self, lib, log):\n        \"\"\"Obtain view count from Listenbrainz.\"\"\"\n        found_total = 0\n        unknown_total = 0\n        ls = self.get_listens()\n        tracks = self.get_tracks_from_listens(ls)\n        log.info(f\"Found {len(ls)} listens\")\n        if tracks:\n            found, unknown = process_tracks(lib, tracks, log)\n            found_total += found\n            unknown_total += unknown\n        log.info(\"... done!\")\n        log.info(\"{0} unknown play-counts\", unknown_total)\n        log.info(\"{0} play-counts imported\", found_total)\n\n    def _make_request(self, url, params=None):\n        \"\"\"Makes a request to the ListenBrainz API.\"\"\"\n        try:\n            response = requests.get(\n                url=url,\n                headers=self.AUTH_HEADER,\n                timeout=10,\n                params=params,\n            )\n            response.raise_for_status()\n            return response.json()\n        except requests.exceptions.RequestException as e:\n            self._log.debug(f\"Invalid Search Error: {e}\")\n            return None\n\n    def get_listens(self, min_ts=None, max_ts=None, count=None):\n        \"\"\"Gets the listen history of a given user.\n\n        Args:\n            username: User to get listen history of.\n            min_ts: History before this timestamp will not be returned.\n                    DO NOT USE WITH max_ts.\n            max_ts: History after this timestamp will not be returned.\n                    DO NOT USE WITH min_ts.\n            count: How many listens to return. If not specified,\n                uses a default from the server.\n\n        Returns:\n            A list of listen info dictionaries if there's an OK status.\n\n        Raises:\n            An HTTPError if there's a failure.\n            A ValueError if the JSON in the response is invalid.\n            An IndexError if the JSON is not structured as expected.\n        \"\"\"\n        url = f\"{self.ROOT}/user/{self.username}/listens\"\n        params = {\n            k: v\n            for k, v in {\n                \"min_ts\": min_ts,\n                \"max_ts\": max_ts,\n                \"count\": count,\n            }.items()\n            if v is not None\n        }\n        response = self._make_request(url, params)\n\n        if response is not None:\n            return response[\"payload\"][\"listens\"]\n        else:\n            return None\n\n    def get_tracks_from_listens(self, listens):\n        \"\"\"Returns a list of tracks from a list of listens.\"\"\"\n        tracks = []\n        for track in listens:\n            if track[\"track_metadata\"].get(\"release_name\") is None:\n                continue\n            mbid_mapping = track[\"track_metadata\"].get(\"mbid_mapping\", {})\n            # print(json.dumps(track, indent=4, sort_keys=True))\n            if mbid_mapping.get(\"recording_mbid\") is None:\n                # search for the track using title and release\n                mbid = self.get_mb_recording_id(track)\n            tracks.append(\n                {\n                    \"album\": {\n                        \"name\": track[\"track_metadata\"].get(\"release_name\")\n                    },\n                    \"name\": track[\"track_metadata\"].get(\"track_name\"),\n                    \"artist\": {\n                        \"name\": track[\"track_metadata\"].get(\"artist_name\")\n                    },\n                    \"mbid\": mbid,\n                    \"release_mbid\": mbid_mapping.get(\"release_mbid\"),\n                    \"listened_at\": track.get(\"listened_at\"),\n                }\n            )\n        return tracks\n\n    def get_mb_recording_id(self, track):\n        \"\"\"Returns the MusicBrainz recording ID for a track.\"\"\"\n        resp = musicbrainzngs.search_recordings(\n            query=track[\"track_metadata\"].get(\"track_name\"),\n            release=track[\"track_metadata\"].get(\"release_name\"),\n            strict=True,\n        )\n        if resp.get(\"recording-count\") == \"1\":\n            return resp.get(\"recording-list\")[0].get(\"id\")\n        else:\n            return None\n\n    def get_playlists_createdfor(self, username):\n        \"\"\"Returns a list of playlists created by a user.\"\"\"\n        url = f\"{self.ROOT}/user/{username}/playlists/createdfor\"\n        return self._make_request(url)\n\n    def get_listenbrainz_playlists(self):\n        \"\"\"Returns a list of playlists created by ListenBrainz.\"\"\"\n        import re\n        resp = self.get_playlists_createdfor(self.username)\n        playlists = resp.get(\"playlists\")\n        listenbrainz_playlists = []\n\n        for playlist in playlists:\n            playlist_info = playlist.get(\"playlist\")\n            if playlist_info.get(\"creator\") == \"listenbrainz\":\n                title = playlist_info.get(\"title\")\n                match = re.search(r\"(Missed Recordings of \\d{4}|Discoveries of \\d{4})\", title)\n                if \"Exploration\" in title:\n                    playlist_type = \"Exploration\"\n                elif \"Jams\" in title:\n                    playlist_type = \"Jams\"\n                elif match:\n                    playlist_type = match.group(1)\n                else:\n                    playlist_type = None\n                if \"week of \" in title:\n                    date_str = title.split(\"week of \")[1].split(\" \")[0]\n                    date = datetime.datetime.strptime(\n                        date_str, \"%Y-%m-%d\"\n                    ).date()\n                else:\n                    date = None\n                identifier = playlist_info.get(\"identifier\")\n                id = identifier.split(\"/\")[-1]\n                if playlist_type in [\"Jams\", \"Exploration\"]:\n                    listenbrainz_playlists.append(\n                    {\"type\": playlist_type, \"date\": date, \"identifier\": id}\n                    )\n        return listenbrainz_playlists\n\n    def get_playlist(self, identifier):\n        \"\"\"Returns a playlist.\"\"\"\n        url = f\"{self.ROOT}/playlist/{identifier}\"\n        return self._make_request(url)\n\n    def get_tracks_from_playlist(self, playlist):\n        \"\"\"This function returns a list of tracks in the playlist.\"\"\"\n        tracks = []\n        for track in playlist.get(\"playlist\").get(\"track\"):\n            tracks.append(\n                {\n                    \"artist\": track.get(\"creator\"),\n                    \"identifier\": track.get(\"identifier\").split(\"/\")[-1],\n                    \"title\": track.get(\"title\"),\n                }\n            )\n        return self.get_track_info(tracks)\n\n    def get_track_info(self, tracks):\n        \"\"\"Returns a list of track info.\"\"\"\n        track_info = []\n        for track in tracks:\n            identifier = track.get(\"identifier\")\n            resp = musicbrainzngs.get_recording_by_id(\n                identifier, includes=[\"releases\", \"artist-credits\"]\n            )\n            recording = resp.get(\"recording\")\n            title = recording.get(\"title\")\n            artist_credit = recording.get(\"artist-credit\", [])\n            if artist_credit:\n                artist = artist_credit[0].get(\"artist\", {}).get(\"name\")\n            else:\n                artist = None\n            releases = recording.get(\"release-list\", [])\n            if releases:\n                album = releases[0].get(\"title\")\n                date = releases[0].get(\"date\")\n                year = date.split(\"-\")[0] if date else None\n            else:\n                album = None\n                year = None\n            track_info.append(\n                {\n                    \"identifier\": identifier,\n                    \"title\": title,\n                    \"artist\": artist,\n                    \"album\": album,\n                    \"year\": year,\n                }\n            )\n        return track_info\n\n    def get_weekly_playlist(self, index):\n        \"\"\"Returns a list of weekly playlists based on the index.\"\"\"\n        playlists = self.get_listenbrainz_playlists()\n        playlist = self.get_playlist(playlists[index].get(\"identifier\"))\n        return self.get_tracks_from_playlist(playlist)\n\n    def get_weekly_exploration(self):\n        \"\"\"Returns a list of weekly exploration.\"\"\"\n        return self.get_weekly_playlist(0)\n\n    def get_weekly_jams(self):\n        \"\"\"Returns a list of weekly jams.\"\"\"\n        return self.get_weekly_playlist(1)\n\n    def get_last_weekly_exploration(self):\n        \"\"\"Returns a list of weekly exploration.\"\"\"\n        return self.get_weekly_playlist(3)\n\n    def get_last_weekly_jams(self):\n        \"\"\"Returns a list of weekly jams.\"\"\"\n        return self.get_weekly_playlist(3)"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "68ddb2559e616656301858d441a523ebd64a710f",
+        "fault_localization_data": [
+            {
+                "file_path": "src/diffusers/loaders/single_file_utils.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/loaders/single_file_utils.py",
+                "faults": [
+                    {
+                        "file_path": "src/diffusers/loaders/single_file_utils.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/loaders/single_file_utils.py",
+                        "line_range": [
+                            17,
+                            44
+                        ],
+                        "reason": "CI lint failure reports two unused-import errors (ruff F401) inside the import block. Logs: \"F401 `torch` imported but unused\" (import at line 23) and \"F401 `safetensors.torch.load_file` imported but unused\" (import at line 25). Ruff summary: \"Found 2 errors.\" and \"[*] 2 fixable with the `--fix` option.\" Both offending imports are within the file's import block (lines 17-44) and are causing the check_code_quality job to fail.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import os\nimport re\nfrom contextlib import nullcontext\nfrom io import BytesIO\n\nimport requests\nimport torch\nimport yaml\nfrom safetensors.torch import load_file as safe_load\nfrom transformers import (\n    CLIPTextConfig,\n    CLIPTextModel,\n    CLIPTextModelWithProjection,\n    CLIPTokenizer,\n)\n\nfrom ..models import UNet2DConditionModel\nfrom ..schedulers import (\n    DDIMScheduler,\n    DDPMScheduler,\n    DPMSolverMultistepScheduler,\n    EulerAncestralDiscreteScheduler,\n    EulerDiscreteScheduler,\n    HeunDiscreteScheduler,\n    LMSDiscreteScheduler,\n    PNDMScheduler,\n)\nfrom ..utils import is_accelerate_available, logging"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "ba66fb81a0c8db48fed7abe833409f447b95708b",
+        "fault_localization_data": [
+            {
+                "file_path": "src/diffusers/models/autoencoders/autoencoder_kl.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/models/autoencoders/autoencoder_kl.py",
+                "faults": [
+                    {
+                        "file_path": "src/diffusers/models/autoencoders/autoencoder_kl.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/models/autoencoders/autoencoder_kl.py",
+                        "line_range": [
+                            14,
+                            32
+                        ],
+                        "reason": "CI shows ImportError: \"cannot import name 'FromSingleFileMixin' from 'diffusers.loaders'\" raised while importing this module (ImportError referenced in CI logs and propagated as RuntimeError in src/diffusers/utils/import_utils.py:695). The import statement performing this is in the import block of this file: line 20: \"from ...loaders import FromSingleFileMixin\" (imports span lines 14-32). This missing symbol in diffusers.loaders directly matches the CI failure that caused pytest tests/others/test_dependencies.py to fail (2 failed, 1 passed).",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "from typing import Dict, Optional, Tuple, Union\n\nimport torch\nimport torch.nn as nn\n\nfrom ...configuration_utils import ConfigMixin, register_to_config\nfrom ...loaders import FromSingleFileMixin\nfrom ...utils.accelerate_utils import apply_forward_hook\nfrom ..attention_processor import (\n    ADDED_KV_ATTENTION_PROCESSORS,\n    CROSS_ATTENTION_PROCESSORS,\n    Attention,\n    AttentionProcessor,\n    AttnAddedKVProcessor,\n    AttnProcessor,\n)\nfrom ..modeling_outputs import AutoencoderKLOutput\nfrom ..modeling_utils import ModelMixin\nfrom .vae import Decoder, DecoderOutput, DiagonalGaussianDistribution, Encoder"
+                    }
+                ]
+            },
+            {
+                "file_path": "src/diffusers/utils/import_utils.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/utils/import_utils.py",
+                "faults": []
+            },
+            {
+                "file_path": "src/diffusers/loaders/__init__.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/loaders/__init__.py",
+                "faults": [
+                    {
+                        "file_path": "src/diffusers/loaders/__init__.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/loaders/__init__.py",
+                        "line_range": [
+                            1,
+                            4
+                        ],
+                        "reason": "Tests failed with ImportError: \"cannot import name 'FromSingleFileMixin' from 'diffusers.loaders'\" (CI evidence: pytest failures in tests/others/test_dependencies.py; import error propagated as RuntimeError from src/diffusers/utils/import_utils.py:695). Root causes visible in this file: (1) _import_structure conditionally adds the 'single_file' entry only when is_transformers_available() is True (see _import_structure creation at lines 54-66 and specifically the addition at line 61). When transformers is not installed, 'single_file' is not included in _import_structure, so the LazyModule (set at lines 82-84) does not expose FromSingleFileMixin, causing the ImportError seen in CI. (2) The direct import under TYPE_CHECKING is also gated by is_transformers_available() (lines 69-79, specifically the from .single_file import FromSingleFileMixin at line 77), so statically-checked imports will not expose the symbol unless transformers is present. Both conditional guards cause the missing symbol error in environments without transformers and directly explain the CI message. CI evidence: \"ImportError: cannot import name 'FromSingleFileMixin' from 'diffusers.loaders'\" and \"FAILED tests/others/test_dependencies.py::DependencyTester::test_backend_registration ... 2 failed, 1 passed\".",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "file",
+                        "code_snippet": "from typing import TYPE_CHECKING\n\nfrom ..utils import DIFFUSERS_SLOW_IMPORT, _LazyModule, deprecate\nfrom ..utils.import_utils import is_peft_available, is_torch_available, is_transformers_available"
+                    }
+                ]
+            },
+            {
+                "file_path": "src/diffusers/models/__init__.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/models/__init__.py",
+                "faults": [
+                    {
+                        "file_path": "src/diffusers/models/__init__.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/src/diffusers/models/__init__.py",
+                        "line_range": [
+                            1,
+                            94
+                        ],
+                        "reason": "CI shows ImportError: \"cannot import name 'FromSingleFileMixin' from 'diffusers.loaders'\" raised while importing src/diffusers/models/autoencoders/autoencoder_kl.py (reported in test logs). That module is exposed for lazy import by this file: the mapping for \"autoencoders.autoencoder_kl\" -> [\"AutoencoderKL\"] is present in _import_structure (line 30). This module is not imported immediately here, but sys.modules[__name__] is replaced with a _LazyModule at line 94, which triggers dynamic import of submodules; import failures in those submodules are then propagated as RuntimeError from import_utils.py (runtime evidence: import_utils.py:695). Tests failed (2 failed, 1 passed) because the missing symbol in diffusers.loaders caused the lazy import of a models submodule to raise ImportError that was surfaced as a RuntimeError. Summary of related sub-faults: (1) _import_structure registers autoencoders.autoencoder_kl (line 30) which triggers import of a module that depends on a missing symbol; (2) replacing the package with _LazyModule (line 94) causes that ImportError to be raised at import time and propagate as a RuntimeError (matches CI trace to import_utils.py:695), causing tests in tests/others/test_dependencies.py to fail.",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "file",
+                        "code_snippet": "# Copyright 2023 The HuggingFace Team. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nfrom typing import TYPE_CHECKING\n\nfrom ..utils import (\n    DIFFUSERS_SLOW_IMPORT,\n    _LazyModule,\n    is_flax_available,\n    is_torch_available,\n)\n\n\n_import_structure = {}\n\nif is_torch_available():\n    _import_structure[\"adapter\"] = [\"MultiAdapter\", \"T2IAdapter\"]\n    _import_structure[\"autoencoders.autoencoder_asym_kl\"] = [\"AsymmetricAutoencoderKL\"]\n    _import_structure[\"autoencoders.autoencoder_kl\"] = [\"AutoencoderKL\"]\n    _import_structure[\"autoencoders.autoencoder_kl_temporal_decoder\"] = [\"AutoencoderKLTemporalDecoder\"]\n    _import_structure[\"autoencoders.autoencoder_tiny\"] = [\"AutoencoderTiny\"]\n    _import_structure[\"autoencoders.consistency_decoder_vae\"] = [\"ConsistencyDecoderVAE\"]\n    _import_structure[\"controlnet\"] = [\"ControlNetModel\"]\n    _import_structure[\"dual_transformer_2d\"] = [\"DualTransformer2DModel\"]\n    _import_structure[\"embeddings\"] = [\"ImageProjection\"]\n    _import_structure[\"modeling_utils\"] = [\"ModelMixin\"]\n    _import_structure[\"prior_transformer\"] = [\"PriorTransformer\"]\n    _import_structure[\"t5_film_transformer\"] = [\"T5FilmDecoder\"]\n    _import_structure[\"transformer_2d\"] = [\"Transformer2DModel\"]\n    _import_structure[\"transformer_temporal\"] = [\"TransformerTemporalModel\"]\n    _import_structure[\"unet_1d\"] = [\"UNet1DModel\"]\n    _import_structure[\"unet_2d\"] = [\"UNet2DModel\"]\n    _import_structure[\"unet_2d_condition\"] = [\"UNet2DConditionModel\"]\n    _import_structure[\"unet_3d_condition\"] = [\"UNet3DConditionModel\"]\n    _import_structure[\"unet_kandinsky3\"] = [\"Kandinsky3UNet\"]\n    _import_structure[\"unet_motion_model\"] = [\"MotionAdapter\", \"UNetMotionModel\"]\n    _import_structure[\"unet_spatio_temporal_condition\"] = [\"UNetSpatioTemporalConditionModel\"]\n    _import_structure[\"uvit_2d\"] = [\"UVit2DModel\"]\n    _import_structure[\"vq_model\"] = [\"VQModel\"]\n\nif is_flax_available():\n    _import_structure[\"controlnet_flax\"] = [\"FlaxControlNetModel\"]\n    _import_structure[\"unet_2d_condition_flax\"] = [\"FlaxUNet2DConditionModel\"]\n    _import_structure[\"vae_flax\"] = [\"FlaxAutoencoderKL\"]\n\n\nif TYPE_CHECKING or DIFFUSERS_SLOW_IMPORT:\n    if is_torch_available():\n        from .adapter import MultiAdapter, T2IAdapter\n        from .autoencoders import (\n            AsymmetricAutoencoderKL,\n            AutoencoderKL,\n            AutoencoderKLTemporalDecoder,\n            AutoencoderTiny,\n            ConsistencyDecoderVAE,\n        )\n        from .controlnet import ControlNetModel\n        from .dual_transformer_2d import DualTransformer2DModel\n        from .embeddings import ImageProjection\n        from .modeling_utils import ModelMixin\n        from .prior_transformer import PriorTransformer\n        from .t5_film_transformer import T5FilmDecoder\n        from .transformer_2d import Transformer2DModel\n        from .transformer_temporal import TransformerTemporalModel\n        from .unet_1d import UNet1DModel\n        from .unet_2d import UNet2DModel\n        from .unet_2d_condition import UNet2DConditionModel\n        from .unet_3d_condition import UNet3DConditionModel\n        from .unet_kandinsky3 import Kandinsky3UNet\n        from .unet_motion_model import MotionAdapter, UNetMotionModel\n        from .unet_spatio_temporal_condition import UNetSpatioTemporalConditionModel\n        from .uvit_2d import UVit2DModel\n        from .vq_model import VQModel\n\n    if is_flax_available():\n        from .controlnet_flax import FlaxControlNetModel\n        from .unet_2d_condition_flax import FlaxUNet2DConditionModel\n        from .vae_flax import FlaxAutoencoderKL\n\nelse:\n    import sys\n\n    sys.modules[__name__] = _LazyModule(__name__, globals()[\"__file__\"], _import_structure, module_spec=__spec__)"
+                    }
+                ]
+            },
+            {
+                "file_path": "tests/others/test_dependencies.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/tests/others/test_dependencies.py",
+                "faults": [
+                    {
+                        "file_path": "tests/others/test_dependencies.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/diffusers/tests/others/test_dependencies.py",
+                        "line_range": [
+                            20,
+                            50
+                        ],
+                        "reason": "CI shows an ImportError: \"cannot import name 'FromSingleFileMixin' from 'diffusers.loaders'\" that is raised while importing package modules and is then propagated as a RuntimeError in src/diffusers/utils/import_utils.py:695. The failing tests import the diffusers package at runtime (see test_backend_registration imports at lines 27-29 and test_pipeline_imports imports at lines 42-44), which triggers the package-level import that fails. Test output: \"FAILED tests/others/test_dependencies.py::DependencyTester::test_backend_registration\" and \"FAILED tests/others/test_dependencies.py::DependencyTester::test_pipeline_imports\" (2 failed, 1 passed). Root cause is a dependency / API mismatch: the symbol FromSingleFileMixin is missing from diffusers.loaders as reported by the CI logs. This fault affects multiple tests within the DependencyTester class, so the full class scope (lines 20-50) is reported.",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "class",
+                        "code_snippet": "class DependencyTester(unittest.TestCase):\n    def test_diffusers_import(self):\n        try:\n            import diffusers  # noqa: F401\n        except ImportError:\n            assert False\n\n    def test_backend_registration(self):\n        import diffusers\n        from diffusers.dependency_versions_table import deps\n\n        all_classes = inspect.getmembers(diffusers, inspect.isclass)\n\n        for cls_name, cls_module in all_classes:\n            if \"dummy_\" in cls_module.__module__:\n                for backend in cls_module._backends:\n                    if backend == \"k_diffusion\":\n                        backend = \"k-diffusion\"\n                    elif backend == \"invisible_watermark\":\n                        backend = \"invisible-watermark\"\n                    assert backend in deps, f\"{backend} is not in the deps table!\"\n\n    def test_pipeline_imports(self):\n        import diffusers\n        import diffusers.pipelines\n\n        all_classes = inspect.getmembers(diffusers, inspect.isclass)\n        for cls_name, cls_module in all_classes:\n            if hasattr(diffusers.pipelines, cls_name):\n                pipeline_folder_module = \".\".join(str(cls_module.__module__).split(\".\")[:3])\n                _ = import_module(pipeline_folder_module, str(cls_name))"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "e29a1f6d5a51a55349b025c23fa01bddb8858a71",
+        "fault_localization_data": [
+            {
+                "file_path": "/home/runner/work/yt-dlp/yt-dlp/yt_dlp/extractor/_extractors.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/extractor/_extractors.py",
+                "faults": []
+            },
+            {
+                "file_path": "/home/runner/work/yt-dlp/yt-dlp/yt_dlp/extractor/extractors.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/extractor/extractors.py",
+                "faults": [
+                    {
+                        "file_path": "/home/runner/work/yt-dlp/yt-dlp/yt_dlp/extractor/extractors.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/extractor/extractors.py",
+                        "line_range": [
+                            1,
+                            4
+                        ],
+                        "reason": "Runtime module import triggers missing-submodule error during CI: CI logs show \"ModuleNotFoundError: No module named 'yt_dlp.extractor.elevensports'\" (raised during test collection and when running devscripts/make_lazy_extractors.py). This file unconditionally falls back to eager importing all extractor modules when lazy loader is not active: lines 9-14 attempt to enable a lazy loader, but if that path is not taken the code executes \"from ._extractors import *\" (line 17). _extractors.py then performs direct imports of individual extractor modules (CI evidence references _extractors.py line 544 importing ElevenSportsIE from .elevensports), so the fallback eager import at line 17 causes the ModuleNotFoundError observed in CI. Additionally, the contextlib.suppress(ImportError) around the lazy loader import (lines 11-14) can mask failures of the lazy loader and cause the code to proceed to the eager import path unexpectedly. Evidence: CI error messages (ModuleNotFoundError) and pytest collection interruption; failing command in Linter: python devscripts/make_lazy_extractors.py also fails with the same ModuleNotFoundError. Suggested scope: file-level since the problematic import and control flow are at top-level of this module (lines 1-28).",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "file",
+                        "code_snippet": "import contextlib\nimport os\n\nfrom ..plugins import load_plugins"
+                    }
+                ]
+            },
+            {
+                "file_path": "/home/runner/work/yt-dlp/yt-dlp/devscripts/make_lazy_extractors.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/devscripts/make_lazy_extractors.py",
+                "faults": [
+                    {
+                        "file_path": "/home/runner/work/yt-dlp/yt-dlp/devscripts/make_lazy_extractors.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/devscripts/make_lazy_extractors.py",
+                        "line_range": [
+                            61,
+                            72
+                        ],
+                        "reason": "Runtime/dependency failure: get_all_ies() unconditionally imports yt_dlp.extractor.extractors which triggers Python to import every extractor module, causing ModuleNotFoundError for missing optional extractors (CI evidence: \"ModuleNotFoundError: No module named 'yt_dlp.extractor.elevensports'\" reported repeatedly in logs and pytest collection). Concrete code: get_all_ies contains `from yt_dlp.extractor.extractors import _ALL_CLASSES` (line 68) which is the direct import that raises the cited ModuleNotFoundError. The function also manipulates a plugins directory (lines 62-71) but that only affects 'ytdlp_plugins' and does not prevent importing extractor modules such as elevensports, so the missing-module dependency is not guarded against here.",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def get_all_ies():\n    PLUGINS_DIRNAME = 'ytdlp_plugins'\n    BLOCKED_DIRNAME = f'{PLUGINS_DIRNAME}_blocked'\n    if os.path.exists(PLUGINS_DIRNAME):\n        # os.rename cannot be used, e.g. in Docker. See https://github.com/yt-dlp/yt-dlp/pull/4958\n        shutil.move(PLUGINS_DIRNAME, BLOCKED_DIRNAME)\n    try:\n        from yt_dlp.extractor.extractors import _ALL_CLASSES\n    finally:\n        if os.path.exists(BLOCKED_DIRNAME):\n            shutil.move(BLOCKED_DIRNAME, PLUGINS_DIRNAME)\n    return _ALL_CLASSES"
+                    },
+                    {
+                        "file_path": "/home/runner/work/yt-dlp/yt-dlp/devscripts/make_lazy_extractors.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/devscripts/make_lazy_extractors.py",
+                        "line_range": [
+                            36,
+                            58
+                        ],
+                        "reason": "Runtime invocation ordering: main() calls get_all_ies() at module runtime (`_ALL_CLASSES = get_all_ies()` on line 41) before importing yt_dlp.plugins and InfoExtractor (lines 43-44). CI shows that this call path leads immediately to ModuleNotFoundError: \"No module named 'yt_dlp.extractor.elevensports'\" when make_lazy_extractors.py is run (Linter) and during pytest collection (Core Test). Because get_all_ies() performs the extractor import (see get_all_ies line 68), calling it here triggers the failing import during script execution and test collection.",
+                        "issue_type": "runtime_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def main():\n    lazy_extractors_filename = get_filename_args(default_outfile='yt_dlp/extractor/lazy_extractors.py')\n    if os.path.exists(lazy_extractors_filename):\n        os.remove(lazy_extractors_filename)\n\n    _ALL_CLASSES = get_all_ies()  # Must be before import\n\n    import yt_dlp.plugins\n    from yt_dlp.extractor.common import InfoExtractor, SearchInfoExtractor\n\n    # Filter out plugins\n    _ALL_CLASSES = [cls for cls in _ALL_CLASSES if not cls.__module__.startswith(f'{yt_dlp.plugins.PACKAGE_NAME}.')]\n\n    DummyInfoExtractor = type('InfoExtractor', (InfoExtractor,), {'IE_NAME': NO_ATTR})\n    module_src = '\\n'.join((\n        MODULE_TEMPLATE,\n        '    _module = None',\n        *extra_ie_code(DummyInfoExtractor),\n        '\\nclass LazyLoadSearchExtractor(LazyLoadExtractor):\\n    pass\\n',\n        *build_ies(_ALL_CLASSES, (InfoExtractor, SearchInfoExtractor), DummyInfoExtractor),\n    ))\n\n    write_file(lazy_extractors_filename, f'{module_src}\\n')"
+                    }
+                ]
+            },
+            {
+                "file_path": "/home/runner/work/yt-dlp/yt-dlp/yt_dlp/YoutubeDL.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/YoutubeDL.py",
+                "faults": [
+                    {
+                        "file_path": "/home/runner/work/yt-dlp/yt-dlp/yt_dlp/YoutubeDL.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/YoutubeDL.py",
+                        "line_range": [
+                            1,
+                            167
+                        ],
+                        "reason": "CI shows ModuleNotFoundError: No module named 'yt_dlp.extractor.elevensports' that occurs during import of the extractor package. In this file, the import that triggers package import is at line 32: 'from .extractor import gen_extractor_classes, get_info_extractor' (also lines 33\u201334 import extractor submodules). The linter (devscripts/make_lazy_extractors.py) and pytest collection both fail with the same ModuleNotFoundError (logs reference yt_dlp/extractor/_extractors.py line 544 importing '.elevensports'). This indicates a missing/incorrect module inside the extractor package that surfaces when the import block (lines 1\u2013167) is executed. Affected jobs: Linter step 'Make lazy extractors' and Core Test pytest collection. Evidence: CI error messages 'ModuleNotFoundError: No module named \"yt_dlp.extractor.elevensports\"' and interrupted pytest collection with the same error.",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import collections\nimport contextlib\nimport copy\nimport datetime\nimport errno\nimport fileinput\nimport http.cookiejar\nimport io\nimport itertools\nimport json\nimport locale\nimport operator\nimport os\nimport random\nimport re\nimport shutil\nimport string\nimport subprocess\nimport sys\nimport tempfile\nimport time\nimport tokenize\nimport traceback\nimport unicodedata\n\nfrom .cache import Cache\nfrom .compat import functools, urllib  # isort: split\nfrom .compat import compat_os_name, compat_shlex_quote, urllib_req_to_req\nfrom .cookies import LenientSimpleCookie, load_cookies\nfrom .downloader import FFmpegFD, get_suitable_downloader, shorten_protocol_name\nfrom .downloader.rtmp import rtmpdump_version\nfrom .extractor import gen_extractor_classes, get_info_extractor\nfrom .extractor.common import UnsupportedURLIE\nfrom .extractor.openload import PhantomJSwrapper\nfrom .minicurses import format_text\nfrom .networking import HEADRequest, Request, RequestDirector\nfrom .networking.common import _REQUEST_HANDLERS, _RH_PREFERENCES\nfrom .networking.exceptions import (\n    HTTPError,\n    NoSupportingHandlers,\n    RequestError,\n    SSLError,\n    _CompatHTTPError,\n    network_exceptions,\n)\nfrom .plugins import directories as plugin_directories\nfrom .postprocessor import _PLUGIN_CLASSES as plugin_pps\nfrom .postprocessor import (\n    EmbedThumbnailPP,\n    FFmpegFixupDuplicateMoovPP,\n    FFmpegFixupDurationPP,\n    FFmpegFixupM3u8PP,\n    FFmpegFixupM4aPP,\n    FFmpegFixupStretchedPP,\n    FFmpegFixupTimestampPP,\n    FFmpegMergerPP,\n    FFmpegPostProcessor,\n    FFmpegVideoConvertorPP,\n    MoveFilesAfterDownloadPP,\n    get_postprocessor,\n)\nfrom .postprocessor.ffmpeg import resolve_mapping as resolve_recode_mapping\nfrom .update import (\n    REPOSITORY,\n    _get_system_deprecation,\n    _make_label,\n    current_git_head,\n    detect_variant,\n)\nfrom .utils import (\n    DEFAULT_OUTTMPL,\n    IDENTITY,\n    LINK_TEMPLATES,\n    MEDIA_EXTENSIONS,\n    NO_DEFAULT,\n    NUMBER_RE,\n    OUTTMPL_TYPES,\n    POSTPROCESS_WHEN,\n    STR_FORMAT_RE_TMPL,\n    STR_FORMAT_TYPES,\n    ContentTooShortError,\n    DateRange,\n    DownloadCancelled,\n    DownloadError,\n    EntryNotInPlaylist,\n    ExistingVideoReached,\n    ExtractorError,\n    FormatSorter,\n    GeoRestrictedError,\n    ISO3166Utils,\n    LazyList,\n    MaxDownloadsReached,\n    Namespace,\n    PagedList,\n    PlaylistEntries,\n    Popen,\n    PostProcessingError,\n    ReExtractInfo,\n    RejectedVideoReached,\n    SameFileError,\n    UnavailableVideoError,\n    UserNotLive,\n    age_restricted,\n    args_to_str,\n    bug_reports_message,\n    date_from_str,\n    deprecation_warning,\n    determine_ext,\n    determine_protocol,\n    encode_compat_str,\n    encodeFilename,\n    error_to_compat_str,\n    escapeHTML,\n    expand_path,\n    extract_basic_auth,\n    filter_dict,\n    float_or_none,\n    format_bytes,\n    format_decimal_suffix,\n    format_field,\n    formatSeconds,\n    get_compatible_ext,\n    get_domain,\n    int_or_none,\n    iri_to_uri,\n    is_path_like,\n    join_nonempty,\n    locked_file,\n    make_archive_id,\n    make_dir,\n    number_of_digits,\n    orderedSet,\n    orderedSet_from_options,\n    parse_filesize,\n    preferredencoding,\n    prepend_extension,\n    remove_terminal_sequences,\n    render_table,\n    replace_extension,\n    sanitize_filename,\n    sanitize_path,\n    sanitize_url,\n    str_or_none,\n    strftime_or_none,\n    subtitles_filename,\n    supports_terminal_sequences,\n    system_identifier,\n    timetuple_from_msec,\n    to_high_limit_path,\n    traverse_obj,\n    try_call,\n    try_get,\n    url_basename,\n    variadic,\n    version_tuple,\n    windows_enable_vt_mode,\n    write_json_file,\n    write_string,\n)\nfrom .utils._utils import _YDLLogger\nfrom .utils.networking import (\n    HTTPHeaderDict,\n    clean_headers,\n    clean_proxies,\n    std_headers,\n)\nfrom .version import CHANNEL, ORIGIN, RELEASE_GIT_HEAD, VARIANT, __version__"
+                    }
+                ]
+            },
+            {
+                "file_path": "/home/runner/work/yt-dlp/yt-dlp/yt_dlp/__init__.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/__init__.py",
+                "faults": [
+                    {
+                        "file_path": "/home/runner/work/yt-dlp/yt-dlp/yt_dlp/__init__.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/__init__.py",
+                        "line_range": [
+                            9,
+                            64
+                        ],
+                        "reason": "CI shows ModuleNotFoundError: No module named 'yt_dlp.extractor.elevensports' (e.g. raised from extractor/_extractors.py line 544) during both the linter devscript and pytest collection. This package __init__ performs eager imports of submodules at import time (notably: line 20 'from .extractor import list_extractor_classes' and other extractor/postprocessor/utils imports in this block). Importing .extractor triggers the extractor registry/_extractors import sequence which attempts to import individual extractor modules (including elevensports) and fails, causing the observed ModuleNotFoundError and aborting tooling/tests. Summary of related sub-faults: - Eager top-level import of .extractor (line 20) causes optional/missing extractor modules to be imported during any 'import yt_dlp' (CI evidence: ModuleNotFoundError during python -m yt_dlp and devscripts/make_lazy_extractors.py). - Multiple other top-level imports in this block increase exposure to missing optional dependencies during package import. The failing behavior matches the CI logs and points to this import block as the root cause.",
+                        "issue_type": "runtime_error",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import collections\nimport getpass\nimport itertools\nimport optparse\nimport os\nimport re\nimport traceback\n\nfrom .compat import compat_shlex_quote\nfrom .cookies import SUPPORTED_BROWSERS, SUPPORTED_KEYRINGS\nfrom .downloader.external import get_external_downloader\nfrom .extractor import list_extractor_classes\nfrom .extractor.adobepass import MSO_INFO\nfrom .options import parseOpts\nfrom .postprocessor import (\n    FFmpegExtractAudioPP,\n    FFmpegMergerPP,\n    FFmpegPostProcessor,\n    FFmpegSubtitlesConvertorPP,\n    FFmpegThumbnailsConvertorPP,\n    FFmpegVideoConvertorPP,\n    FFmpegVideoRemuxerPP,\n    MetadataFromFieldPP,\n    MetadataParserPP,\n)\nfrom .update import Updater\nfrom .utils import (\n    NO_DEFAULT,\n    POSTPROCESS_WHEN,\n    DateRange,\n    DownloadCancelled,\n    DownloadError,\n    FormatSorter,\n    GeoUtils,\n    PlaylistEntries,\n    SameFileError,\n    decodeOption,\n    download_range_func,\n    expand_path,\n    float_or_none,\n    format_field,\n    int_or_none,\n    match_filter_func,\n    parse_bytes,\n    parse_duration,\n    preferredencoding,\n    read_batch_urls,\n    read_stdin,\n    render_table,\n    setproctitle,\n    traverse_obj,\n    variadic,\n    write_string,\n)\nfrom .utils.networking import std_headers\nfrom .YoutubeDL import YoutubeDL"
+                    }
+                ]
+            },
+            {
+                "file_path": "/home/runner/work/yt-dlp/yt-dlp/yt_dlp/__main__.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/__main__.py",
+                "faults": [
+                    {
+                        "file_path": "/home/runner/work/yt-dlp/yt-dlp/yt_dlp/__main__.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/__main__.py",
+                        "line_range": [
+                            6,
+                            14
+                        ],
+                        "reason": "Import of the package at module scope (line 14: \"import yt_dlp\") causes package initialization to run during CLI invocation and test collection. CI logs show ModuleNotFoundError: \"No module named 'yt_dlp.extractor.elevensports'\" (reported from yt_dlp/extractor/_extractors.py line 544) which is raised when the package is imported; this exact failure appears in both the Linter step (devscripts/make_lazy_extractors.py) and pytest collection (\"Interrupted: 9 errors during collection\" with \"E   ModuleNotFoundError: No module named 'yt_dlp.extractor.elevensports'\"). Because the import that triggers the missing-module error is in the contiguous import block (lines 6\u201314), the fault is localized to this import_block: importing the package at module import-time exposes missing optional/conditional submodules and leads to dependency-related runtime failures during CI.",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "import_block",
+                        "code_snippet": "import sys\n\nif __package__ is None and not getattr(sys, 'frozen', False):\n    # direct call of __main__.py\n    import os.path\n    path = os.path.realpath(os.path.abspath(__file__))\n    sys.path.insert(0, os.path.dirname(os.path.dirname(path)))\n\nimport yt_dlp"
+                    }
+                ]
+            },
+            {
+                "file_path": "yt_dlp/compat/compat_utils.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/compat/compat_utils.py",
+                "faults": [
+                    {
+                        "file_path": "yt_dlp/compat/compat_utils.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/yt-dlp/yt_dlp/compat/compat_utils.py",
+                        "line_range": [
+                            47,
+                            83
+                        ],
+                        "reason": "CI shows ModuleNotFoundError: No module named 'yt_dlp.extractor.elevensports' (seen during pytest collection and in devscripts/make_lazy_extractors.py). The passthrough_module function (lines 47-83) contains two faults that directly explain this error: 1) Created-but-unregistered parent module: at line 80 the code uses sys.modules.get(parent, types.ModuleType(parent)) and assigns the result to local variable `parent` but never inserts the newly created ModuleType into sys.modules. Because the temporary module is not registered, subsequent relative imports that rely on the package being present in sys.modules can fail, producing ModuleNotFoundError for submodules like 'yt_dlp.extractor.elevensports'. 2) Unsuppressed import of child string: at line 68 the code does `child = importlib.import_module(child, parent.__name__)` outside of any exception suppression, so if the child module import fails it will propagate ModuleNotFoundError to callers (e.g., devscripts/make_lazy_extractors.py and pytest collection). These two issues (lines 68 and 80\u201382) are within the passthrough_module function and together explain why missing submodules surface as uncaught ModuleNotFoundError in CI.",
+                        "issue_type": "dependency_error",
+                        "fault_localization_level": "method",
+                        "code_snippet": "def passthrough_module(parent, child, allowed_attributes=(..., ), *, callback=lambda _: None):\n    \"\"\"Passthrough parent module into a child module, creating the parent if necessary\"\"\"\n    def __getattr__(attr):\n        if _is_package(parent):\n            with contextlib.suppress(ModuleNotFoundError):\n                return importlib.import_module(f'.{attr}', parent.__name__)\n\n        ret = from_child(attr)\n        if ret is _NO_ATTRIBUTE:\n            raise AttributeError(f'module {parent.__name__} has no attribute {attr}')\n        callback(attr)\n        return ret\n\n    @functools.lru_cache(maxsize=None)\n    def from_child(attr):\n        nonlocal child\n        if attr not in allowed_attributes:\n            if ... not in allowed_attributes or _is_dunder(attr):\n                return _NO_ATTRIBUTE\n\n        if isinstance(child, str):\n            child = importlib.import_module(child, parent.__name__)\n\n        if _is_package(child):\n            with contextlib.suppress(ImportError):\n                return passthrough_module(f'{parent.__name__}.{attr}',\n                                          importlib.import_module(f'.{attr}', child.__name__))\n\n        with contextlib.suppress(AttributeError):\n            return getattr(child, attr)\n\n        return _NO_ATTRIBUTE\n\n    parent = sys.modules.get(parent, types.ModuleType(parent))\n    parent.__class__ = EnhancedModule\n    parent.__getattr__ = __getattr__\n    return parent"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "d985231d83ec0cb50784548dae26236dd03bd2a6",
+        "fault_localization_data": [
+            {
+                "file_path": "tests/repositories/test_remove_repository.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/integration/tests/repositories/test_remove_repository.py",
+                "faults": [
+                    {
+                        "file_path": "tests/repositories/test_remove_repository.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/integration/tests/repositories/test_remove_repository.py",
+                        "line_range": [
+                            26,
+                            72
+                        ],
+                        "reason": "codespell lint failure: pre-commit 'codespell' hook reported a spelling error in this file (hook id: codespell, exit code: 65). The log indicates tests/repositories/test_remove_repository.py:23: instad ==> instead. The misspelling occurs in the pytest.mark.parametrize decorator's skip_reason string (lines 19-25) used for the test_remove_repository function; fix the word 'instad' to 'instead' to satisfy codespell and allow the lint job to pass.",
+                        "issue_type": "linting",
+                        "fault_localization_level": "method",
+                        "code_snippet": "async def test_remove_repository(\n    hass: HomeAssistant,\n    setup_integration: Generator,\n    ws_client: WSClient,\n    category_test_data: CategoryTestData,\n    snapshots: SnapshotFixture,\n):\n    hacs = get_hacs(hass)\n\n    repo = hacs.repositories.get_by_full_name(category_test_data[\"repository\"])\n    assert repo is not None\n    assert repo.data.installed is False\n    repo.data.installed = True\n\n    assert len(hacs.repositories.list_downloaded) == 2\n\n    if repo.data.category in (\"theme\", \"python_script\"):\n        repo.data.file_name = category_test_data[\"files\"][0]\n\n    # workaround for local path bug in tests\n    repo.content.path.local = repo.localpath\n\n    Path(repo.localpath).mkdir(parents=True, exist_ok=True)\n    for file in category_test_data[\"files\"]:\n        Path(repo.localpath, file).touch()\n\n    await snapshots.assert_hacs_data(\n        hacs, f\"{category_test_data['repository']}/test_remove_repository_pre.json\"\n    )\n\n    response = await ws_client.send_and_receive_json(\n        \"hacs/repository/remove\", {\"repository\": repo.data.id}\n    )\n    assert response[\"success\"] == True\n\n    assert len(hacs.repositories.list_downloaded) == 1\n\n    assert repo.data.installed is False\n    if repo.content.single:\n        for file in category_test_data[\"files\"]:\n            assert not os.path.exists(Path(repo.content.path.local, file))\n    else:\n        assert not os.path.exists(repo.localpath)\n\n    await snapshots.assert_hacs_data(\n        hacs, f\"{category_test_data['repository']}/test_remove_repository_post.json\"\n    )"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "5b9b7a0f0f73cc0257f1b41b4904dc9056e9baa1",
+        "fault_localization_data": [
+            {
+                "file_path": "tests/common.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/integration/tests/common.py",
+                "faults": [
+                    {
+                        "file_path": "tests/common.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/integration/tests/common.py",
+                        "line_range": [
+                            52,
+                            58
+                        ],
+                        "reason": "CI evidence: pre-commit 'pyupgrade' hook modified files and reported \"Rewriting tests/common.py\" (hook id: pyupgrade). The code contains a set([...]) construction at lines 52-58 (IGNORED_BASE_FILES = set([ ... ])). pyupgrade commonly rewrites set([...]) to set literal {...}, which explains why pyupgrade rewrote the file. Additionally, black also reported it modified files (black failed) \u2014 pyupgrade's rewrite likely caused subsequent black reformatting. Concrete location: lines 52-58 contain the set([...]) that pyupgrade would simplify and thus triggered the observed CI changes.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "line",
+                        "code_snippet": "IGNORED_BASE_FILES = set([\n        \"/config/automations.yaml\",\n        \"/config/configuration.yaml\",\n        \"/config/scenes.yaml\",\n        \"/config/scripts.yaml\",\n        \"/config/secrets.yaml\",\n    ])"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "sha_fail": "5fea24b4a3fc4952e83474db5e7dc05af9ec76f6",
+        "fault_localization_data": [
+            {
+                "file_path": "tests/repositories/test_get_hacs_json.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/integration/tests/repositories/test_get_hacs_json.py",
+                "faults": [
+                    {
+                        "file_path": "tests/repositories/test_get_hacs_json.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/integration/tests/repositories/test_get_hacs_json.py",
+                        "line_range": [
+                            1,
+                            25
+                        ],
+                        "reason": "Pre-commit formatting hooks modified this file and caused CI failure: pyupgrade rewrote this file (CI log: \"Rewriting tests/repositories/test_get_hacs_json.py\") and pre-commit exited with code 1; black also reported \"- hook id: black\" and \"- files were modified by this hook\". The formatting changes affect top-level imports and code layout (import block lines 2-6) and the test function (lines 15-25), so the failure is a repository-wide formatting issue detected by pre-commit (pyupgrade and black).",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "file",
+                        "code_snippet": "\nimport pytest\nfrom custom_components.hacs.base import HacsBase\nfrom custom_components.hacs.repositories.base import HacsRepository\n\nfrom tests.common import client_session_proxy\n\n\n\n@pytest.mark.parametrize(\"version,name\", [\n    (\"1.0.0\", \"Proxy integration\"),\n    (\"99.99.99\", None)\n])\n@pytest.mark.asyncio\nasync def test_validate_repository(hacs: HacsBase, version: str, name: str | None):\n    repository = HacsRepository(hacs=hacs)\n    repository.data.full_name = \"octocat/integration\"\n\n    hacs.session = await client_session_proxy(hacs.hass)\n    manifest = await repository.get_hacs_json(version=version)\n\n    if name:\n        assert manifest.name == name\n    else:\n        assert manifest is None"
+                    }
+                ]
+            },
+            {
+                "file_path": "tests/repositories/test_get_documentation.py",
+                "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/integration/tests/repositories/test_get_documentation.py",
+                "faults": [
+                    {
+                        "file_path": "tests/repositories/test_get_documentation.py",
+                        "full_file_path": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/integration/tests/repositories/test_get_documentation.py",
+                        "line_range": [
+                            1,
+                            25
+                        ],
+                        "reason": "Pre-commit formatting hooks modified this file causing CI failure: CI logs show pyupgrade rewrote this file (log: \"Rewriting tests/repositories/test_get_documentation.py\") and black reported files were modified (hook id: black) and exited with code 1. The rewritten/modified areas include the import block (lines 2-7) and the test function (lines 16-25). The failure is due to formatting/auto-fix changes by pyupgrade and black, as indicated by the CI evidence that hooks \"modified files\" and pre-commit returned a non-zero exit code.",
+                        "issue_type": "formatting",
+                        "fault_localization_level": "file",
+                        "code_snippet": "\nfrom typing import Any\nimport pytest\nfrom custom_components.hacs.base import HacsBase\nfrom custom_components.hacs.repositories.base import HacsRepository\n\nfrom tests.common import client_session_proxy\n\n\n\n@pytest.mark.parametrize(\"data,result\", [\n    ({\"installed\": True, \"installed_version\": \"1.0.0\"}, \"Example readme file\"),\n    ({\"installed\": False, \"last_version\": \"2.0.0\"}, \"Example readme file\")\n])\n@pytest.mark.asyncio\nasync def test_validate_repository(hacs: HacsBase, data: dict[str, Any], result: str):\n    repository = HacsRepository(hacs=hacs)\n    repository.data.full_name = \"octocat/integration\"\n    for key, value in data.items():\n        setattr(repository.data, key, value)\n\n    hacs.session = await client_session_proxy(hacs.hass)\n    docs = await repository.get_documentation(filename=\"README.md\")\n\n    assert result in docs"
+                    }
+                ]
+            }
+        ]
+    }
+]
