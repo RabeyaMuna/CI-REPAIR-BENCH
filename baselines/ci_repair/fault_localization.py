@@ -26,7 +26,7 @@ api_key = os.getenv("OPENAI_API_KEY")
 
 
 class FaultLocalization:
-    def __init__(self, sha_fail: str, repo_path: str, error_logs: dict, workflow: str, llm: ChatOpenAI):
+    def __init__(self, sha_fail: str, repo_path: str, error_logs: dict, workflow: str, llm: ChatOpenAI, model_name: str=None):
         # Unpack OmegaConf + project root if your loader returns a tuple
         cfg_result = load_config()
         if isinstance(cfg_result, tuple) and len(cfg_result) == 2:
@@ -47,6 +47,8 @@ class FaultLocalization:
         self.workflow = workflow
         self.repo_path = repo_path
         self.failed_commit = sha_fail
+        
+        self.model_name = model_name
 
         # Make sure api_key is defined/imported where this runs
         self.llm = llm
@@ -286,7 +288,7 @@ CHECKLIST BEFORE RETURNING
 3) "line_range" matches the exact outline boundaries for the chosen scope.
 4) Each "reason" references concrete CI evidence or rule code.
 5) No duplicates of ALREADY DETECTED FAULTS.
-6) Output is valid JSON only — no markdown, prose, or trailing commas.
+6) Output is valid JSON only — no markdown, prose, or trailing commas. Return **only valid JSON** — no markdown, commentary, or code fences.
 7) If nothing new is found, return [].
 """
         print(f"[Chunk {chunk_idx+1}/{num_chunks}] Analyzing lines {valid_start}-{valid_end}...")
@@ -416,7 +418,7 @@ CHECKLIST BEFORE RETURNING
             return ""
 
     def _call_llm_directly(self, prompt: str) -> dict:
-        chunks = chunk_log_by_tokens(prompt, max_tokens=90000)
+        chunks = chunk_log_by_tokens(prompt, max_tokens=90000, model=self.model_name)
 
         for chunk in chunks:
             try:
@@ -468,7 +470,7 @@ CHECKLIST BEFORE RETURNING
 
     # Helper method for all other file types
     def _chunk_file(self, file_content):
-        chunk_size = 400
+        chunk_size = 500
         overlap = 50
         lines = file_content.splitlines()
         total_lines = len(lines)

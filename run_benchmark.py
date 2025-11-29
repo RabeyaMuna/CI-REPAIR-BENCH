@@ -41,7 +41,7 @@ CIBenchPython.eval_dataset(
     fix_repo_function=fix_apply_generated_patch,
     dataset_info=dataset_info,
     num_dp=None,           # Limit number of datapoints (optional)
-    ids_list=list(range(326, 328)),         # Provide specific IDs if needed
+    ids_list=None,         # Provide specific IDs if needed
     force_download=False   # Set True to re-download from online
 )
 

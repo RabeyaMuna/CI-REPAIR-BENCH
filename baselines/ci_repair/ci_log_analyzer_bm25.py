@@ -201,7 +201,7 @@ class CILogAnalyzerBM25:
         """
         print("Running Tool: BM25 Log + File Retrieval Analyzer")
         results: List[Dict[str, Any]] = []
-        THRESHOLD = 80_000
+        THRESHOLD = 90_000
 
         for step in self.ci_log:
             step_name = step.get("step_name", "unknown_step")
@@ -216,7 +216,7 @@ class CILogAnalyzerBM25:
 
                 if total_tokens > THRESHOLD:
                     chunks = chunk_log_by_tokens(
-                        log_text, max_tokens=10_000, overlap=200
+                        log_text, max_tokens=80_000, overlap=200, model=self.model_name
                     )
                     print(f"Chunking activated: {len(chunks)} chunks for '{step_name}'")
                 else:
@@ -381,6 +381,11 @@ class CILogAnalyzerBM25:
                 ]
             else:
                 log_chunks = [failures_text]
+                
+            print(
+                f"[CHUNK-SUMMARY] Step '{step_name}' entry_index={entry_idx} "
+                f"→ {len(log_chunks)} chunk(s) for LLM summarization."
+            )
 
             # step_name must be valid JSON in the schema example
             step_name_json = json.dumps(step_name)
@@ -554,7 +559,13 @@ the following STRICT JSON schema (do not add or remove keys):
 
 
                 try:
+                    t0 = time.time()
                     response = self.llm.invoke([HumanMessage(content=prompt)]).content
+                    elapsed = time.time() - t0
+                    print(
+                        f"[LLM] _summarize_log_details_if_large: step='{step_name}' "
+                        f"chunk {idx+1}/{len(log_chunks)} took {elapsed:.2f}s"
+                    )
                     try:
                         summary = json.loads(response)
                     except json.JSONDecodeError:
@@ -598,14 +609,20 @@ the following STRICT JSON schema (do not add or remove keys):
             failures_json_str = json.dumps(relevant_failures, indent=2)
             total_tokens = self._estimate_tokens(failures_json_str)
 
-            if total_tokens > 90_000:
+            if total_tokens > 80_000:
                 # Chunk the LIST, not the token count
-                failure_chunks = self._split_failures_by_tokens(
+                failure_chunks = self.chunk_log_by_tokens(
                     relevant_failures,
-                    max_tokens=90_000,
+                    max_tokens=80_000,
+                    model=self.model_name
                 )
             else:
                 failure_chunks = [relevant_failures]
+            
+            print(
+                f"[PROCESS-LOG-DETAILS] Step '{step_name}' has "
+                f"{len(failure_chunks)} failure chunk(s) for LLM explanation."
+            )
 
             combined_failures: List[Dict[str, Any]] = []
 
@@ -683,7 +700,11 @@ Return a single JSON object with exactly these keys:
   "relevant_failures": "One combined natural-language explanation for ALL failures in this subset. This string must include, for every failure, its line_number, error_type, message, keywords, bm25_score, and a natural-language reconstruction of its context_lines, mentioning all files and important details without losing any information."
 }}
 
-Rules:
+## Output Rules
+- Return **only valid JSON** — no markdown, no comments, no code fences.
+- The actual JSON must not contain comments.
+- The response MUST be **only** a single JSON object. Do NOT add any text before or after it.
+- Do NOT use Markdown formatting at all: No code fences (```), no backticks, no headings (like # or ##), no bullet lists.
 - The actual JSON must not contain comments.
 - step_name in the output must match the input step_name.
 - error_context and relevant_failures must be strings.
@@ -693,8 +714,14 @@ Rules:
 
 
                 try:
+                    t0 = time.time()
                     raw_response = self.llm.invoke([HumanMessage(content=prompt)]).content.strip()
-
+                    elapsed = time.time() - t0
+                    
+                    print(
+                        f"[LLM] process_log_details: step='{step_name}' "
+                        f"chunk {chunk_idx+1}/{len(failure_chunks)} took {elapsed:.2f}s"
+                    )
                     try:
                         chunk_summary = json.loads(raw_response)
                     except json.JSONDecodeError:
@@ -723,6 +750,7 @@ Rules:
     def full_content_summary(self, log_details: List[Dict[str, Any]], workflow_details: Any) -> Dict[str, Any]:
         log_details_text = json.dumps(log_details, indent=2, ensure_ascii=False)
         workflow_text = json.dumps(workflow_details, indent=2, ensure_ascii=False)
+        
         prompt = f"""
 You are a CI failure summarization agent.
 
@@ -906,7 +934,13 @@ Return a single JSON object in exactly this shape:
 """
 
         try:
+            t0 = time.time()
             response = self.llm.invoke([HumanMessage(content=prompt)]).content
+            elapsed = time.time() - t0
+            print(
+                f"[LLM] full_content_summary: sha_fail={self.sha_fail} "
+                f"took {elapsed:.2f}s"
+            )
             try:
                 summary = json.loads(response)
             except json.JSONDecodeError:

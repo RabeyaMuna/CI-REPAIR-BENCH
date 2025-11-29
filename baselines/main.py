@@ -23,7 +23,7 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
     generated_patches = []
     results = []
     
-    subset = dataset[7:]
+    subset = dataset[251:280]
     # target_ids = {241, 243, 281, 323}
     # subset = [dp for dp in dataset if dp.get("id") in target_ids]
     for datapoint in subset:
@@ -72,7 +72,8 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
                                                 repo_path=repo_path,
                                                 error_logs=log_analysis_result,
                                                 workflow=workflow,
-                                                llm=llm
+                                                llm=llm,
+                                                model_name=model_key
                                             ).run()
             
             fault_localization.append(fault_localizer)
@@ -90,7 +91,7 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
         
         try:
             patch_generator = PatchGeneration(bug_report=fault_localizer, repo_path=repo_path, task_id=task_id,
-            error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow, llm=llm).run()
+            error_details=log_analysis_result, workflow_path=workflow_path, workflow=workflow, llm=llm, model_name=model_key).run()
             
             if patch_generator["diff"] =="":
                 print(f" No patch generated for {sha_fail}")
@@ -120,7 +121,7 @@ if __name__ == "__main__":
     dataset_df = pd.read_parquet(dataset_path)
     dataset = dataset_df.to_dict(orient="records")
 
-    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="bm25")
+    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="llm")
 
     output_file = os.path.join(config.project_result_dir, "generated_patches.json")
     with open(output_file, "w") as f:

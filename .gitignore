@@ -9,3 +9,5 @@ baselines/.venv/
 scripts/
 generated_patches_list/
 scripts
+baselines/replaced_script/
+stored_results/

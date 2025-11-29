@@ -154,6 +154,7 @@ class PatchGeneration:
         workflow_path: str = "",
         workflow: str = "",
         llm: ChatOpenAI = None,
+        model_name: str = None
     ):
         self.config = load_config()
         self.bug_report = bug_report
@@ -167,6 +168,7 @@ class PatchGeneration:
         self.parser = JsonOutputParser()
         self.patch_results: List[Dict[str, Any]] = []
         self.original_content = None
+        self.model_name = model_name
 
     # =========================================================
     # --------------------- CORE METHODS ----------------------
@@ -174,7 +176,7 @@ class PatchGeneration:
 
     def _call_llm_directly(self, prompt: str) -> Any:
         """Chunk long prompts and call the LLM, parsing valid JSON output."""
-        chunks = chunk_log_by_tokens(prompt, max_tokens=50000)
+        chunks = chunk_log_by_tokens(prompt, max_tokens=50000, model=self.model_name)
         for chunk in chunks:
             try:
                 response = self.llm.invoke([HumanMessage(content=chunk)]).content.strip()
@@ -368,11 +370,25 @@ Output:
 #### Example 3: Logical or Type Error (Not Auto-fixable)
 Error: "Function missing a return statement"
 Workflow uses: `pytest`, `mypy`
+
+### RESPONSE RULES (CRITICAL)
+- Your **entire** response must be a single JSON value.
+- Do NOT include markdown headings, backticks, or any text before or after the JSON.
+- Do NOT wrap the JSON in ```json``` fences.
+- No explanations outside the JSON object.
+
+
 Output:
 {{
-  "installation_commands": [],
-  "fix_commands": [],
-  "tool_explanation": "This is a logical or semantic error that cannot be safely fixed automatically by the available tools."
+  "installation_commands": [
+    "pip install <tool1>",
+    "pip install <tool2>"
+  ],
+  "fix_commands": [
+    "<command1>",
+    "<command2>"
+  ],
+  "tool_explanation": "Briefly explain which tools were chosen, why they apply to this error type, and how they align with the CI workflow."
 }}
 """.strip()
 
@@ -471,6 +487,14 @@ Each fault entry describes a specific issue detected by CI validation tools.
 - Do NOT return the entire file content.
 
 ---
+
+### RESPONSE RULES (CRITICAL)
+- Your **entire** response must be a single JSON value.
+- Do NOT include markdown headings, backticks, or any text before or after the JSON.
+- Do NOT wrap the JSON in ```json``` fences.
+- No explanations outside the JSON object. No markdown, commentary, or code fences.
+- code formate should be as it, return patched code without any corruption.
+
 
 ### RESPONSE FORMAT
 [

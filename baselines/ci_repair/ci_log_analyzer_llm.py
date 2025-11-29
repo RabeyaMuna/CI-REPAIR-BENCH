@@ -62,7 +62,7 @@ class CILogAnalyzerLLM:
                 print(f"Token count for '{step_name}': {total_tokens}")
 
                 if total_tokens > THRESHOLD:
-                    raw_chunks = chunk_log_by_tokens(log_text, max_tokens=60000, overlap=200)
+                    raw_chunks = chunk_log_by_tokens(log_text, max_tokens=60000, overlap=200, model=self.model_name)
                     print(f"Chunking activated: {len(raw_chunks)} chunks created for step '{step_name}'")
                     
                     chunk_tracker.append((step_name, len(raw_chunks)))
@@ -267,7 +267,6 @@ of the CI failure for this step using the following STRICT JSON schema
       * "evidence"   (short quote or paraphrase from summaries / relevant_failures).
 
 ### Global Rules
-
 1. Use ONLY the information from the STEP JSON shown below.
 2. Use null for any unknown scalar values (e.g., line_number if not visible).
 3. Do NOT add extra top-level keys.

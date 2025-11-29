@@ -318,7 +318,15 @@ def fix_apply_generated_patch(datapoint, repo_path, repo, out_folder):
             patches = []
 
     current_id = datapoint["id"]
-    patch_data = next((p for p in patches if p["id"] == current_id and p.get("diff", "").strip()), None)
+    patch_data = next(
+        (
+            p
+            for p in patches
+            if ids_match(p.get("id"), current_id)
+            and p.get("diff", "").strip()
+        ),
+        None,
+    )
 
     if not patch_data:
         print(f"[SKIP] No patch found for ID {current_id}")
@@ -355,3 +363,18 @@ def fix_apply_generated_patch(datapoint, repo_path, repo, out_folder):
     finally:
         if os.path.exists(temp_diff_path):
             os.remove(temp_diff_path)
+
+
+def ids_match(a, b) -> bool:
+    # If same type, just compare directly
+    if type(a) is type(b):
+        return a == b
+
+    # If types differ, handle int<->str specifically
+    if isinstance(a, int) and isinstance(b, str):
+        return str(a) == b.strip()
+    if isinstance(a, str) and isinstance(b, int):
+        return a.strip() == str(b)
+
+    # Fallback for weird cases – you can decide to be stricter here
+    return False

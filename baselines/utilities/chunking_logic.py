@@ -5,23 +5,31 @@ import time
 import tiktoken
 from tiktoken import encoding_for_model
 
-def get_chunk_params(token_count):
-    if token_count > 1_000_000:
-        return 6000, 100
-    elif token_count > 500_000:
-        return 5000, 100
-    elif token_count > 100_000:
-        return 3000, 100
-    else:
-        return token_count, 0  # no chunking needed
+def _get_encoder_from_model(model: str):
+    name = (model or "").lower()
 
-def count_tokens(text: str, model: str = "gpt-4o-mini"):
+    # OpenAI GPT-family models: use the exact encoding if possible
+    if name.startswith("gpt") or "gpt-" in name:
+        try:
+            return encoding_for_model(model)
+        except Exception:
+            # If tiktoken doesn't recognize the exact model, fall back
+            pass
+
+    # For "cl100k_base" explicitly, or for Claude/DeepSeek/etc. → generic BPE
+    try:
+        return tiktoken.get_encoding("cl100k_base")
+    except Exception as e:
+        # This should basically never happen, but just in case:
+        raise RuntimeError(f"Failed to load cl100k_base encoding: {e}")
+
+def count_tokens(text: str, model: str = "cl100k_base"):
     encoding = tiktoken.encoding_for_model(model)
     return len(encoding.encode(text))
 
-def chunk_log_by_tokens(log_text: str, max_tokens: int = 60000, overlap: int = 100) -> List[str]:
+def chunk_log_by_tokens(log_text: str, max_tokens: int = 60000, overlap: int = 100, model: str = "cl100k_base") -> List[str]:
     # Safe encoding that accepts all special tokens as plain text
-    enc = encoding_for_model("gpt-4o-mini")
+    enc = _get_encoder_from_model(model)
 
     lines = log_text.splitlines()
     chunks = []
@@ -52,34 +60,7 @@ def chunk_log_by_tokens(log_text: str, max_tokens: int = 60000, overlap: int = 1
     return chunks
 
 
-def chunk_log_safely(
-    log_text: str,
-    max_tokens: int = 90_000,
-    max_chars: int = 100_000,
-    overlap_lines: int = 50
-) -> List[str]:
-    enc = encoding_for_model("gpt-4o-mini")  # no special args here
-    lines = log_text.splitlines()
-    chunks = []
-    current_chunk = []
-    current_chars = 0
 
-    for line in lines:
-        line_length = len(line) + 1
-        current_chars += line_length
-        current_chunk.append(line)
-
-        approx_token_count = len(enc.encode("\n".join(current_chunk), disallowed_special=()))  # FIXED
-        
-        if current_chars > max_chars or approx_token_count > max_tokens:
-            chunks.append("\n".join(current_chunk[:-overlap_lines] if len(current_chunk) > overlap_lines else current_chunk))
-            current_chunk = current_chunk[-overlap_lines:]
-            current_chars = sum(len(l) + 1 for l in current_chunk)
-
-    if current_chunk:
-        chunks.append("\n".join(current_chunk))
-
-    return chunks
    
 def chunk_lines_with_overlap(content: str, lines_per_chunk=200, overlap=20):
     lines = content.splitlines()

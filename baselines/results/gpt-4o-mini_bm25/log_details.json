@@ -1,28 +1,1612 @@
 [
     {
-        "sha_fail": "2c06ffa4c9d2c37846c60ad75899b4d72f214ff9",
+        "sha_fail": "2ee00eddc1bebd2fcffc4a026162e00378ebe3ae",
         "error_context": [
-            "The CI job failed due to a code quality check that identified an import block in 'examples/community/ip_adapter_face_id.py' as un-sorted or un-formatted at line 15. The process completed with exit code 1, indicating a failure in the quality checks."
+            "The CI job failed during the 'Run tests and linter checks' step due to a formatting error detected by the 'ruff-format' hook, which indicated that files were modified by this hook. The process completed with exit code 2, indicating a failure."
         ],
         "relevant_files": [
             {
-                "file": "examples/community/ip_adapter_face_id.py",
-                "line_number": 15,
-                "reason": "The log states 'examples/community/ip_adapter_face_id.py:15:1: I001 [*] Import block is un-sorted or un-formatted', indicating this file caused the failure."
+                "file": "sqlglot/expressions.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
+            },
+            {
+                "file": "sqlglot/lineage.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
+            },
+            {
+                "file": "sqlglot/transforms.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
+            },
+            {
+                "file": "sqlglot/dialects/dialect.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
+            },
+            {
+                "file": "sqlglot/dialects/duckdb.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
+            },
+            {
+                "file": "sqlglot/parser.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
+            },
+            {
+                "file": "sqlglot/optimizer/scope.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
+            },
+            {
+                "file": "sqlglot/optimizer/qualify_columns.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
+            },
+            {
+                "file": "sqlglot/generator.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
+            },
+            {
+                "file": "sqlglot/executor/python.py",
+                "line_number": null,
+                "reason": "The file was modified by the 'ruff-format' hook, as indicated by the log line: '1 file reformatted, 135 files left unchanged'."
             }
         ],
         "error_types": [
             {
                 "category": "Code Formatting",
-                "subcategory": "Import Block Formatting",
-                "evidence": "The error message indicates an issue with the import block: 'Import block is un-sorted or un-formatted'."
+                "subcategory": "Ruff Formatting Error",
+                "evidence": "The log states: 'ruff-format..............................................................Failed' and '1 file reformatted, 135 files left unchanged'."
             }
         ],
         "failed_job": [
             {
-                "job": "check_code_quality",
-                "step": "Check quality",
-                "command": "ruff check examples tests src utils scripts"
+                "job": "run-checks",
+                "step": "Run tests and linter checks",
+                "command": "make check"
+            }
+        ]
+    },
+    {
+        "sha_fail": "bddc230cc11627fdbb8bdd98b67489afcad87d98",
+        "error_context": [
+            "The CI job failed due to an AttributeError in the test 'test_datetime_parsing' located in the file '/home/runner/work/sqlglot/sqlglot/tests/dialects/test_dremio.py' at line 192. The error message indicates that a string object was incorrectly treated as a dictionary, leading to the failure of the test."
+        ],
+        "relevant_files": [
+            {
+                "file": "/home/runner/work/sqlglot/sqlglot/tests/dialects/test_dremio.py",
+                "line_number": 192,
+                "reason": "The error occurred in the test function 'test_datetime_parsing' at line 192, which caused the test to fail due to an AttributeError: 'str' object has no attribute 'items'."
+            },
+            {
+                "file": "/home/runner/work/sqlglot/sqlglot/tests/dialects/test_dialect.py",
+                "line_number": 54,
+                "reason": "This file is involved in the failure as it is referenced in the traceback, indicating that the function 'validate_all' is where the error originated."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AttributeError in unit test",
+                "evidence": "The test 'test_datetime_parsing' failed with an AttributeError: 'str' object has no attribute 'items' as seen in the log message."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "run-checks",
+                "step": "Run tests and linter checks",
+                "command": "python -m unittest"
+            }
+        ]
+    },
+    {
+        "sha_fail": "daad35b9c60770a655eaaea4565bf81f63ae1b38",
+        "error_context": [
+            "The CI job 'lint-and-format' failed due to multiple linting errors detected by pre-commit hooks, specifically related to trailing whitespace and end-of-file issues. The command 'pre-commit run --all-files' was executed, which resulted in modifications to several files."
+        ],
+        "relevant_files": [
+            {
+                "file": "utils/llm_utils.py",
+                "line_number": 11,
+                "reason": "The file was mentioned in the context of fixing trailing whitespace, as indicated by the log line: 'Fixing utils/llm_utils.py'."
+            },
+            {
+                "file": "workflows/agents/document_segmentation_agent.py",
+                "line_number": 11,
+                "reason": "The file was mentioned in the context of fixing trailing whitespace, as indicated by the log line: 'Fixing workflows/agents/document_segmentation_agent.py'."
+            },
+            {
+                "file": "tools/document_segmentation_server.py",
+                "line_number": 11,
+                "reason": "The file was mentioned in the context of fixing trailing whitespace, as indicated by the log line: 'Fixing tools/document_segmentation_server.py'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Trailing Whitespace",
+                "evidence": "Log entries indicate that the pre-commit hook for 'trailing-whitespace' failed with exit code 1, and files were modified by this hook."
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "End-of-File Fixes",
+                "evidence": "Log entries indicate that the pre-commit hook for 'end-of-file-fixer' failed with exit code 1, and files were modified by this hook."
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Linting Errors",
+                "evidence": "The command 'pre-commit run --all-files' resulted in multiple linting errors, including 'E722 Do not use bare `except`' in tools/document_segmentation_server.py."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-and-format",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files"
+            }
+        ]
+    },
+    {
+        "sha_fail": "238a409674f147334f43788013fdfa766fd8035c",
+        "error_context": [
+            "The CI job 'lint-and-format' failed due to linting errors detected by the 'ruff' tool. Specifically, there were issues with unused variables in the files 'workflows/agents/memory_agent_concise.py' and 'workflows/agents/memory_agent_concise_index.py'."
+        ],
+        "relevant_files": [
+            {
+                "file": "workflows/agents/memory_agent_concise.py",
+                "line_number": 645,
+                "reason": "The log indicates a linting error: 'Local variable `implemented_files_list` is assigned to but never used' at line 645."
+            },
+            {
+                "file": "workflows/agents/memory_agent_concise_index.py",
+                "line_number": 646,
+                "reason": "The log indicates a linting error: 'Local variable `implemented_files_list` is assigned to but never used' at line 646."
+            },
+            {
+                "file": "workflows/agents/memory_agent_concise_index.py",
+                "line_number": 899,
+                "reason": "The log indicates a linting error: 'Local variable `unimplemented_files_list` is assigned to but never used' at line 899."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Variable",
+                "evidence": "The log states: 'workflows/agents/memory_agent_concise.py:645:9: F841 Local variable `implemented_files_list` is assigned to but never used'."
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Variable",
+                "evidence": "The log states: 'workflows/agents/memory_agent_concise_index.py:646:9: F841 Local variable `implemented_files_list` is assigned to but never used'."
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Variable",
+                "evidence": "The log states: 'workflows/agents/memory_agent_concise_index.py:899:9: F841 Local variable `unimplemented_files_list` is assigned to but never used'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-and-format",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files --show-diff-on-failure"
+            }
+        ]
+    },
+    {
+        "sha_fail": "219bc58c7f1bfe425ddc1d628ff5cda9639afc1e",
+        "error_context": [
+            "The CI job 'lint-and-format' failed due to multiple issues related to file formatting and handling of PDF files. Specifically, the pre-commit hook for trimming trailing whitespace failed, indicating that files were modified, and there were IOError exceptions raised when attempting to read PDF files as text files."
+        ],
+        "relevant_files": [
+            {
+                "file": "utils/file_processor.py",
+                "line_number": 102,
+                "reason": "The file raised an IOError stating that a file is a PDF and not a text file, as seen in the log: 'raise IOError(f\"File {file_path} is a PDF file, not a text file...')"
+            },
+            {
+                "file": "workflows/agent_orchestration_engine.py",
+                "line_number": 796,
+                "reason": "This file also raised an IOError regarding a PDF file, as indicated by the log: 'raise IOError(f\"File {md_path} is a PDF file, not a text file...')"
+            },
+            {
+                "file": "tools/pdf_downloader.py",
+                "line_number": 109,
+                "reason": "This file was involved in the context of reading a PDF file, which led to an IOError, as shown in the log: 'with open(file_path, \"rb\") as f:'"
+            },
+            {
+                "file": "tools/pdf_converter.py",
+                "line_number": 109,
+                "reason": "This file was also referenced in the context of handling PDF files, contributing to the IOError raised."
+            },
+            {
+                "file": "workflows/agent_orchestration_engine.py",
+                "line_number": 664,
+                "reason": "This file was modified by the pre-commit hook, which failed due to formatting issues, as indicated by the log: 'Fixing workflows/agent_orchestration_engine.py'"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Trailing Whitespace",
+                "evidence": "The pre-commit hook for trimming trailing whitespace failed, as indicated by the log: 'trim trailing whitespace.................................................Failed'"
+            },
+            {
+                "category": "Runtime Error",
+                "subcategory": "IOError",
+                "evidence": "Multiple IOErrors were raised when attempting to read PDF files as text files, as seen in the logs: 'raise IOError(f\"File {file_path} is a PDF file, not a text file...')'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-and-format",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files --show-diff-on-failure"
+            }
+        ]
+    },
+    {
+        "sha_fail": "9ecbaeeb4d8db618ccdb6cb81f5edf4ba2c8b8de",
+        "error_context": [
+            "The CI job 'pre-commit' failed due to an error while building the 'untokenize' package, which was required during the pre-commit checks. The error message indicates an 'AttributeError' related to a 'Constant' object, suggesting a potential issue in the code or dependencies. The failure occurred during the execution of the command 'pre-commit run --show-diff-on-failure --color=always --all-files'."
+        ],
+        "relevant_files": [
+            {
+                "file": "github/Requester.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            },
+            {
+                "file": "doc/conf.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            },
+            {
+                "file": "tests/Environment.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            },
+            {
+                "file": "tests/Requester.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            },
+            {
+                "file": "tests/CheckRun.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            },
+            {
+                "file": "github/GithubObject.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            },
+            {
+                "file": "scripts/openapi.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            },
+            {
+                "file": "github/GithubRetry.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            },
+            {
+                "file": "github/Auth.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            },
+            {
+                "file": "tests/Organization.py",
+                "line_number": null,
+                "reason": "The error message states 'AttributeError: 'Constant' object has no attribute 's'', which indicates that this file may be involved in the failure, as it is likely part of the code being executed during the pre-commit checks."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Dependency Error",
+                "subcategory": "AttributeError in package build",
+                "evidence": "The error message indicates 'AttributeError: 'Constant' object has no attribute 's'', which occurred while building the 'untokenize' package."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "pre-commit",
+                "step": "run pre-commit",
+                "command": "pre-commit run --show-diff-on-failure --color=always --all-files"
+            }
+        ]
+    },
+    {
+        "sha_fail": "20a0e348143cc9f47432d087a62ad5c2a4040fe2",
+        "error_context": [
+            "The CI job 'pre-commit' failed due to an error while building the 'untokenize' package, which was required for the pre-commit checks. The error message indicates an 'AttributeError' related to a 'Constant' object, suggesting a potential issue in the code or dependencies."
+        ],
+        "relevant_files": [
+            {
+                "file": "/home/runner/.cache/pre-commit/repo6y2lxhz8/py_env-python3/lib/python3.14/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py",
+                "line_number": 389,
+                "reason": "The error traceback indicates that the failure occurred in this file while executing a command related to building the 'untokenize' package, specifically at line 389."
+            },
+            {
+                "file": "/home/runner/.cache/pre-commit/repo6y2lxhz8/py_env-python3/lib/python3.14/site-packages/setuptools/build_meta.py",
+                "line_number": 331,
+                "reason": "This file is mentioned in the traceback as part of the setup process for building the package, indicating it is involved in the failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Dependency Error",
+                "subcategory": "AttributeError in package build",
+                "evidence": "The error message states: 'AttributeError: 'Constant' object has no attribute 's'' during the build process for 'untokenize'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "pre-commit",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files"
+            }
+        ]
+    },
+    {
+        "sha_fail": "6033729f8ed6df96607e43cb8739cd481b895519",
+        "error_context": [
+            "The CI job failed during the 'pre-commit' step due to an error while building the 'untokenize' package, which was required for the pre-commit hook. The error message indicates an AttributeError related to a 'Constant' object, suggesting a potential issue in the code or dependencies."
+        ],
+        "relevant_files": [
+            {
+                "file": "github/Repository.py",
+                "line_number": 2211,
+                "reason": "The error message indicates a type argument issue in 'github/Repository.py:2211:36', stating that 'dict' expects 2 type arguments, but 1 was given."
+            },
+            {
+                "file": "tests/Framework.py",
+                "line_number": 361,
+                "reason": "The log mentions 'tests/Framework.py:361:9' as a note indicating that the bodies of untyped functions are not checked by default, which is relevant to the type checking failure."
+            },
+            {
+                "file": "doc/conf.py",
+                "line_number": null,
+                "reason": "This file is involved as it is part of the project structure and is likely related to the documentation build process, which may be affected by the type checking errors."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Mypy type mismatch",
+                "evidence": "The log states 'github/Repository.py:2211:36: error: \"dict\" expects 2 type arguments, but 1 given [type-arg]' indicating a type argument mismatch."
+            },
+            {
+                "category": "Dependency Error",
+                "subcategory": "AttributeError in package build",
+                "evidence": "The error message 'AttributeError: 'Constant' object has no attribute 's'' indicates a failure in building the 'untokenize' package."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "pre-commit",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files"
+            }
+        ]
+    },
+    {
+        "sha_fail": "e5cf9e0da88f8a9835011d89c15146d25806f619",
+        "error_context": [
+            "The CI job 'ruff' failed due to multiple linting errors in the 'sphinx/ext/mathjax.py' file, specifically related to the use of f-strings and string literals in exceptions. The job completed with exit code 1, indicating that the linting checks did not pass."
+        ],
+        "relevant_files": [
+            {
+                "file": "sphinx/ext/mathjax.py",
+                "line_number": 114,
+                "reason": "The log indicates multiple linting errors in 'sphinx/ext/mathjax.py', including 'F541 f-string without any placeholders' and 'EM102 Exception must not use an f-string literal, assign to variable first' at line 114."
+            },
+            {
+                "file": "sphinx/ext/mathjax.py",
+                "line_number": 116,
+                "reason": "The log shows an error 'EM101 Exception must not use a string literal, assign to variable first' at line 116, indicating a violation of linting rules."
+            },
+            {
+                "file": "sphinx/ext/mathjax.py",
+                "line_number": 118,
+                "reason": "The log states 'EM101 Exception must not use a string literal, assign to variable first' at line 118, further confirming issues with exception handling in the code."
+            },
+            {
+                "file": "sphinx/ext/mathjax.py",
+                "line_number": 123,
+                "reason": "The log mentions 'Q000 Double quotes found but single quotes preferred' at line 123, indicating a formatting issue."
+            },
+            {
+                "file": "tests/test_extensions/test_ext_math.py",
+                "line_number": 384,
+                "reason": "The log indicates a linting error in 'tests/test_extensions/test_ext_math.py' with 'Q000 Double quotes found but single quotes preferred' at line 384."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Linting Errors",
+                "evidence": "The job failed with exit code 1 due to multiple linting errors in 'sphinx/ext/mathjax.py' and 'tests/test_extensions/test_ext_math.py', as indicated by the messages in the log."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "ruff",
+                "step": "Lint with Ruff",
+                "command": "ruff check --output-format=github"
+            }
+        ]
+    },
+    {
+        "sha_fail": "3ce7b9cb7b89ed8330621bdb0acb809eb830d687",
+        "error_context": [
+            "The CI job failed during testing due to two test failures in the file 'tests/test_async_client_futures.py' and 'tests/test_client_futures.py'. The failures were caused by an API error from the Binance service, as indicated by the log messages."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/test_async_client_futures.py",
+                "line_number": 14,
+                "reason": "The log states '[gw1] [ 46%] FAILED tests/test_async_client_futures.py::test_futures_coin_funding_rate', indicating this file is involved in the failure."
+            },
+            {
+                "file": "tests/test_client_futures.py",
+                "line_number": 14,
+                "reason": "The log states 'FAILED tests/test_client_futures.py::test_futures_coin_funding_rate', indicating this file is involved in the failure."
+            },
+            {
+                "file": "binance/async_client.py",
+                "line_number": 186,
+                "reason": "The log shows 'E           binance.exceptions.BinanceAPIException: APIError(code=-1000): An unknown error occurred while processing the request.', which indicates that this file is related to the API error."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError in unit test",
+                "evidence": "The log indicates 'FAILED tests/test_async_client_futures.py::test_futures_coin_funding_rate' and 'FAILED tests/test_client_futures.py::test_futures_coin_funding_rate'."
+            },
+            {
+                "category": "Runtime Error",
+                "subcategory": "API Error",
+                "evidence": "The log shows 'E           binance.exceptions.BinanceAPIException: APIError(code=-1000): An unknown error occurred while processing the request.'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test",
+                "step": "Test with tox",
+                "command": "tox -e py"
+            }
+        ]
+    },
+    {
+        "sha_fail": "58de72d97f1b19b44a141fbaa4cdd0411748f6ea",
+        "error_context": [
+            "The CI job failed due to an assertion error in the test 'test_can_see_order_status' located in 'tests/functional/customer/test_order_status.py' at line 24. The test expected an HTTP status of 200 but received a 302 instead, indicating a redirect. This failure occurred during the 'Run tests' step of the CI job."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/functional/customer/test_order_status.py",
+                "line_number": 24,
+                "reason": "The test failed with an AssertionError: <HTTPStatus.OK: 200> != 302, as indicated in the log message: 'FAILED tests/functional/customer/test_order_status.py::TestAnAnonymousUser::test_can_see_order_status - AssertionError: <HTTPStatus.OK: 200> != 302'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError in unit test",
+                "evidence": "The test 'test_can_see_order_status' failed with an AssertionError: <HTTPStatus.OK: 200> != 302."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test",
+                "step": "Run tests",
+                "command": "coverage run --parallel --omit='*migrations*' -m pytest -x"
+            }
+        ]
+    },
+    {
+        "sha_fail": "73dfb313ca4efa46a4b018ac388ed26040556feb",
+        "error_context": [
+            "The CI job failed during the execution of tests, specifically the test 'test_add_category' in the file 'flask_admin/tests/test_base.py'. The failure was due to an unhandled exception related to a resource warning about an unclosed file, which indicates a potential issue in the code handling file operations."
+        ],
+        "relevant_files": [
+            {
+                "file": "flask_admin/tests/test_base.py",
+                "line_number": 0,
+                "reason": "The test 'test_add_category' failed, as indicated by the log line: 'FAILED flask_admin/tests/test_base.py::test_add_category - pytest.PytestUnrai...'"
+            },
+            {
+                "file": "flask_admin/static/bootstrap/bootstrap4/css/bootstrap.min.css",
+                "line_number": null,
+                "reason": "A ResourceWarning was raised for an unclosed file: '<_io.FileIO name='/home/runner/work/flask-admin/flask-admin/flask_admin/static/bootstrap/bootstrap4/css/bootstrap.min.css' mode='rb' closefd=True>'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError in unit test",
+                "evidence": "The log states: 'FAILED flask_admin/tests/test_base.py::test_add_category - pytest.PytestUnrai...'"
+            },
+            {
+                "category": "Resource Warning",
+                "subcategory": "Unclosed File",
+                "evidence": "ResourceWarning: unclosed file <_io.FileIO name='/home/runner/work/flask-admin/flask-admin/flask_admin/static/bootstrap/bootstrap4/css/bootstrap.min.css' mode='rb' closefd=True>"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests",
+                "command": "pytest -v --tb=short --basetemp=/home/runner/work/flask-admin/flask-admin/.tox/tmp/py3.13"
+            }
+        ]
+    },
+    {
+        "sha_fail": "4846dead90a34de7b3d8addf4ddf36300ccbc6e3",
+        "error_context": [
+            "The CI job failed during the execution of tests, specifically the test 'test_add_category' in the file 'flask_admin/tests/test_base.py'. The failure was due to an AttributeError related to the 'pathlib' module, indicating a potential issue with the code or the environment setup."
+        ],
+        "relevant_files": [
+            {
+                "file": "flask_admin/tests/test_base.py",
+                "line_number": 41,
+                "reason": "The test 'test_add_category' in 'flask_admin/tests/test_base.py' failed with an error message indicating an AttributeError: 'pathlib.PurePosixPath' object has no attribute '_str_normcase_cached'. This is evidenced by the log line stating 'ERROR flask_admin/tests/test_base.py::test_add_category - pytest.PytestUnrais...'"
+            },
+            {
+                "file": "flask_admin/tests/test_model.py",
+                "line_number": 43,
+                "reason": "The error occurred during the setup of 'test_add_category', which is related to the 'pathlib' module as indicated by the log lines showing the traceback leading to the error in 'pathlib/__init__.py'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AttributeError",
+                "evidence": "The log states 'E   AttributeError: 'pathlib.PurePosixPath' object has no attribute '_str_normcase_cached'. Did you mean: '_parts_normcase_cached'?'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests",
+                "command": "pytest -v --tb=short --basetemp=/home/runner/work/flask-admin/flask-admin/.tox/tmp/py3.14"
+            }
+        ]
+    },
+    {
+        "sha_fail": "ce28f30ca68a2e0469f14beb1b4d65a4633d211e",
+        "error_context": [
+            "The CI job 'lint-and-format' failed during the 'Run pre-commit' step due to a formatting issue detected by the 'ruff-format' hook. The log indicates that 1 file was reformatted, which caused the process to exit with code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "lightrag/api/lightrag_server.py",
+                "line_number": 547,
+                "reason": "The file was involved in the formatting failure as indicated by the log line: '1 file reformatted, 95 files left unchanged'."
+            },
+            {
+                "file": "lightrag/lightrag.py",
+                "line_number": null,
+                "reason": "This file was likely involved in the formatting checks as part of the pre-commit hook, which reported modifications."
+            },
+            {
+                "file": "lightrag/api/routers/document_routes.py",
+                "line_number": null,
+                "reason": "This file was likely involved in the formatting checks as part of the pre-commit hook, which reported modifications."
+            },
+            {
+                "file": "examples/unofficial-sample/lightrag_cloudflare_demo.py",
+                "line_number": null,
+                "reason": "This file was likely involved in the formatting checks as part of the pre-commit hook, which reported modifications."
+            },
+            {
+                "file": "lightrag/llm/openai.py",
+                "line_number": null,
+                "reason": "This file was likely involved in the formatting checks as part of the pre-commit hook, which reported modifications."
+            },
+            {
+                "file": "lightrag/kg/milvus_impl.py",
+                "line_number": null,
+                "reason": "This file was likely involved in the formatting checks as part of the pre-commit hook, which reported modifications."
+            },
+            {
+                "file": "lightrag/kg/qdrant_impl.py",
+                "line_number": null,
+                "reason": "This file was likely involved in the formatting checks as part of the pre-commit hook, which reported modifications."
+            },
+            {
+                "file": "lightrag/operate.py",
+                "line_number": null,
+                "reason": "This file was likely involved in the formatting checks as part of the pre-commit hook, which reported modifications."
+            },
+            {
+                "file": "lightrag/utils.py",
+                "line_number": null,
+                "reason": "This file was likely involved in the formatting checks as part of the pre-commit hook, which reported modifications."
+            },
+            {
+                "file": "lightrag/tools/download_cache.py",
+                "line_number": null,
+                "reason": "This file was likely involved in the formatting checks as part of the pre-commit hook, which reported modifications."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Ruff Formatting Error",
+                "evidence": "The log states: 'ruff-format..............................................................Failed' and '1 file reformatted, 95 files left unchanged'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-and-format",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files --show-diff-on-failure"
+            }
+        ]
+    },
+    {
+        "sha_fail": "a0593ec1c9613ae8ab78fddd30e47114ded16f00",
+        "error_context": [
+            "The CI job 'lint-and-format' failed due to issues with code formatting and linting. Specifically, the 'trailing-whitespace' pre-commit hook failed, indicating that files were modified, including 'lightrag/kg/postgres_impl.py'. Additionally, the 'ruff-format' hook also failed, suggesting further formatting issues."
+        ],
+        "relevant_files": [
+            {
+                "file": "lightrag/kg/postgres_impl.py",
+                "line_number": 531,
+                "reason": "The file 'lightrag/kg/postgres_impl.py' was mentioned in the context of the 'trailing-whitespace' hook failure, which stated that files were modified by this hook."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Trailing Whitespace",
+                "evidence": "The log states 'trim trailing whitespace.................................................Failed' and 'files were modified by this hook'."
+            },
+            {
+                "category": "Code Formatting",
+                "subcategory": "Ruff Formatting Error",
+                "evidence": "'ruff-format..............................................................Failed' indicates that the ruff formatting check did not pass."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-and-format",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files --show-diff-on-failure"
+            }
+        ]
+    },
+    {
+        "sha_fail": "60564cf453626802e147b5b929b8b1c6427fb3d8",
+        "error_context": [
+            "The CI job 'lint-and-format' failed due to issues with code formatting and linting. Specifically, the pre-commit hook for trimming trailing whitespace failed, indicating that the file 'lightrag/kg/postgres_impl.py' was modified but not properly formatted, leading to an exit code of 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "lightrag/kg/postgres_impl.py",
+                "line_number": 50,
+                "reason": "The file 'lightrag/kg/postgres_impl.py' was mentioned in the context of a failed pre-commit hook for trimming trailing whitespace, with the log stating 'Fixing lightrag/kg/postgres_impl.py' and an exit code of 1."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Trailing Whitespace",
+                "evidence": "The log states 'trim trailing whitespace.................................................Failed' and 'exit code: 1', indicating that the formatting check failed."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-and-format",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files --show-diff-on-failure"
+            }
+        ]
+    },
+    {
+        "sha_fail": "d6626e5de246cce87651793060322ff1b3f7e0c0",
+        "error_context": [
+            "The CI job failed during the test execution phase due to an ImportError in the test file 'libs/agno/tests/unit/tools/test_firecrawl.py'. The error indicates that the module 'firecrawl' could not import 'ScrapeOptions', suggesting a missing or incorrectly defined dependency."
+        ],
+        "relevant_files": [
+            {
+                "file": "libs/agno/tests/unit/tools/test_firecrawl.py",
+                "line_number": 10,
+                "reason": "The file 'libs/agno/tests/unit/tools/test_firecrawl.py' is directly involved in the failure as it generated an ImportError: 'cannot import name 'ScrapeOptions' from 'firecrawl'. This is evidenced by the log line stating 'ImportError while importing test module ...'."
+            },
+            {
+                "file": "libs/agno/agno/tools/firecrawl.py",
+                "line_number": 9,
+                "reason": "The file 'libs/agno/agno/tools/firecrawl.py' is implicated in the failure because it is the source of the ImportError, as indicated by the traceback in the logs: 'from firecrawl import FirecrawlApp, ScrapeOptions'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "ImportError",
+                "evidence": "The logs show 'ImportError while importing test module ...' and 'cannot import name 'ScrapeOptions' from 'firecrawl'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests for Agno",
+                "command": "python -m pytest --cov=agno --cov-report=json:coverage-agno.json ./libs/agno/tests/unit"
+            }
+        ]
+    },
+    {
+        "sha_fail": "f6adbaa7d295c83c481fbd8ad452eb1883f42a2c",
+        "error_context": [
+            "The CI job 'style-check' failed due to a linting error reported by 'ruff'. The error indicates that the import 'agno.models.response.ModelResponse' is unused in 'agno/models/dashscope/dashscope.py' at line 9. The job completed with exit code 1, indicating a failure in the linting step."
+        ],
+        "relevant_files": [
+            {
+                "file": "agno/models/dashscope/dashscope.py",
+                "line_number": 9,
+                "reason": "The file 'agno/models/dashscope/dashscope.py' contains an unused import of 'ModelResponse', which triggered a linting error: 'F401 [*] `agno.models.response.ModelResponse` imported but unused'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Unused Import",
+                "evidence": "The log states: 'F401 [*] `agno.models.response.ModelResponse` imported but unused'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style-check",
+                "step": "Ruff check",
+                "command": "ruff check ."
+            }
+        ]
+    },
+    {
+        "sha_fail": "1ab3bc774b390a52cf998b70586f980b6684375a",
+        "error_context": [
+            "The CI job 'Check docs' failed due to a formatting issue in the file '/home/runner/work/beets/beets/docs/plugins/unimported.rst'. The log indicates that this file could be reformatted, leading to the process exiting with code 1."
+        ],
+        "relevant_files": [
+            {
+                "file": "docs/plugins/unimported.rst",
+                "line_number": null,
+                "reason": "The log states 'File '/home/runner/work/beets/beets/docs/plugins/unimported.rst' could be reformatted.' This indicates that the file is directly tied to the failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Reformatting Required",
+                "evidence": "The log message states 'File '/home/runner/work/beets/beets/docs/plugins/unimported.rst' could be reformatted.'"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Check docs",
+                "step": "Check docs formatting",
+                "command": "poe format-docs --check"
+            }
+        ]
+    },
+    {
+        "sha_fail": "6f27d0e8dbbb74ef34579d283621da82ebf3ba26",
+        "error_context": [
+            "The CI failed due to multiple errors during the test collection phase, specifically related to the use of deprecated pytest fixture marks. The unittest step failed with exit code 2, indicating that three tests were interrupted due to these errors."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/unittests/runs/test_merge_run.py",
+                "line_number": 14,
+                "reason": "The file was mentioned in the error message: 'ERROR collecting tests/unittests/runs/test_merge_run.py - pytest.PytestRemovedIn9Warning: Marks applied to fixtures have no effect'."
+            },
+            {
+                "file": "tests/unittests/runs/test_simple_run.py",
+                "line_number": 14,
+                "reason": "The file was mentioned in the error message: 'ERROR collecting tests/unittests/runs/test_simple_run.py - pytest.PytestRemovedIn9Warning: Marks applied to fixtures have no effect'."
+            },
+            {
+                "file": "tests/unittests/sources/test_smartos.py",
+                "line_number": 14,
+                "reason": "The file was mentioned in the error message: 'ERROR collecting tests/unittests/sources/test_smartos.py - pytest.PytestRemovedIn9Warning: Marks applied to fixtures have no effect'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "Pytest Fixture Warning",
+                "evidence": "Multiple errors during collection due to deprecated fixture marks, as indicated by the message: 'pytest.PytestRemovedIn9Warning: Marks applied to fixtures have no effect'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "unittest / 3.14-dev",
+                "step": "Run unittest",
+                "command": "tox -e py3"
+            }
+        ]
+    },
+    {
+        "sha_fail": "3fecab1b8e5668d6fa49529e87195f6ee7eba268",
+        "error_context": [
+            "The test 'test_export_action_filter_preservation_end_to_end' in the file 'tests/core/tests/admin_integration/test_action_export.py' failed due to an AssertionError, indicating that the expected content type 'text/csv' did not match the actual content type 'text/html; charset=utf-8'. This failure occurred during the execution of the test suite using pytest."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/core/tests/admin_integration/test_action_export.py",
+                "line_number": 353,
+                "reason": "The failure occurred in the test 'test_export_action_filter_preservation_end_to_end' at line 353, where the assertion failed due to a mismatch in the expected and actual content types."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError in unit test",
+                "evidence": "AssertionError: 'text/html; charset=utf-8' != 'text/csv' in the test 'test_export_action_filter_preservation_end_to_end'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test",
+                "step": "Run tox targets for 3.12 (postgres)",
+                "command": "tox run -f py312"
+            }
+        ]
+    },
+    {
+        "sha_fail": "dadeba110a5a98dbc810f9b8f3896424175318c1",
+        "error_context": [
+            "The test 'test_export_action_filter_preservation_end_to_end' in the file '/home/runner/work/django-import-export/django-import-export/tests/core/tests/admin_integration/test_action_export.py' failed due to an AssertionError, indicating that the expected content type 'text/csv' did not match the actual content type 'text/html; charset=utf-8'. This failure occurred during the execution of the test suite using pytest."
+        ],
+        "relevant_files": [
+            {
+                "file": "/home/runner/work/django-import-export/django-import-export/tests/core/tests/admin_integration/test_action_export.py",
+                "line_number": 353,
+                "reason": "The failure occurred in the test method 'test_export_action_filter_preservation_end_to_end', where an AssertionError was raised due to a mismatch in expected and actual content types."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError in unit test",
+                "evidence": "AssertionError: 'text/html; charset=utf-8' != 'text/csv' in the test 'test_export_action_filter_preservation_end_to_end'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test",
+                "step": "Run tox targets for ${{ matrix.python-version }} (postgres)",
+                "command": "tox run -f py$(echo ${{ matrix.python-version }} | tr -d .)"
+            }
+        ]
+    },
+    {
+        "sha_fail": "16c48e2d1190bbc6fd907ae612921df5dd3f42f4",
+        "error_context": [
+            "The CI job failed due to multiple type checking errors in the file 'tests/middleware/test_cors.py'. Specifically, there were missing return statements in several functions, which caused the mypy type checker to report errors. The failure occurred during the 'Run linting checks' step."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/middleware/test_cors.py",
+                "line_number": 462,
+                "reason": "The log states 'tests/middleware/test_cors.py:462: error: Missing return statement [empty-body]', indicating that this file is directly tied to the failure."
+            },
+            {
+                "file": "tests/middleware/test_cors.py",
+                "line_number": 483,
+                "reason": "The log states 'tests/middleware/test_cors.py:483: error: Missing return statement [empty-body]', indicating that this file is directly tied to the failure."
+            },
+            {
+                "file": "tests/middleware/test_cors.py",
+                "line_number": 696,
+                "reason": "The log states 'tests/middleware/test_cors.py:696: error: Missing return statement [empty-body]', indicating that this file is directly tied to the failure."
+            },
+            {
+                "file": "tests/middleware/test_cors.py",
+                "line_number": 778,
+                "reason": "The log states 'tests/middleware/test_cors.py:778: error: Missing return statement [empty-body]', indicating that this file is directly tied to the failure."
+            },
+            {
+                "file": "tests/middleware/test_cors.py",
+                "line_number": 819,
+                "reason": "The log states 'tests/middleware/test_cors.py:819: error: Missing return statement [empty-body]', indicating that this file is directly tied to the failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Type Checking",
+                "subcategory": "Missing return statement",
+                "evidence": "The log states 'Found 5 errors in 1 file (checked 67 source files)' and lists multiple lines in 'tests/middleware/test_cors.py' with 'error: Missing return statement [empty-body]'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run linting checks",
+                "command": "uv run mypy starlette tests"
+            }
+        ]
+    },
+    {
+        "sha_fail": "207b861fbc10acc867a6f04eae0b4c866d1e508d",
+        "error_context": [
+            "The CI job failed due to an assertion error in the test located in 'tests/supervisors/test_multiprocess.py' at line 136. The assertion 'assert pids != [p.pid for p in supervisor.processes]' failed, indicating that the expected behavior of the process management was not met. This failure occurred during the 'Run tests' step of the CI workflow."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/supervisors/test_multiprocess.py",
+                "line_number": 136,
+                "reason": "The log indicates an assertion error at this line: 'E       assert [1313, 1314] != [1313, 1314]', which directly ties this file to the test failure."
+            },
+            {
+                "file": "uvicorn/supervisors/multiprocess.py",
+                "line_number": null,
+                "reason": "The failure is related to the process management logic implemented in this file, as indicated by the context of the assertion error."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError in unit test",
+                "evidence": "The log states 'tests/supervisors/test_multiprocess.py:136: AssertionError' indicating that the test did not pass due to an assertion failure."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests",
+                "command": "scripts/test"
+            }
+        ]
+    },
+    {
+        "sha_fail": "c4330a42492e01350945e09419953aa3f40fb796",
+        "error_context": [
+            "The CI failed due to a coverage failure where the total coverage was 99.98%, which is below the required threshold of 100.00%. This occurred during the 'Run tests' step while executing the command to generate a coverage report."
+        ],
+        "relevant_files": [
+            {
+                "file": "uvicorn/protocols/http/h11_impl.py",
+                "line_number": 0,
+                "reason": "The file was mentioned in the coverage report with 1 missed statement, contributing to the overall coverage failure."
+            },
+            {
+                "file": "uvicorn/server.py",
+                "line_number": 0,
+                "reason": "The file is part of the server implementation and is likely involved in the execution context during the tests."
+            },
+            {
+                "file": "uvicorn/protocols/http/httptools_impl.py",
+                "line_number": 0,
+                "reason": "This file was also part of the coverage report, indicating it may have missed coverage."
+            },
+            {
+                "file": "uvicorn/config.py",
+                "line_number": 0,
+                "reason": "This file is part of the configuration for the server and may impact the execution of tests."
+            },
+            {
+                "file": "uvicorn/main.py",
+                "line_number": 0,
+                "reason": "This file is the entry point for the application and is relevant to the overall execution context."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Coverage Error",
+                "subcategory": "Coverage threshold not met",
+                "evidence": "Coverage failure: total of 99.98 is less than fail-under=100.00"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests",
+                "command": "uv run coverage report"
+            }
+        ]
+    },
+    {
+        "sha_fail": "1635d1811c3630bf60e4392671e04be7765d902e",
+        "error_context": [
+            "The CI job failed due to a coverage failure, where the total coverage of 99.97% is less than the required fail-under threshold of 100.00%. This occurred during the 'Run tests' step while executing the command 'uv run coverage report'."
+        ],
+        "relevant_files": [
+            {
+                "file": "uvicorn/loops/asyncio.py",
+                "line_number": 10,
+                "reason": "The file is involved in the coverage report, showing 1 missed statement at line 10."
+            },
+            {
+                "file": "uvicorn/loops/auto.py",
+                "line_number": 11,
+                "reason": "The file is involved in the coverage report, showing 1 missed statement at line 11."
+            },
+            {
+                "file": "uvicorn/server.py",
+                "line_number": null,
+                "reason": "This file is part of the project and is likely involved in the overall coverage calculations."
+            },
+            {
+                "file": "tests/conftest.py",
+                "line_number": null,
+                "reason": "This file is part of the test suite and is likely involved in the overall coverage calculations."
+            },
+            {
+                "file": "uvicorn/_subprocess.py",
+                "line_number": null,
+                "reason": "This file is part of the project and is likely involved in the overall coverage calculations."
+            },
+            {
+                "file": "tests/supervisors/test_signal.py",
+                "line_number": null,
+                "reason": "This file is part of the test suite and is likely involved in the overall coverage calculations."
+            },
+            {
+                "file": "tests/protocols/test_websocket.py",
+                "line_number": null,
+                "reason": "This file is part of the test suite and is likely involved in the overall coverage calculations."
+            },
+            {
+                "file": "uvicorn/protocols/http/h11_impl.py",
+                "line_number": null,
+                "reason": "This file is part of the project and is likely involved in the overall coverage calculations."
+            },
+            {
+                "file": "uvicorn/protocols/http/httptools_impl.py",
+                "line_number": null,
+                "reason": "This file is part of the project and is likely involved in the overall coverage calculations."
+            },
+            {
+                "file": "uvicorn/main.py",
+                "line_number": null,
+                "reason": "This file is part of the project and is likely involved in the overall coverage calculations."
+            },
+            {
+                "file": "uvicorn/config.py",
+                "line_number": null,
+                "reason": "This file is part of the project and is likely involved in the overall coverage calculations."
+            },
+            {
+                "file": "tests/test_config.py",
+                "line_number": null,
+                "reason": "This file is part of the test suite and is likely involved in the overall coverage calculations."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Coverage Error",
+                "subcategory": "Coverage threshold not met",
+                "evidence": "Coverage failure: total of 99.97 is less than fail-under=100.00"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "tests",
+                "step": "Run tests",
+                "command": "uv run coverage report"
+            }
+        ]
+    },
+    {
+        "sha_fail": "df5e9e422993a051ab7e2fc7b1dc70485a40c7d3",
+        "error_context": [
+            "The CI job failed during the test step due to an AssertionError in the test_sync_lip_to_image test, which asserted that a subprocess call returned a success code but instead returned 1. This indicates that the command executed by the test did not complete successfully.",
+            "The relevant file involved is tests/test_cli_lip_syncer.py at line 32, where the assertion was made."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/test_cli_lip_syncer.py",
+                "line_number": 32,
+                "reason": "The failure occurred in the test_sync_lip_to_image function, which asserts that subprocess.run(commands).returncode == 0, but the actual return code was 1, indicating a failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError in unit test",
+                "evidence": "AssertionError: assert 1 == 0 in tests/test_cli_lip_syncer.py:32"
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test",
+                "step": "pytest",
+                "command": "pytest"
+            }
+        ]
+    },
+    {
+        "sha_fail": "064c3b62f835ae5315b5893b3b4bd98b54e34ffa",
+        "error_context": [
+            "The CI job 'lint-and-format' failed during the 'Run pre-commit' step due to multiple formatting issues detected by pre-commit hooks. Specifically, the 'trailing-whitespace' hook failed, indicating that files were modified to fix whitespace issues."
+        ],
+        "relevant_files": [
+            {
+                "file": "workflows/agent_orchestration_engine.py",
+                "line_number": 0,
+                "reason": "The file was mentioned in the context of the 'trailing-whitespace' hook failure, which indicated that it was modified to fix whitespace issues."
+            },
+            {
+                "file": "cli/cli_interface.py",
+                "line_number": 0,
+                "reason": "This file was also mentioned in the context of the 'trailing-whitespace' hook failure, indicating it was modified to fix whitespace issues."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Trailing Whitespace",
+                "evidence": "The log states 'trim trailing whitespace.................................................Failed' and 'files were modified by this hook', specifically mentioning 'Fixing workflows/agent_orchestration_engine.py' and 'Fixing cli/cli_interface.py'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint-and-format",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files --show-diff-on-failure"
+            }
+        ]
+    },
+    {
+        "sha_fail": "5fd445c656b537125771608dac8823bded23f826",
+        "error_context": [
+            "The CI job 'Test on Arch' failed due to a command execution error related to missing secret keys for signing packages. The failure occurred during the execution of the 'setup/arch-ci.sh' script, which is responsible for installing dependencies."
+        ],
+        "relevant_files": [
+            {
+                "file": "/__w/calibre/calibre/setup/arch-ci.sh",
+                "line_number": null,
+                "reason": "The failure is tied to the execution of the 'setup/arch-ci.sh' script, which failed to execute correctly due to the error: 'There is no secret key available to sign with.'"
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Configuration Error",
+                "subcategory": "Missing secret key for signing",
+                "evidence": "The log states '==> ERROR: There is no secret key available to sign with.' indicating a configuration issue."
+            },
+            {
+                "category": "Runtime Error",
+                "subcategory": "Command execution failure",
+                "evidence": "The log shows 'error: command failed to execute correctly' which confirms that the command could not complete due to the missing key."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "archtest",
+                "step": "Install calibre dependencies",
+                "command": "setup/arch-ci.sh"
+            }
+        ]
+    },
+    {
+        "sha_fail": "4ffacbbe801b90aa147af206809b8c610ccbcefb",
+        "error_context": [
+            "The CI job 'Scan dependencies for vulnerabilities' failed due to a ValueError raised while parsing dependencies in the 'bypy/download_sources.py' file. The error indicates that the dependency 'brotli' could not be found, leading to a failure in the dependency check process."
+        ],
+        "relevant_files": [
+            {
+                "file": "/home/runner/work/kitty/kitty/bypy-src/bypy/download_sources.py",
+                "line_number": 492,
+                "reason": "The log states 'raise ValueError(f'Failed to parse Dependency: {dep} with error: {e}') from e' indicating that this file is directly involved in the failure."
+            },
+            {
+                "file": "/home/runner/work/kitty/kitty/bypy-src/bypy/utils.py",
+                "line_number": 1294,
+                "reason": "The log shows 'File \"/home/runner/work/kitty/kitty/bypy-src/bypy/utils.py\", line 1294, in setup_build_parser' which is part of the call stack leading to the error."
+            },
+            {
+                "file": "/home/runner/work/kitty/kitty/bypy-src/bypy/linux.py",
+                "line_number": 18,
+                "reason": "The log indicates 'File \"/home/runner/work/kitty/kitty/bypy-src/bypy/linux.py\", line 18, in setup_parser' as part of the call stack that resulted in the failure."
+            },
+            {
+                "file": "/home/runner/work/kitty/kitty/.github/workflows/ci.py",
+                "line_number": 288,
+                "reason": "The log shows 'File \"/home/runner/work/kitty/kitty/.github/workflows/ci.py\", line 288, in <module>' indicating this file is part of the workflow that failed."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Dependency Error",
+                "subcategory": "Missing dependency 'brotli'",
+                "evidence": "The log states 'ValueError: Failed to parse Dependency: {'name': 'brotli 1.1.0', ... with error: 'brotli'' indicating that the dependency could not be found."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "dependecy-scanner",
+                "step": "Check dependencies",
+                "command": "python3 .github/workflows/ci.py check-dependencies"
+            }
+        ]
+    },
+    {
+        "sha_fail": "48674ee71fd28378322b16a8796b2288507831bd",
+        "error_context": [
+            "The CI job failed due to multiple test failures in the file 'tests/test_core.py'. Specifically, the tests 'test_000_update', 'test_005_mem', and 'test_107_fs_plugin_method' failed due to assertion errors indicating that expected keys were not found. The failures occurred during the 'test / test-macos (3.13)' job."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/test_core.py",
+                "line_number": 201,
+                "reason": "The test 'test_000_update' failed with an AssertionError indicating 'False is not true'. This is evidenced by the log line: 'FAILED tests/test_core.py::TestGlances::test_000_update - AssertionError: False is not true'."
+            },
+            {
+                "file": "tests/test_core.py",
+                "line_number": 263,
+                "reason": "The test 'test_005_mem' failed with an AssertionError indicating 'Cannot find key: available'. This is evidenced by the log line: 'FAILED tests/test_core.py::TestGlances::test_005_mem - AssertionError: False is not true : Cannot find key: available'."
+            },
+            {
+                "file": "tests/test_core.py",
+                "line_number": 639,
+                "reason": "The test 'test_107_fs_plugin_method' failed with an AttributeError indicating 'Can't get local object 'exit_after.<locals>.handler''. This is evidenced by the log line: 'FAILED tests/test_core.py::TestGlances::test_107_fs_plugin_method - AttributeError: Can't get local object 'exit_after.<locals>.handler'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "The log indicates multiple assertion failures in 'tests/test_core.py', specifically: 'FAILED tests/test_core.py::TestGlances::test_000_update - AssertionError: False is not true'."
+            },
+            {
+                "category": "Test Failure",
+                "subcategory": "AttributeError",
+                "evidence": "The log indicates an AttributeError in 'tests/test_core.py' for the test 'test_107_fs_plugin_method': 'FAILED tests/test_core.py::TestGlances::test_107_fs_plugin_method - AttributeError: Can't get local object 'exit_after.<locals>.handler'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test / test-macos (3.13)",
+                "step": "test / test-macos (3.13)",
+                "command": "pytest"
+            }
+        ]
+    },
+    {
+        "sha_fail": "026bbd5ffd1394338d51c1c0c5c8209205ae33ed",
+        "error_context": [
+            "The CI job failed during the 'style' step due to a formatting issue detected by the pre-commit hook 'ruff-format'. The logs indicate that 1 file was reformatted, but the process ultimately failed with exit code 1, indicating that the formatting did not meet the required standards."
+        ],
+        "relevant_files": [
+            {
+                "file": "flask_admin/contrib/fileadmin/__init__.py",
+                "line_number": null,
+                "reason": "The file was mentioned in the context of the ruff-format hook, which indicated that files were modified by this hook, leading to the failure."
+            },
+            {
+                "file": "flask_admin/base.py",
+                "line_number": null,
+                "reason": "This file was also mentioned in the context of the ruff-format hook, indicating it was part of the files checked for formatting."
+            },
+            {
+                "file": "flask_admin/model/base.py",
+                "line_number": null,
+                "reason": "This file was included in the formatting checks by the ruff-format hook, contributing to the failure."
+            },
+            {
+                "file": "flask_admin/contrib/sqla/view.py",
+                "line_number": null,
+                "reason": "This file was part of the files modified by the ruff-format hook, which led to the failure."
+            },
+            {
+                "file": "flask_admin/form/upload.py",
+                "line_number": null,
+                "reason": "This file was included in the formatting checks by the ruff-format hook, contributing to the failure."
+            },
+            {
+                "file": "flask_admin/contrib/sqla/fields.py",
+                "line_number": null,
+                "reason": "This file was part of the files modified by the ruff-format hook, which led to the failure."
+            },
+            {
+                "file": "flask_admin/contrib/fileadmin/azure.py",
+                "line_number": null,
+                "reason": "This file was included in the formatting checks by the ruff-format hook, contributing to the failure."
+            },
+            {
+                "file": "flask_admin/actions.py",
+                "line_number": null,
+                "reason": "This file was part of the files modified by the ruff-format hook, which led to the failure."
+            },
+            {
+                "file": "examples/forms_files_images/main.py",
+                "line_number": null,
+                "reason": "This file was included in the formatting checks by the ruff-format hook, contributing to the failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Ruff Formatting Error",
+                "evidence": "The logs state 'ruff-format..............................................................Failed' and 'style: FAIL code 1', indicating that the formatting checks did not pass."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "style",
+                "step": "Run pre-commit",
+                "command": "pre-commit run --all-files"
+            }
+        ]
+    },
+    {
+        "sha_fail": "6066f06de3275801b19af5f23ccb5e3940991e60",
+        "error_context": [
+            "The CI job failed during the linting step due to a formatting issue in the file 'Lib/pathlib/types.py'. The process completed with exit code 1, indicating that the linting checks did not pass."
+        ],
+        "relevant_files": [
+            {
+                "file": "Lib/pathlib/types.py",
+                "line_number": 184,
+                "reason": "The file 'Lib/pathlib/types.py' is involved in the failure as it was reported in the context of a linting error: '##[error]Process completed with exit code 1.' and the diff shows changes made to this file."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Trailing Whitespace",
+                "evidence": "The linting step failed with the message 'files were modified by this hook' and the context shows that changes were made to 'Lib/pathlib/types.py'."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "lint",
+                "step": "Run pre-commit/action@v3.0.1",
+                "command": "pre-commit run --show-diff-on-failure --color=always --all-files"
+            }
+        ]
+    },
+    {
+        "sha_fail": "b828018b142c3297f962643eea8c07ce460072ab",
+        "error_context": [
+            "The CI job failed during the test step due to an error indicating that the '--base-ref' option cannot be empty. This occurred while running the command 'uv run -- llama-dev test --workers 8 --base-ref= --cov --cov-fail-under=50'.",
+            "The relevant file '/home/runner/work/llama_index/llama_index/llama-dev' was involved in the failure as it was being built when the error occurred."
+        ],
+        "relevant_files": [
+            {
+                "file": "/home/runner/work/llama_index/llama_index/llama-dev",
+                "line_number": null,
+                "reason": "The error message states 'Error: Option '--base-ref' cannot be empty.' which indicates that this file was being executed when the failure occurred."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Configuration Error",
+                "subcategory": "Missing required option",
+                "evidence": "The log states 'Error: Option '--base-ref' cannot be empty.' indicating a missing configuration option."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test",
+                "step": "Run tests with coverage",
+                "command": "uv run -- llama-dev test --workers 8 --base-ref= --cov --cov-fail-under=50"
+            }
+        ]
+    },
+    {
+        "sha_fail": "d01a6ec49f1aac932816c81c0354de64c0183373",
+        "error_context": [
+            "The CI job failed during the smoke test step due to an ImportError when trying to import the 'lib.core.ncgui' module from 'sqlmap'. The error message indicated that there was 'No module named '_curses'', which suggests a missing dependency. This failure occurred in the 'build (windows-latest, 3.13)' job."
+        ],
+        "relevant_files": [
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/sqlmap/lib/core/ncgui.py",
+                "line_number": 54,
+                "reason": "The log states '[ERROR] smoke test failed at importing module 'lib.core.ncgui' (D:\\a\\sqlmap\\sqlmap\\lib\\core\\ncgui.py): No module named '_curses'' indicating that this file is directly involved in the failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Dependency Error",
+                "subcategory": "Missing dependency _curses",
+                "evidence": "The error message states 'No module named '_curses'' which indicates that the required '_curses' module is not available."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "build",
+                "step": "Smoke test",
+                "command": "python sqlmap.py --smoke"
+            }
+        ]
+    },
+    {
+        "sha_fail": "71b7fd4a926acb2c018af855f325502bfe03d417",
+        "error_context": [
+            "The CI job 'Check Ruff Fix' failed due to issues detected by the 'ruff check' command, which reported multiple formatting errors. The process completed with exit code 1, indicating that the errors were not automatically fixable."
+        ],
+        "relevant_files": [
+            {
+                "file": "dspy/clients/utils_finetune.py",
+                "line_number": 8,
+                "reason": "The file was mentioned in the context of a ruff check that found issues, specifically stating 'Would fix 4 errors (94 additional fixes available with `--unsafe-fixes`).'"
+            },
+            {
+                "file": "dspy/clients/lm.py",
+                "line_number": 1,
+                "reason": "This file was also referenced in the context of the ruff check, indicating it is involved in the detected issues."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Ruff detected issues",
+                "evidence": "Ruff found issues that can be fixed automatically, indicating formatting problems in the code."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "Check Ruff Fix",
+                "step": "Ruff Check",
+                "command": "ruff check --fix-only --diff --exit-non-zero-on-fix"
+            }
+        ]
+    },
+    {
+        "sha_fail": "a7b902770d8b2769920794cf4e2016525e3ea1d9",
+        "error_context": [
+            "The CI job failed due to an assertion error in the test_clickhouse test, which compared two SQL queries and found them unequal. This occurred during the 'Run tests and linter checks' step, specifically while executing the pytest command."
+        ],
+        "relevant_files": [
+            {
+                "file": "sqlglot/tests/dialects/test_clickhouse.py",
+                "line_number": 49,
+                "reason": "The file contains the test that failed with an AssertionError: 'SELECT EXTRACT(YEAR FROM toDateTime('2023-02-01'))' != 'SELECT EXTRACT(YEAR FROM CAST('2023-02-01' AS Nullable(DateTime)))'."
+            },
+            {
+                "file": "sqlglot/tests/dialects/test_dialect.py",
+                "line_number": 34,
+                "reason": "This file is involved in the failure as it contains the validate_identity method that was called during the test, leading to the assertion error."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError in unit test",
+                "evidence": "AssertionError: \"SELECT EXTRACT(YEAR FROM toDateTime('2023-02-01'))\" != \"SELECT EXTRACT(YEAR FROM CAST('2023-02-01' AS Nullable(DateTime)))\""
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "run-checks",
+                "step": "Run tests and linter checks",
+                "command": "pytest"
+            }
+        ]
+    },
+    {
+        "sha_fail": "5df3ea92f59125955124ea1883b777b489db3042",
+        "error_context": [
+            "The CI job failed due to an assertion error in the test 'test_annotate_funcs' located in 'tests/test_optimizer.py' at line 921, where the expected value 'BINARY' did not match the actual value 'UNKNOWN'. This caused the test suite to fail, leading to the overall job failure."
+        ],
+        "relevant_files": [
+            {
+                "file": "tests/test_optimizer.py",
+                "line_number": 921,
+                "reason": "The file 'tests/test_optimizer.py' contains the failing test 'test_annotate_funcs', which raised an AssertionError: 'UNKNOWN' != 'BINARY'."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError in unit test",
+                "evidence": "AssertionError: 'UNKNOWN' != 'BINARY' in test 'test_annotate_funcs' at line 921."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "run-checks",
+                "step": "Run tests and linter checks",
+                "command": "python -m unittest"
+            }
+        ]
+    },
+    {
+        "sha_fail": "ff15e0ed7276b5aa8e4581769e8e8e7deca1420d",
+        "error_context": [
+            "The CI job 'Run full tests' failed because the specified Python version '3.14t-dev - 3.14t' was not found for Ubuntu 24.04. This was indicated by the error message at line 28: 'The version '3.14t-dev - 3.14t' with architecture 'x64' was not found for Ubuntu 24.04.'"
+        ],
+        "relevant_files": [],
+        "error_types": [
+            {
+                "category": "Configuration Error",
+                "subcategory": "Missing Python Version",
+                "evidence": "The version '3.14t-dev - 3.14t' with architecture 'x64' was not found for Ubuntu 24.04."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "test_tox",
+                "step": "Run test suite",
+                "command": "python -m tox -e py314"
+            }
+        ]
+    },
+    {
+        "sha_fail": "c7fbe73582650fe0c431fad4d0e290caa3efb3bb",
+        "error_context": [
+            "The CI job 'pre-commit' failed due to a process exiting with code 1, indicating an error during the execution of pre-commit hooks. Specifically, the 'Add License' hook failed, which modified files and resulted in a failure message."
+        ],
+        "relevant_files": [
+            {
+                "file": ".github/workflows/pre-commit.yaml",
+                "line_number": 679,
+                "reason": "The log indicates that the process completed with exit code 1, which is tied to the execution of the pre-commit hooks defined in this file."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/docs/generate_docs.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/deploy/mlflow-triton-plugin/mlflow_triton/deployments.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/build.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/compose.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/python/openai/tests/conftest.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/qa/L0_batcher/batcher_test.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/docs/conf.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/tools/add_copyright.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/qa/L0_lifecycle/lifecycle_test.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            },
+            {
+                "file": "/Users/rabeyakhatunmuna/Documents/CI-REPAIR-BENCH/baselines/repo_cloned/server/python/openai/tests/test_chat_completions.py",
+                "line_number": null,
+                "reason": "Matched tokens from error context indicate that this file was processed by the hooks, which may have contributed to the failure."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Code Formatting",
+                "subcategory": "Pre-commit hook failure",
+                "evidence": "The log states 'Add License..............................................................Failed' indicating that the pre-commit hook for adding a license failed."
+            }
+        ],
+        "failed_job": [
+            {
+                "job": "pre-commit",
+                "step": "Run pre-commit hooks",
+                "command": "pre-commit run --all-files"
             }
         ]
     }
