@@ -67,7 +67,7 @@ class CILogAnalyzerLLM:
                     
                     chunk_tracker.append((step_name, len(raw_chunks)))
                     
-                    if len(raw_chunks) > 10:
+                    if len(raw_chunks) > 6:
                         chunks = self._filter_chunks(raw_chunks)
                     else:
                         chunks = raw_chunks
@@ -497,12 +497,7 @@ Return a SINGLE aggregated summary for the entire failed run using this exact st
         """
         n_chunks = len(raw_chunks)
 
-        # If we have 6 or fewer chunks, just keep everything
-        if n_chunks <= 6:
-            print(f"Filtered from {n_chunks} ➝ {n_chunks} chunks (<= 6, kept all)")
-            return raw_chunks
-
-        cutoff = n_chunks - 6
+        cutoff = n_chunks - 4
         filtered_chunks: List[str] = []
 
         # 1) Check the first (n-6) chunks and keep only those with error keywords
@@ -515,12 +510,12 @@ Return a SINGLE aggregated summary for the entire failed run using this exact st
                     filtered_chunks.append(chunk)
                     break  # done with this chunk
 
-        # 2) Append the last 6 chunks unconditionally (preserve serial order)
+        # 2) Append the last 4 chunks unconditionally (preserve serial order)
         filtered_chunks.extend(raw_chunks[cutoff:])
 
         print(
             f"Filtered from {n_chunks} ➝ {len(filtered_chunks)} chunks "
-            f"(checked first {cutoff}, always kept last 6)"
+            f"(checked first {cutoff}, always kept last 4)"
         )
 
         return filtered_chunks
