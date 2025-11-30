@@ -7,12 +7,14 @@ import re
 import yaml
 import time
 from pathlib import Path
-import json, re, demjson3
+import demjson3
 from dotenv import load_dotenv
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import JsonOutputParser
+
 from utilities.load_config import load_config
 from utilities.snippet_extractor import extract_snippet_from_line_range, find_line_range
 from utilities.chunking_logic import chunk_log_by_tokens
@@ -26,7 +28,32 @@ api_key = os.getenv("OPENAI_API_KEY")
 
 
 class FaultLocalization:
-    def __init__(self, sha_fail: str, repo_path: str, error_logs: dict, workflow: str, llm: ChatOpenAI, model_name: str=None):
+    def __init__(
+        self,
+        sha_fail: str,
+        repo_path: str,
+        error_logs: dict,
+        workflow: str,
+        llm: ChatOpenAI,
+        model_name: Optional[str] = None,
+        changed_files_info: Optional[dict] = None,
+    ):
+        """
+        FaultLocalization agent.
+
+        changed_files_info format (from collect_changed_files_for_fail_and_parent):
+        {
+          "sha_fail": "<sha_fail>",
+          "changed_files": [
+            {
+              "commit": "<commit_sha>",
+              "file_path": "<path/to/file>",
+              "diff": "<unified diff>",
+            },
+            ...
+          ]
+        }
+        """
         # Unpack OmegaConf + project root if your loader returns a tuple
         cfg_result = load_config()
         if isinstance(cfg_result, tuple) and len(cfg_result) == 2:
@@ -35,82 +62,217 @@ class FaultLocalization:
             self.config, self.project_root = cfg_result, None
 
         self.error_logs = error_logs or {}
+        self.changed_files_info = changed_files_info or {"changed_files": []}
+
         # Use correct defaults/types
         self.error_context = self.error_logs.get("error_context", [])         # list
         self.error_types = self.error_logs.get("error_types", [])             # list
+
         # Handle both singular/plural to be robust
-        self.failed_jobs = self.error_logs.get("failed_jobs",
-                           self.error_logs.get("failed_job", []))              # list
+        self.failed_jobs = self.error_logs.get(
+            "failed_jobs",
+            self.error_logs.get("failed_job", []),
+        )  # list
+
         # Fix tuple-as-key bug
         self.relevant_files = self.error_logs.get("relevant_files", [])       # list
+
         self._has_checked_out = False
         self.workflow = workflow
         self.repo_path = repo_path
         self.failed_commit = sha_fail
-        
-        self.model_name = model_name
 
-        # Make sure api_key is defined/imported where this runs
+        self.model_name = model_name
         self.llm = llm
 
         self.parser = JsonOutputParser()
 
+    # ------------------------------------------------------------------ #
+    # Public entry
+    # ------------------------------------------------------------------ #
 
     def run(self) -> Dict:
         try:
             self._checkout_failed_commit_once()
 
             print("[Step 3] Running final fault localization...")
-            result = self._final_fault_localization()
+            suspecious_files = self.select_suspecious_files()
 
+            result = self._final_fault_localization(suspecious_files)
             return result
 
         except Exception as e:
-            base_dir = os.path.join(self.config["exception_dir"], "interrupted_fault_localization")
+            base_dir = os.path.join(
+                self.config["exception_dir"],
+                "interrupted_fault_localization",
+            )
             os.makedirs(base_dir, exist_ok=True)
             filepath = os.path.join(base_dir, f"{self.failed_commit}_bug.json")
             error_info = {
                 "sha_fail": self.failed_commit,
                 "error": str(e),
-                "tool": "FaultLocalization"
+                "tool": "FaultLocalization",
             }
-            with open(filepath, "w") as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(error_info, f, indent=4)
             return error_info
-    
-          
+
+    # ------------------------------------------------------------------ #
+    # Git helpers
+    # ------------------------------------------------------------------ #
+
     def _checkout_failed_commit_once(self):
         try:
-            subprocess.run(["git", "checkout", self.failed_commit], cwd=self.repo_path, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "checkout", self.failed_commit],
+                cwd=self.repo_path,
+                check=True,
+                capture_output=True,
+            )
             self._has_checked_out = True
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Git checkout failed: {e.stderr.decode()}")
-        
-    def _final_fault_localization(self) -> List[Dict]:
-        print("[Tool] read_error_file called")
 
-        fault_localization = []
+    # ------------------------------------------------------------------ #
+    # Suspicious file selection
+    # ------------------------------------------------------------------ #
+
+    def select_suspecious_files(self) -> List[Dict[str, Any]]:
+        """
+        1) Start from log_analyzer `relevant_files` (filtered by extension).
+        2) Add extra files from `changed_files_info["changed_files"]` if the LLM
+        says the diff is suspicious for the failed jobs.
+
+        Returns a list of dicts that at least contain "file" so that
+        _final_fault_localization can resolve paths.
+        """
+        suspecious_files: List[Dict[str, Any]] = []
+
+        # 1) Relevant files from error_logs
         for item in self.relevant_files:
-            
             file_path = (item.get("file") or item.get("path") or "").strip()
             if not file_path:
                 continue
-            
+
             ext = Path(file_path).suffix.lower()
-            
+            if ext not in {".py", ".txt"}:
+                continue
+
+            suspecious_files.append({"file": file_path})
+
+        # Build a set of already-selected file paths from suspecious_files
+        seen_paths: set[str] = set()
+        for entry in suspecious_files:
+            p = (entry.get("file") or entry.get("path") or "").strip()
+            if p:
+                seen_paths.add(p)
+
+        # 2) Changed files from changed_files_info
+        changed_files_list = self.changed_files_info.get("changed_files", []) or []
+        if not changed_files_list:
+            return suspecious_files
+
+        failed_jobs_text = json.dumps(self.failed_jobs, indent=2, ensure_ascii=False)
+
+        for item in changed_files_list:
+            file_path = (item.get("file_path") or "").strip()
+            if not file_path:
+                continue
+
+            # If this file is already in suspecious_files, skip immediately
+            if file_path in seen_paths:
+                # Already included from relevant_files or earlier changed_files
+                continue
+
+            ext = Path(file_path).suffix.lower()
+            if ext not in {".py", ".txt"}:
+                continue
+
+            changed_content = item.get("diff", "")
+
+            prompt = f"""
+You are a **Suspicious File Selector** for CI failures.
+
+Goal:
+Given a file path, the unified diff of that file for a failed commit,
+and the CI failed jobs description, decide whether this file's changes
+are likely responsible for (or closely related to) the CI failure.
+
+Return **only** a JSON object with this exact schema, as plain text:
+
+{{
+  "is_suspicious": true or false
+}}
+
+Hard rules:
+- Do NOT add any markdown fences (no ```json, no ```).
+- Do NOT add any extra keys, comments, or explanation.
+- Do NOT add any surrounding text before or after the JSON.
+- The response must be a single valid JSON object only.
+
+========================================
+FILE PATH:
+{file_path}
+
+UNIFIED DIFF FOR THIS FILE:
+{changed_content}
+
+FAILED JOBS (CI context):
+{failed_jobs_text}
+========================================
+"""
+
+            try:
+                raw_response = self.llm.invoke(prompt).content.strip()
+                if raw_response.startswith("```"):
+                    raw_response = raw_response.strip("` \n")
+
+                try:
+                    parsed = json.loads(raw_response)
+                except json.JSONDecodeError:
+                    parsed = demjson3.decode(raw_response)
+
+                if isinstance(parsed, dict) and parsed.get("is_suspicious") is True:
+                    suspecious_files.append({"file": file_path})
+                    seen_paths.add(file_path)  # so we never process it again
+                    print(f"[Selector] Marked '{file_path}' as suspicious based on diff.")
+                else:
+                    print(f"[Selector] '{file_path}' not suspicious.")
+            except Exception as e:
+                print(f"[Selector] Error deciding for {file_path}: {e}")
+
+        return suspecious_files
+
+
+    # ------------------------------------------------------------------ #
+    # Final fault localization over selected files
+    # ------------------------------------------------------------------ #
+
+    def _final_fault_localization(self, suspecious_files: list) -> Dict[str, Any]:
+        print("[Tool] read_error_file called")
+
+        fault_localization: List[Dict[str, Any]] = []
+
+        for item in suspecious_files:
+            file_path = (item.get("file") or item.get("path") or "").strip()
+            if not file_path:
+                continue
+
+            ext = Path(file_path).suffix.lower()
             if ext not in {".py", ".toml", ".txt"}:
                 continue
-            
+
             resolved = self.find_full_file_path(file_path)
             if resolved["status"] != "found":
+                print(f"[WARN] Could not resolve path for {file_path}")
                 continue
 
             full_file_path = resolved["full_path"]
-            
+
             content = self._read_file_content(full_file_path)
             if not content:
                 continue
-            
+
             file_type = self.detect_file_type(file_path)
             outline = build_outline(content) if file_type == "python" else ""
             numbered_full_content = self._numbered_file_content(content)
@@ -119,7 +281,7 @@ class FaultLocalization:
 
             # Per-chunk strict FL
             all_faults: List[Dict[str, Any]] = []
-            
+
             for idx, ch in enumerate(chunks):
                 file_summary = (
                     f"File: {file_path}\n"
@@ -130,7 +292,7 @@ class FaultLocalization:
                     f"Chunk lines ({ch['valid_start']}–{ch['valid_end']}):\n\n"
                     f"```{file_type}\n{ch['content']}\n```"
                 )
-                
+
                 faults = self.fault_localization_based_on_ci_log(
                     file_path=file_path,
                     full_file_path=full_file_path,
@@ -141,45 +303,52 @@ class FaultLocalization:
                     chunk_idx=idx,
                     num_chunks=num_chunks,
                     faults=all_faults,
-                    outline=outline
+                    outline=outline,
                 )
-                
+
                 if faults:
                     all_faults.extend(faults)
-                    
-            fault_localization.append({
-                "file_path": file_path,
-                "full_file_path": full_file_path,
-                "faults": all_faults
-            })
-            
+
+            fault_localization.append(
+                {
+                    "file_path": file_path,
+                    "full_file_path": full_file_path,
+                    "faults": all_faults,
+                }
+            )
+
         results = {
             "sha_fail": self.failed_commit,
-            "fault_localization_data": fault_localization
+            "fault_localization_data": fault_localization,
         }
-        
+
         return results
 
+    # ------------------------------------------------------------------ #
+    # Core FL for one chunk
+    # ------------------------------------------------------------------ #
+
     def fault_localization_based_on_ci_log(
-    self,
-    *,
-    file_path: str,
-    full_file_path: str,
-    file_summary: str,
-    valid_start: int,
-    valid_end: int,
-    original_content: str,
-    chunk_idx: int,
-    num_chunks: int,
-    faults: list,
-    outline: List[Dict[str, Any]],
-) -> list:
+        self,
+        *,
+        file_path: str,
+        full_file_path: str,
+        file_summary: str,
+        valid_start: int,
+        valid_end: int,
+        original_content: str,
+        chunk_idx: int,
+        num_chunks: int,
+        faults: list,
+        outline: List[Dict[str, Any]],
+    ) -> list:
         """
         Runs the strict FL prompt for a single chunk and returns a list of fault objects.
         Expects the LLM to return [] or [ { ... }, ... ] per your original schema.
         """
 
-        fault_locations = []
+        fault_locations: List[Dict[str, Any]] = []
+
         prompt = f"""
 You are a **Strict Fault Localization Agent**.
 
@@ -242,7 +411,7 @@ R3. Outline-Based Scope Expansion
 R4. Reason–Snippet Consistency
   - Each "reason" must cite concrete CI evidence (messages or rule codes such as F401, E1101, I001, etc.).
   - Reference actual code or confirm omission explicitly. Avoid vague speculation.
-  -  If unable to find code evidence for a claimed fault, do NOT include it.
+  - If unable to find code evidence for a claimed fault, do NOT include it.
 
 R5. Line Range Integrity
   - "line_range" must match **exact first and last lines** of the chosen scope according to the outline.
@@ -299,75 +468,77 @@ CHECKLIST BEFORE RETURNING
             if raw_response.startswith("```"):
                 raw_response = raw_response.strip("` \n")
 
-            # Must be pure JSON
             try:
-        # Try strict JSON parsing
                 parsed_result = json.loads(raw_response)
             except json.JSONDecodeError:
-                # Fallback to demjson3 for messy JSON
                 parsed_result = demjson3.decode(raw_response)
 
             if not isinstance(parsed_result, list) or not parsed_result:
                 print(f"[Chunk {chunk_idx}] No faults found.")
                 return []
 
-            # --------------------------------------------------------
-            # Fetch local snippets using the expanded line ranges
-            # -------------------------------------------------------
             for fault in parsed_result:
                 line_range = fault.get("line_range")
                 fault_level = fault.get("fault_localization_level")
-                
+
                 if not line_range:
                     continue  # Skip if no snippet present
 
                 start, end = line_range
                 if valid_start <= start and end <= valid_end:
                     extended_range = self._expand_line_range_with_outline(
-                                            line_range=line_range,
-                                            outline=outline,
-                                            fault_level=fault_level,
-                                        )
+                        line_range=line_range,
+                        outline=outline,
+                        fault_level=fault_level,
+                    )
                     fault["line_range"] = extended_range
                     print("\n--- After Extended Line range ---", extended_range)
-                    # Normal case: attach found range
-                    snippet = extract_snippet_from_line_range(original_file_content=original_content, line_range=extended_range)
-                    
+
+                    snippet = extract_snippet_from_line_range(
+                        original_file_content=original_content,
+                        line_range=extended_range,
+                    )
                     fault["code_snippet"] = snippet
-                    
+
                     fault_locations.append(fault)
                     print("\n--- Fault Detected ---")
                     print("Code Snippet:\n", snippet)
                     print("Line Range:", extended_range)
                     print("---------------------\n")
-            else:
-                # Skip fault outside this chunk
-                print(f"[Chunk {chunk_idx+1}] Skipping fault outside chunk range {valid_start}-{valid_end}: {line_range}")
-
+                else:
+                    # Fault outside this chunk
+                    print(
+                        f"[Chunk {chunk_idx+1}] Skipping fault outside chunk range "
+                        f"{valid_start}-{valid_end}: {line_range}"
+                    )
 
         except json.JSONDecodeError as e:
-            # Save parsing error for analysis
             self._save_fault_localization_error(
-                self.failed_commit, e,
+                self.failed_commit,
+                e,
                 tool_name="fault_localization_based_on_ci_log",
-                prompt_name="json_parsing"
+                prompt_name="json_parsing",
             )
             print(f"[Chunk {chunk_idx}] JSON parse error: {e}")
             print(f"[Chunk {chunk_idx}] Raw response:\n{raw_response}")
             return []
 
         except Exception as e:
-            # Save unexpected errors
             self._save_fault_localization_error(
-                self.failed_commit, e,
+                self.failed_commit,
+                e,
                 tool_name="fault_localization_based_on_ci_log",
-                prompt_name="chunk_processing"
+                prompt_name="chunk_processing",
             )
             print(f"[Chunk {chunk_idx}] Error processing chunk: {e}")
             return []
 
         return fault_locations
-                
+
+    # ------------------------------------------------------------------ #
+    # Path & file helpers
+    # ------------------------------------------------------------------ #
+
     def find_full_file_path(self, file_path: str) -> dict:
         """
         Find the best matching full path for a given relative file_path inside repo_path.
@@ -378,25 +549,29 @@ CHECKLIST BEFORE RETURNING
         file_name = os.path.basename(normalized)
 
         try:
-            # Direct full path exists
             if os.path.exists(abs_path):
                 return {"status": "found", "full_path": abs_path}
 
             candidates = []
-            # Walk the repo and collect all candidates
             for root, _, files in os.walk(self.repo_path):
                 if file_name in files:
                     candidate = os.path.join(root, file_name)
                     rel_candidate = os.path.relpath(candidate, self.repo_path)
-                    # Compute similarity: longest common suffix with the requested path
-                    score = len(os.path.commonprefix([rel_candidate[::-1], normalized[::-1]]))
+                    score = len(
+                        os.path.commonprefix(
+                            [rel_candidate[::-1], normalized[::-1]]
+                        )
+                    )
                     candidates.append((score, candidate))
 
             if candidates:
-                # Pick the highest scoring match
                 candidates.sort(key=lambda x: x[0], reverse=True)
                 best_match = candidates[0][1]
-                return {"status": "found", "full_path": best_match, "all_candidates": [c[1] for c in candidates]}
+                return {
+                    "status": "found",
+                    "full_path": best_match,
+                    "all_candidates": [c[1] for c in candidates],
+                }
 
         except Exception as e:
             return {"status": "error", "error": str(e)}
@@ -405,11 +580,10 @@ CHECKLIST BEFORE RETURNING
 
     def _read_file_content(self, resolved_path: str) -> str:
         """Return file content as a string, or '' if file is missing/unreadable."""
-        
         if not os.path.exists(resolved_path):
             print(f"[WARN] File not found: {resolved_path}")
             return ""
-        
+
         try:
             with open(resolved_path, "r", encoding="utf-8") as f:
                 return f.read()
@@ -417,16 +591,22 @@ CHECKLIST BEFORE RETURNING
             print(f"[WARN] Could not read {resolved_path}: {e}")
             return ""
 
+    # ------------------------------------------------------------------ #
+    # LLM helpers
+    # ------------------------------------------------------------------ #
+
     def _call_llm_directly(self, prompt: str) -> dict:
         chunks = chunk_log_by_tokens(prompt, max_tokens=90000, model=self.model_name)
 
         for chunk in chunks:
             try:
                 raw_response = self.llm.invoke([HumanMessage(content=chunk)]).content.strip()
-
-                # Remove markdown fences if present
-                raw_response = re.sub(r"^```(?:json)?\s*|```$", "", raw_response.strip(), flags=re.DOTALL)
-
+                raw_response = re.sub(
+                    r"^```(?:json)?\s*|```$",
+                    "",
+                    raw_response.strip(),
+                    flags=re.DOTALL,
+                )
                 return self.safe_parse_json(raw_response)
             except Exception as e:
                 print(f"[ERROR] LLM call failed while parsing: {e}")
@@ -444,8 +624,14 @@ CHECKLIST BEFORE RETURNING
                 print("[!] Fallback parsing failed.")
                 raise ValueError(f"JSON parsing failed: {e}\n\nRaw:\n{text}")
 
+    # ------------------------------------------------------------------ #
+    # Misc helpers
+    # ------------------------------------------------------------------ #
+
     def _numbered_file_content(self, content: str, offset: int = 0) -> str:
-        return "\n".join(f"{idx+1:04d}: {line}" for idx, line in enumerate(content.splitlines()))
+        return "\n".join(
+            f"{idx+1:04d}: {line}" for idx, line in enumerate(content.splitlines())
+        )
 
     def detect_file_type(self, file_path: str) -> str:
         """Detect programming/config language based on file extension."""
@@ -462,63 +648,60 @@ CHECKLIST BEFORE RETURNING
             ".rst": "restructuredtext",
             ".md": "markdown",
         }
-        
-        # Handle Dockerfile without extension
+
         if ext == "" and Path(file_path).name.lower() == "dockerfile":
             return "dockerfile"
-        return mapping.get(ext, "text")  # default to plain text if unknown
+        return mapping.get(ext, "text")
 
-    # Helper method for all other file types
-    def _chunk_file(self, file_content):
+    def _chunk_file(self, file_content: str) -> List[Dict[str, Any]]:
         chunk_size = 500
         overlap = 50
         lines = file_content.splitlines()
         total_lines = len(lines)
-        chunks = []
-        
-        num_chunks = math.ceil(total_lines / (chunk_size - overlap)) if chunk_size > overlap else 1
+        chunks: List[Dict[str, Any]] = []
+
+        num_chunks = (
+            math.ceil(total_lines / (chunk_size - overlap))
+            if chunk_size > overlap
+            else 1
+        )
 
         for chunk_idx in range(num_chunks):
             start_idx = max(0, chunk_idx * chunk_size - overlap)
             end_idx = min(start_idx + chunk_size + overlap, total_lines)
-            
+
             valid_start = start_idx + overlap if chunk_idx != 0 else start_idx
             valid_end = end_idx - overlap if chunk_idx != num_chunks - 1 else end_idx
 
             chunk_lines = lines[start_idx:end_idx]
-            
-            chunks.append({
-                "content": "\n".join(chunk_lines),
-                "line_range": (start_idx + 1, end_idx),
-                "valid_start": valid_start + 1,
-                "valid_end": valid_end
-            })
+
+            chunks.append(
+                {
+                    "content": "\n".join(chunk_lines),
+                    "line_range": (start_idx + 1, end_idx),
+                    "valid_start": valid_start + 1,
+                    "valid_end": valid_end,
+                }
+            )
 
         return chunks
-    
+
     def _save_fault_localization_error(
-    self,
-    sha: str,
-    error: Exception,
-    tool_name: str = "",
-    prompt_name: str = "",
-    extra_context: dict | None = None
+        self,
+        sha: str,
+        error: Exception,
+        tool_name: str = "",
+        prompt_name: str = "",
+        extra_context: Optional[dict] = None,
     ):
         """
         Save detailed fault localization error info to JSON file.
-
-        Args:
-            sha (str): Commit SHA where the error occurred.
-            error (Exception): The raised exception.
-            tool_name (str): The internal tool/method where failure occurred.
-            prompt_name (str): The specific prompt/stage (e.g., 'json_parsing', 'line_range').
-            extra_context (dict): Optional contextual info (chunk_idx, file_path, etc.)
         """
-
-        base_dir = os.path.join(self.config["exception_dir"], "interrupted_fault_localization")
+        base_dir = os.path.join(
+            self.config["exception_dir"], "interrupted_fault_localization"
+        )
         os.makedirs(base_dir, exist_ok=True)
 
-        # timestamped filename to avoid overwriting
         fname = f"{self.failed_commit}.json"
         filepath = os.path.join(base_dir, fname)
 
@@ -531,7 +714,6 @@ CHECKLIST BEFORE RETURNING
             "Agent": "FaultLocalization",
         }
 
-        # attach any extra context (e.g., chunk_idx, file_path)
         if extra_context:
             error_info["context"] = extra_context
 
@@ -539,20 +721,15 @@ CHECKLIST BEFORE RETURNING
             json.dump(error_info, f, indent=4)
 
         return error_info
-    
+
     def _expand_line_range_with_outline(
         self,
-        line_range: list[int],
-        outline: list[dict],
-        fault_level: str | None = None,
-    ) -> list[int]:
+        line_range: List[int],
+        outline: List[dict],
+        fault_level: Optional[str] = None,
+    ) -> List[int]:
         """
         Expand the given [start, end] line_range using the file outline.
-
-        - If the range falls inside a function/method → return the full function range.
-        - If inside a class → return the full class range.
-        - If inside a const/import-like element → return that full range.
-        - If nothing matches, return the original line_range.
         """
 
         if not outline or not line_range:
@@ -560,8 +737,7 @@ CHECKLIST BEFORE RETURNING
 
         start, end = line_range
 
-        # Flatten outline: handle children recursively
-        flat: list[dict] = []
+        flat: List[dict] = []
 
         def visit(node: dict):
             flat.append(node)
@@ -571,9 +747,9 @@ CHECKLIST BEFORE RETURNING
         for node in outline:
             visit(node)
 
-        # All elements that contain the start line
         candidates = [
-            n for n in flat
+            n
+            for n in flat
             if isinstance(n.get("start"), int)
             and isinstance(n.get("end"), int)
             and n["start"] <= start <= n["end"]
@@ -582,11 +758,10 @@ CHECKLIST BEFORE RETURNING
         if not candidates:
             return line_range
 
-        # Map localization level to preferred kinds (if LLM gave a level)
         preferred_kinds_by_level = {
             "method": {"func", "method"},
             "class": {"class"},
-            "import_block": {"import_block", "const"},  # treat const as import-like
+            "import_block": {"import_block", "const"},
         }
         preferred_kinds = preferred_kinds_by_level.get(fault_level or "", set())
 
@@ -601,7 +776,6 @@ CHECKLIST BEFORE RETURNING
                 key=lambda n: (n["end"] - n["start"], n["start"]),
             )
         else:
-            # fallback: smallest enclosing element of any kind
             chosen = min(
                 candidates,
                 key=lambda n: (n["end"] - n["start"], n["start"]),

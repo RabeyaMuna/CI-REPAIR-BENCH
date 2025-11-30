@@ -15,7 +15,7 @@ from utilities.chunking_logic import chunk_log_by_tokens
 
 load_dotenv()
 
-MAX_TOKENS_SUMMARY = 90_000
+MAX_TOKENS_SUMMARY = 60_000
 
 class CILogAnalyzerLLM:
     def __init__(
@@ -47,7 +47,7 @@ class CILogAnalyzerLLM:
         """
         print("Running Tool: LL M-based CI Log Analysis")
         results: List[Dict[str, Any]] = []
-        THRESHOLD = 80_000
+        THRESHOLD = 70_000
         chunk_tracker = []
         for step in self.ci_log:
             step_name = step.get("step_name", "unknown_step")
@@ -111,17 +111,17 @@ Return ONLY valid JSON with this exact structure:
   "relevant_files": [
     {{
       "file": "normalized/path/to/file1.py",
-      "reason": "Exact CI log evidence why this file is mentioned in the CI Log and if there is any relevance of CI failure if so why",
+      "reason": "Exact CI log evidence why this file is mentioned in the CI Log and if there is any relevance of CI failure if so why"
     }},
     {{
       "file": "normalized/path/to/file2.py",
-      "reason":  "Exact CI log evidence why this file is mentioned in the CI Log and if there is any relevance of CI failure if so why",
+      "reason": "Exact CI log evidence why this file is mentioned in the CI Log and if there is any relevance of CI failure if so why"
     }}
-   ],
-    "relevant_failures": [
-        "Complete error block 1 from CI log with all context lines",
-        "Complete error block 2 from CI log with all context lines"
-    ]
+  ],
+  "relevant_failures": [
+    "Complete error block 1 from CI log with all context lines",
+    "Complete error block 2 from CI log with all context lines"
+  ]
 }}
 
 ## CRITICAL RULES:
@@ -213,7 +213,7 @@ of the CI failure for this step using the following STRICT JSON schema
     "file": "path/to/file.py",
     "line_number": 123,
     "reason": "Short explanation of why this file is tied to the failure."
-    }}
+    }},
 ],
 "error_types": [
     {{
@@ -351,7 +351,7 @@ Return a SINGLE aggregated summary for the entire failed run using this exact st
       "file": "path/to/file.py",
       "line_number": 123,
       "reason": "Short evidence-based explanation of why this file is tied to the failure."
-    }}
+    }},
   ],
   "error_types": [
     {{
