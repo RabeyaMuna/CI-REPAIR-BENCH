@@ -25,6 +25,7 @@ def _safe_read_jsonl(path):
     """Read JSONL if present; otherwise return empty list."""
     if not os.path.exists(path):
         return []
+    
     return read_jsonl(path)
 
 

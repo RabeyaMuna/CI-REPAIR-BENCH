@@ -61,9 +61,9 @@ LLM_REGISTRY: Dict[str, LLMInfo] = {
     ),
 
     # DeepSeek via OpenAI-compatible API
-    "deepseek-chat": LLMInfo(
+    "DeepSeek-V3.2": LLMInfo(
         provider="deepseek",
-        model_name="deepseek-chat",
+        model_name="DeepSeek-V3.2", # Fixed missing comma
         temperature=0.0,
         base_url="https://api.deepseek.com/v1",
         api_key=DEEPSEEK_API_KEY,     # comes from DEEPSEEK_API_KEY in .env

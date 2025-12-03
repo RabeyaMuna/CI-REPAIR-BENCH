@@ -1,0 +1,35 @@
+{
+    "sha_fail": "102f918deb2532bb7b825f00258f2c1414cf94da",
+    "changed_files": [
+        {
+            "commit": "102f918deb2532bb7b825f00258f2c1414cf94da",
+            "file_path": "mindsdb/integrations/handlers/autogluon_handler/requirements.txt",
+            "diff": "diff --git a/mindsdb/integrations/handlers/autogluon_handler/requirements.txt b/mindsdb/integrations/handlers/autogluon_handler/requirements.txt\nindex f1fe79a94..6006eaf02 100644\n--- a/mindsdb/integrations/handlers/autogluon_handler/requirements.txt\n+++ b/mindsdb/integrations/handlers/autogluon_handler/requirements.txt\n@@ -1,2 +1 @@\n autogluon\n-type_infer==0.0.17\n"
+        },
+        {
+            "commit": "102f918deb2532bb7b825f00258f2c1414cf94da",
+            "file_path": "mindsdb/integrations/handlers/autosklearn_handler/requirements.txt",
+            "diff": "diff --git a/mindsdb/integrations/handlers/autosklearn_handler/requirements.txt b/mindsdb/integrations/handlers/autosklearn_handler/requirements.txt\nindex 2430a8769..d6aeb9b47 100644\n--- a/mindsdb/integrations/handlers/autosklearn_handler/requirements.txt\n+++ b/mindsdb/integrations/handlers/autosklearn_handler/requirements.txt\n@@ -1,2 +1 @@\n auto-sklearn\n-type_infer==0.0.17\n"
+        },
+        {
+            "commit": "102f918deb2532bb7b825f00258f2c1414cf94da",
+            "file_path": "mindsdb/integrations/handlers/flaml_handler/requirements.txt",
+            "diff": "diff --git a/mindsdb/integrations/handlers/flaml_handler/requirements.txt b/mindsdb/integrations/handlers/flaml_handler/requirements.txt\nindex 5c48060ae..6a53b19f3 100644\n--- a/mindsdb/integrations/handlers/flaml_handler/requirements.txt\n+++ b/mindsdb/integrations/handlers/flaml_handler/requirements.txt\n@@ -1,2 +1 @@\n flaml<=1.2.3\n-type_infer==0.0.17\n"
+        },
+        {
+            "commit": "102f918deb2532bb7b825f00258f2c1414cf94da",
+            "file_path": "mindsdb/integrations/handlers/lightwood_handler/requirements.txt",
+            "diff": "diff --git a/mindsdb/integrations/handlers/lightwood_handler/requirements.txt b/mindsdb/integrations/handlers/lightwood_handler/requirements.txt\nindex 34f7595a6..05fe9c16a 100644\n--- a/mindsdb/integrations/handlers/lightwood_handler/requirements.txt\n+++ b/mindsdb/integrations/handlers/lightwood_handler/requirements.txt\n@@ -4,4 +4,3 @@ lightwood[extra_ts]==23.11.1.0\n lightwood[extra]==23.11.1.0\n lightwood[image]==23.11.1.0\n lightwood[xai]==23.11.1.0\n-type_infer==0.0.17\n"
+        },
+        {
+            "commit": "102f918deb2532bb7b825f00258f2c1414cf94da",
+            "file_path": "mindsdb/integrations/handlers/tpot_handler/requirements.txt",
+            "diff": "diff --git a/mindsdb/integrations/handlers/tpot_handler/requirements.txt b/mindsdb/integrations/handlers/tpot_handler/requirements.txt\nindex 46c5dab0d..595c7d47a 100644\n--- a/mindsdb/integrations/handlers/tpot_handler/requirements.txt\n+++ b/mindsdb/integrations/handlers/tpot_handler/requirements.txt\n@@ -1,2 +1 @@\n tpot<=0.11.7\n-type_infer==0.0.17\n"
+        },
+        {
+            "commit": "102f918deb2532bb7b825f00258f2c1414cf94da",
+            "file_path": "requirements/requirements.txt",
+            "diff": "diff --git a/requirements/requirements.txt b/requirements/requirements.txt\nindex db309711c..268a4b0bb 100644\n--- a/requirements/requirements.txt\n+++ b/requirements/requirements.txt\n@@ -24,6 +24,7 @@ duckdb == 0.9.1\n requests >= 2.30.0\n pydateinfer==0.3.0\n dataprep_ml==0.0.21\n+type_infer==0.0.17\n dill == 0.3.6\n numpy\n pytz\n"
+        }
+    ]
+}

@@ -241,7 +241,7 @@ config = OmegaConf.load(CONFIG_PATH)
 base_dir = config.get("base_dir")
 
 results_dir       = os.path.join(base_dir, "results")
-jobs_pushed_file  = os.path.join(results_dir, "jobs_ids_diff-5-llm.jsonl")      # SOURCE OF TRUTH (input)
+jobs_pushed_file  = os.path.join(results_dir, "jobs_ids_diff.jsonl")      # SOURCE OF TRUTH (input)
 
 # dedicated outputs
 awaiting_file     = os.path.join(results_dir, "jobs_awaiting_diff.jsonl")

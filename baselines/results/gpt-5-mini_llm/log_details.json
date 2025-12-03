@@ -2,36 +2,112 @@
     {
         "sha_fail": "066ba5bb325850910e8f4cb76a91e3293c3b7619",
         "error_context": [
-            "All pytest matrix runs failed during the 'Test with pytest' step. The ubuntu-latest runs for python 3.14.0-beta.3 and 3.13 failed with a parsing/unexpected-token error: \"Expected a ']' but saw '}'\". The python 3.10 run failed with a string-literal parsing error: \"Line terminator characters must be escaped inside string literals', 'U+000A'\". These messages indicate syntax/parsing errors encountered by pytest (or the Python parser used by pytest) while loading tests or source files, causing pytest to abort before completing the test suite. The failures are all from the same workflow run of the 'pytest' job and occurred when executing the 'Test with pytest' run block that invokes pytest."
+            "The CI run failed mainly because the test matrix produced test-level failures and then a Codecov upload step exited non\u2011zero. In the pytest job (step: \"Test with pytest\") multiple deterministic test failures occurred (notably in tests/_files/test_sticker.py, tests/_files/test_audio.py, tests/_files/test_video.py and related tests) producing AssertionError/AttributeError/KeyError traces (examples: \"assert 510 == 0\", \"assert 1395 == 1427\", \"AttributeError: 'NoneType' object has no attribute 'to_dict'\", \"KeyError: 'thumbnail'\"). Many other tests interacting with the network were marked XFAIL by the flaky plugin because they hit Telegram API rate\u2011limits (flood control) or network timeouts; repeated log lines show \"Not waiting for flood control: Flood control exceeded. Retry in <N> seconds\" and \"Ignoring TimedOut error: Timed out\" pointing to tests/auxil/networking.py and the request layer (src/telegram/request/_baserequest.py) as the call path. Those network/XFail conditions increased instability but the concrete failing assertions are rooted in test expectations about returned objects (thumbnail presence, dimensions, file_size) that did not match actual API/test fixtures. Finally, after tests completed, the Codecov upload step (step: \"Submit coverage\" / codecov/codecov-action) failed because no upload token was provided: the Codecov CLI reported \"Upload failed: {\"message\":\"Token required - not valid tokenless upload\"}\", which caused the job to exit with code 1. Evidence: pytest produced failing tests and an aggregated summary (e.g., \"6 failed ...\" in Python 3.10 run) and the codecov action printed the token-required error and then \"Process completed with exit code 1.\""
         ],
-        "relevant_files": [],
-        "error_types": [
+        "relevant_files": [
             {
-                "category": "Syntax Error",
-                "subcategory": "Unexpected token / mismatched bracket",
-                "evidence": "Two runs reported: \"Expected a ']' but saw '}'\" (pytest (3.14.0-beta.3) and pytest (3.13)). This indicates a mismatched bracket or similar token parsing error."
+                "file": "tests/_files/test_sticker.py",
+                "line_number": 322,
+                "reason": "Multiple deterministic test failures originate here (assertion mismatches and AttributeError/KeyError around sticker.thumbnail and width). Log evidence: failing assertions at tests/_files/test_sticker.py:322 and earlier de_json/to_dict assertions (e.g. 'AttributeError: 'NoneType' object has no attribute 'to_dict'', 'KeyError: \"thumbnail\"')."
             },
             {
-                "category": "Syntax Error",
-                "subcategory": "Unescaped line terminator in string literal",
-                "evidence": "One run reported: \"Line terminator characters must be escaped inside string literals', 'U+000A'\" (pytest (3.10)), indicating an unescaped newline inside a string literal caused parsing to fail."
+                "file": "tests/_files/test_audio.py",
+                "line_number": 266,
+                "reason": "Contains an assertion failure comparing PhotoSize/file_size expectations (log shows 'assert 1395 == 1427' with traceback referencing tests/_files/test_audio.py:266)."
+            },
+            {
+                "file": "tests/_files/test_video.py",
+                "line_number": 307,
+                "reason": "Contains an assertion failure comparing video thumbnail file sizes (log shows 'assert 1769 == 1767' with traceback referencing tests/_files/test_video.py:307)."
+            },
+            {
+                "file": "tests/_files/test_chatphoto.py",
+                "line_number": 182,
+                "reason": "Referenced in flaky/XFail traces for photo-related tests; log shows test failures pointing to tests/_files/test_chatphoto.py:182 in the stack for test_send_all_args and similar traces."
+            },
+            {
+                "file": "tests/_files/test_contact.py",
+                "line_number": 199,
+                "reason": "Appears repeatedly in flaky/XFail tracebacks for contact-sending tests that hit flood control (evidence: TracebackEntry entries referencing tests/_files/test_contact.py:199 and related lines)."
+            },
+            {
+                "file": "tests/_files/test_location.py",
+                "line_number": 230,
+                "reason": "Referenced by multiple failing/XFailed live-location and location tests (log shows traces pointing to tests/_files/test_location.py:230 and :267)."
+            },
+            {
+                "file": "tests/_files/test_inputmedia.py",
+                "line_number": 1244,
+                "reason": "Referenced in failing paid-media / inputmedia-related tests (log shows TracebackEntry to tests/_files/test_inputmedia.py:1244 for test_send_paid_media)."
+            },
+            {
+                "file": "tests/test_bot.py",
+                "line_number": 3533,
+                "reason": "Contains bot-level tests that produced failures or BadRequest results (e.g. test_set_game_score_and_high_scores raised telegram.error.BadRequest 'Bot_score_not_modified' with traceback into tests/test_bot.py:3533)."
+            },
+            {
+                "file": "src/telegram/ext/_extbot.py",
+                "line_number": 2649,
+                "reason": "Library extension bot layer is repeatedly on the failing call stacks for many networked tests (trace entries like src/telegram/ext/_extbot.py:2649, :3284, :3107 appear across flaky/failure logs)."
+            },
+            {
+                "file": "src/telegram/_bot.py",
+                "line_number": 3575,
+                "reason": "Core bot implementation frames appear in many failure traces (examples: src/telegram/_bot.py:3575, :6426, :1118) where API calls and responses propagate into tests that timed out or hit flood control."
+            },
+            {
+                "file": "src/telegram/request/_baserequest.py",
+                "line_number": 198,
+                "reason": "Request layer appears in nearly every network-related traceback (evidence: TracebackEntry '/.../src/telegram/request/_baserequest.py:198'), tying flood-control/timeouts to the HTTP/request layer used by the tests."
+            },
+            {
+                "file": "tests/auxil/networking.py",
+                "line_number": 58,
+                "reason": "Test networking helper is present in many tracebacks for timeouts/flood-control; logs show traces to tests/auxil/networking.py:58/60/109 as the network stub used by failing tests."
+            }
+        ],
+        "error_types": [
+            {
+                "category": "Test Failure",
+                "subcategory": "AssertionError",
+                "evidence": "Concrete assertion failures in tests: examples in logs include \"assert 510 == 0\" (tests/_files/test_sticker.py) and \"assert 1395 == 1427\" (tests/_files/test_audio.py)."
+            },
+            {
+                "category": "Test Failure",
+                "subcategory": "AttributeError / KeyError (missing thumbnail)",
+                "evidence": "Errors showing missing thumbnail handling: \"AttributeError: 'NoneType' object has no attribute 'to_dict'\" and \"KeyError: 'thumbnail'\" in tests/_files/test_sticker.py (de_json / to_dict assertions)."
+            },
+            {
+                "category": "Test Failure",
+                "subcategory": "API rate limit / Flood control (XFailed)",
+                "evidence": "Many flaky entries marked XFailed with flood control messages: \"Not waiting for flood control: Flood control exceeded. Retry in 38679 seconds\" (present in multiple TracebackEntry lists)."
+            },
+            {
+                "category": "Test Failure",
+                "subcategory": "Network Timeout (XFailed)",
+                "evidence": "Multiple flaky entries show timeouts: \"Ignoring TimedOut error: Timed out\" (e.g., test_send_sticker_default_protect_content, test_send_mp3_url_file)."
+            },
+            {
+                "category": "Runtime Error",
+                "subcategory": "API Error (BadRequest)",
+                "evidence": "telegram.error.BadRequest occurred in tests: example message 'Bot_score_not_modified' (logged for test_set_game_score_and_high_scores)."
+            },
+            {
+                "category": "Configuration Error",
+                "subcategory": "Missing CI secret / token",
+                "evidence": "Codecov upload failed with: \"Upload failed: {\"message\":\"Token required - not valid tokenless upload\"}\" and the codecov step returned exit code 1."
             }
         ],
         "failed_job": [
             {
                 "job": "pytest",
-                "step": "pytest (3.14.0-beta.3, ubuntu-latest)",
-                "command": "# We test without optional dependencies first. This includes:\n# - without pytz\n# - without jobqueue\n# - without ratelimiter\n# - without webhooks\n# - without arbitrary callback data\n# - without socks support\n# - without http2 support\nTO_TEST=\"test_no_passport.py or test_datetime.py or test_defaults.py or test_jobqueue.py or test_applicationbuilder.py or test_ratelimiter.py or test_updater.py or test_callbackdatacache.py or test_request.py\"\npytest -v --cov -k \"${TO_TEST}\" --junit-xml=.test_report_no_optionals_junit.xml\nopt_dep_status=$?\n\n# Test the rest\nexport TEST_WITH_OPT_DEPS='true'\npip install .[all]\n# `-n auto --dist worksteal` uses pytest-xdist to run tests on multiple CPU\n# workers. Increasing number of workers has little effect on test duration, but it seems\n# to increase flakyness.\npytest -v --cov --cov-append -n auto --dist worksteal --junit-xml=.test_report_optionals_junit.xml\nmain_status=$?\n# exit with non-zero status if any of the two pytest runs failed\nexit $(( ${opt_dep_status} || ${main_status} ))"
+                "step": "Test with pytest",
+                "command": "pytest -v --cov -k \"${TO_TEST}\" --junit-xml=.test_report_no_optionals_junit.xml && pytest -v --cov --cov-append -n auto --dist worksteal --junit-xml=.test_report_optionals_junit.xml"
             },
             {
                 "job": "pytest",
-                "step": "pytest (3.13, ubuntu-latest)",
-                "command": "# We test without optional dependencies first. This includes:\n# - without pytz\n# - without jobqueue\n# - without ratelimiter\n# - without webhooks\n# - without arbitrary callback data\n# - without socks support\n# - without http2 support\nTO_TEST=\"test_no_passport.py or test_datetime.py or test_defaults.py or test_jobqueue.py or test_applicationbuilder.py or test_ratelimiter.py or test_updater.py or test_callbackdatacache.py or test_request.py\"\npytest -v --cov -k \"${TO_TEST}\" --junit-xml=.test_report_no_optionals_junit.xml\nopt_dep_status=$?\n\n# Test the rest\nexport TEST_WITH_OPT_DEPS='true'\npip install .[all]\n# `-n auto --dist worksteal` uses pytest-xdist to run tests on multiple CPU\n# workers. Increasing number of workers has little effect on test duration, but it seems\n# to increase flakyness.\npytest -v --cov --cov-append -n auto --dist worksteal --junit-xml=.test_report_optionals_junit.xml\nmain_status=$?\n# exit with non-zero status if any of the two pytest runs failed\nexit $(( ${opt_dep_status} || ${main_status} ))"
-            },
-            {
-                "job": "pytest",
-                "step": "pytest (3.10, ubuntu-latest)",
-                "command": "# We test without optional dependencies first. This includes:\n# - without pytz\n# - without jobqueue\n# - without ratelimiter\n# - without webhooks\n# - without arbitrary callback data\n# - without socks support\n# - without http2 support\nTO_TEST=\"test_no_passport.py or test_datetime.py or test_defaults.py or test_jobqueue.py or test_applicationbuilder.py or test_ratelimiter.py or test_updater.py or test_callbackdatacache.py or test_request.py\"\npytest -v --cov -k \"${TO_TEST}\" --junit-xml=.test_report_no_optionals_junit.xml\nopt_dep_status=$?\n\n# Test the rest\nexport TEST_WITH_OPT_DEPS='true'\npip install .[all]\n# `-n auto --dist worksteal` uses pytest-xdist to run tests on multiple CPU\n# workers. Increasing number of workers has little effect on test duration, but it seems\n# to increase flakyness.\npytest -v --cov --cov-append -n auto --dist worksteal --junit-xml=.test_report_optionals_junit.xml\nmain_status=$?\n# exit with non-zero status if any of the two pytest runs failed\nexit $(( ${opt_dep_status} || ${main_status} ))"
+                "step": "Submit coverage",
+                "command": "uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00"
             }
         ]
     }

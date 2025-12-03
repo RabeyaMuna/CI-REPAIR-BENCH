@@ -1,36 +1,42 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 ci_backfill_utils.py
 
-Logic:
+Algorithm:
 
-1. Always collect file changes for `sha_fail` commit.
-2. Look at the parent of `sha_fail`:
-   - If push CI runs already exist for the parent:
-       * Use their conclusion (success/failure).
-   - If NO push runs exist:
-       * Use provided workflow path + YAML (from dataset),
-         overwrite that workflow file at the parent commit on a temp branch,
-         enforce `on: push`,
-         push branch to trigger CI,
-         wait for a completed push run for that temp commit,
-         read its conclusion (success/failure).
-   - If the parent is (or behaves as) FAILED:
-       * Collect file changes for the parent commit as well
-         (but do NOT overwrite newer info from `sha_fail`).
-   - If the parent is SUCCESS or not clearly failed:
-       * Stop and just return what we have.
+Given a failed commit `sha_fail` (from your dataset):
 
-Return format:
+1) Always collect changed files + diffs for `sha_fail` (relative to its parent).
+
+2) Walk backwards through parents (up to `max_previous_commits`):
+
+   For each commit `current_sha`:
+     - Find `parent_sha`.
+     - Look up GitHub Actions workflow runs in the REAL repo
+       for this exact workflow file (workflow_rel_path) and this commit.
+
+     - If there is at least one COMPLETED run for that workflow:
+         * If ANY completed run has conclusion == "failure":
+               => treat parent_sha as a FAILED commit.
+                  - Collect its changed files + diffs.
+                  - Continue backwards with current_sha = parent_sha.
+         * Otherwise (no "failure" conclusion among completed runs):
+               => treat as PASSED commit, STOP traversal.
+
+     - If there are NO runs for that workflow, or none are completed:
+         => no reliable info, STOP traversal.
+
+Return structure:
 
 {
-  "sha_fail": <sha_fail>,
+  "sha_fail": <sha_fail>,   # top-level failed commit from dataset
   "changed_files": [
     {
-      "commit": <commit_sha>,
-      "file_path": <path/to/file>,
-      "diff": "<file-level unified diff>"
+      "commit": <commit_sha>,      # sha_fail or one of its failed parents
+      "file_path": "<path/to/file>",
+      "diff": "<unified diff vs parent>",
     },
     ...
   ]
@@ -38,97 +44,220 @@ Return format:
 """
 
 import os
-import time
 import subprocess
 from typing import Any, Dict, List, Optional
+
 from dotenv import load_dotenv
 import requests
-import yaml
 
 load_dotenv()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_API = "https://api.github.com"
 
+# Ignore config-ish / metadata files
+IGNORED_EXTENSIONS = (".yaml", ".yml", ".xml", ".toml", ".lock", ".md", "json", "jsonl", "json5")
 
 
-# ---------------------------------------------------------------------------
+# =====================================================================
+# Helpers
+# =====================================================================
+
+def _normalize_sha(sha: Any) -> str:
+    """
+    Ensure we always work with a string commit SHA.
+
+    Accepts:
+      - plain string
+      - 1-element tuple/list like ('abc123',)
+    """
+    if isinstance(sha, (tuple, list)):
+        if len(sha) == 1:
+            return str(sha[0])
+        raise TypeError(f"Expected single SHA, got multiple: {sha!r}")
+    return str(sha)
+
+
+# =====================================================================
 # Git helpers
-# ---------------------------------------------------------------------------
+# =====================================================================
 
-def get_parent_commit_sha(repo_path: str, sha: str) -> Optional[str]:
-    """
-    Return the parent commit SHA of `sha` (sha^).
-    Returns None if this is the root commit or parent cannot be found.
-    """
+def _run_git(args: List[str], repo_path: str, check: bool = True) -> subprocess.CompletedProcess:
+    """Small wrapper for running git commands."""
+    return subprocess.run(
+        ["git"] + args,
+        cwd=repo_path,
+        capture_output=True,
+        text=True,
+        check=check,
+    )
+
+
+def _try_get_parent_once(repo_path: str, sha: str) -> Optional[str]:
+    """Try to get parent of sha once, without deepening."""
+    sha = _normalize_sha(sha)
     try:
-        proc = subprocess.run(
-            ["git", "rev-parse", f"{sha}^"],
-            cwd=repo_path,
-            capture_output=True,
-            text=True,
+        proc = _run_git(["rev-parse", f"{sha}^"], repo_path, check=True)
+        parent_sha = proc.stdout.strip()
+        return parent_sha or None
+    except subprocess.CalledProcessError as e:
+        msg = (e.stderr or "").strip()
+        print(f"[WARN] Could not find parent of {sha}: {msg}")
+        return None
+
+
+def ensure_parent_commit_available(
+    repo_path: str,
+    sha: str,
+    remote: str = "origin",
+    deepen_step: int = 500,
+    max_deepen_rounds: int = 3,
+) -> Optional[str]:
+    """
+    Ensure the REAL parent commit of `sha` is available locally.
+
+    - First, try rev-parse sha^.
+    - If that fails, repeatedly:
+        git fetch <remote> --deepen=<deepen_step>
+      and retry up to max_deepen_rounds.
+
+    Returns parent_sha if found, else None.
+    """
+    sha = _normalize_sha(sha)
+    parent_sha = _try_get_parent_once(repo_path, sha)
+    if parent_sha:
+        return parent_sha
+
+    for attempt in range(1, max_deepen_rounds + 1):
+        print(
+            f"[INFO] Parent of {sha} not available; deepening history "
+            f"(attempt {attempt}/{max_deepen_rounds})..."
+        )
+        try:
+            _run_git(
+                ["fetch", remote, f"--deepen={deepen_step}"],
+                repo_path,
+                check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            print(
+                f"[WARN] git fetch --deepen failed for {sha}: "
+                f"{(e.stderr or '').strip()}"
+            )
+
+        parent_sha = _try_get_parent_once(repo_path, sha)
+        if parent_sha:
+            print(f"[INFO] Parent of {sha} found after deepening.")
+            return parent_sha
+
+    print(f"[ERROR] Could not ensure parent of {sha} in local repo.")
+    return None
+
+
+def get_commit_changed_files(
+    repo_path: str,
+    sha: str,
+    remote: str = "origin",
+) -> List[str]:
+    """
+    Fetch the REAL parent of `sha`, then return changed files:
+
+        git diff --name-only <parent_sha> <sha>
+
+    Filters out config-style / doc / JSON-family files:
+    - .yaml, .yml, .xml, .toml, .lock, .md
+    - anything with extension starting with '.json' (.json, .jsonl, .json5, ...)
+    """
+    sha = _normalize_sha(sha)
+    parent_sha = ensure_parent_commit_available(repo_path, sha, remote=remote)
+    if not parent_sha:
+        print(
+            f"[ERROR] Cannot get changed files for {sha} because parent is not available."
+        )
+        return []
+
+    try:
+        proc = _run_git(
+            ["diff", "--name-only", parent_sha, sha],
+            repo_path,
             check=True,
         )
-        parent_sha = proc.stdout.strip()
-        if parent_sha:
-            return parent_sha
-        return None
+        all_files = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+
+        filtered_files = []
+        for fp in all_files:
+            lower_fp = fp.lower()
+            _, ext = os.path.splitext(lower_fp)  # e.g. ".py", ".json", ".jsonl"
+
+            # Ignore config/doc files
+            if ext in IGNORED_EXTENSIONS:
+                print(f"[INFO] Skipping ignored config/doc file: {fp}")
+                continue
+
+            # Ignore ANY JSON-like extension: .json, .jsonl, .json5, etc.
+            if ext.startswith(".json"):
+                print(f"[INFO] Skipping JSON-family file: {fp}")
+                continue
+
+            filtered_files.append(fp)
+
+        return filtered_files
+
     except subprocess.CalledProcessError as e:
-        print(f"[WARN] Could not find parent of {sha}: {e}")
-        return None
+        print(f"[ERROR] Failed to get changed files for {sha}: {e.stderr.strip()}")
+        return []
 
 
-def get_commit_changed_files(repo_path: str, sha: str) -> List[str]:
+def get_file_diff_for_commit(
+    repo_path: str,
+    sha: str,
+    file_path: str,
+    remote: str = "origin",
+) -> str:
     """
-    Get the list of changed files for a commit relative to its parent.
+    Get unified diff for `file_path` in commit `sha` vs its REAL parent:
 
-    Uses:
-        git diff --name-only sha^ sha
+        git diff <parent_sha> <sha> -- <file_path>
     """
-    files_proc = subprocess.run(
-        ["git", "diff", "--name-only", f"{sha}^", sha],
-        cwd=repo_path,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return [line.strip() for line in files_proc.stdout.splitlines() if line.strip()]
+    sha = _normalize_sha(sha)
+    parent_sha = ensure_parent_commit_available(repo_path, sha, remote=remote)
+    if not parent_sha:
+        print(
+            f"[ERROR] Cannot get diff for {file_path} in {sha} because parent is not available."
+        )
+        return ""
+
+    try:
+        proc = _run_git(
+            ["diff", parent_sha, sha, "--", file_path],
+            repo_path,
+            check=True,
+        )
+        return proc.stdout
+    except subprocess.CalledProcessError as e:
+        print(
+            f"[ERROR] Failed to get diff for {file_path} in {sha}: {e.stderr.strip()}"
+        )
+        return ""
 
 
-def get_file_diff_for_commit(repo_path: str, sha: str, file_path: str) -> str:
-    """
-    Get the unified diff for a single file in a given commit,
-    relative to its parent.
-
-    Uses:
-        git diff sha^ sha -- <file_path>
-    """
-    diff_proc = subprocess.run(
-        ["git", "diff", f"{sha}^", sha, "--", file_path],
-        cwd=repo_path,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return diff_proc.stdout
-
-
-# ---------------------------------------------------------------------------
-# GitHub Actions helpers
-# ---------------------------------------------------------------------------
+# =====================================================================
+# GitHub Actions helpers (REAL repo CI status – workflow-specific)
+# =====================================================================
 
 def get_runs_for_commit(
     owner: str,
     repo: str,
     sha: str,
-    per_page: int = 30,
-    event: str = "push",
+    per_page: int = 50,
+    workflow_rel_path: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Return all workflow runs for this repository whose head_sha == sha and event == `event`.
+    Return workflow runs in the REAL repo where head_sha == sha.
 
-    Uses:
-        GET /repos/{owner}/{repo}/actions/runs?head_sha=sha&event=push
+    If workflow_rel_path is provided, only keep runs whose `.path` matches
+    that workflow (by full path or by basename).
     """
+    sha = _normalize_sha(sha)
     url = f"{GITHUB_API}/repos/{owner}/{repo}/actions/runs"
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
@@ -137,209 +266,103 @@ def get_runs_for_commit(
     params = {
         "head_sha": sha,
         "per_page": per_page,
-        "event": event,
+        # NOTE: we do NOT filter by 'event'; we want ANY event for that workflow.
     }
 
     resp = requests.get(url, headers=headers, params=params, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    return data.get("workflow_runs", [])
+    if resp.status_code != 200:
+        print(
+            f"[WARN] Failed to fetch runs for {owner}/{repo}@{sha}: "
+            f"HTTP {resp.status_code} {resp.text[:200]}"
+        )
+        return []
+
+    runs = resp.json().get("workflow_runs", [])
+
+    if workflow_rel_path:
+        target_base = os.path.basename(workflow_rel_path)
+        filtered = []
+        for r in runs:
+            r_path = (r.get("path") or "").strip()
+            if not r_path:
+                continue
+            r_base = os.path.basename(r_path)
+            # match by full rel path or just the filename
+            if r_path == workflow_rel_path or r_base == target_base:
+                filtered.append(r)
+
+        print(
+            f"[INFO] Filtered runs for {owner}/{repo}@{sha} "
+            f"by workflow='{workflow_rel_path}' → {len(filtered)} run(s)."
+        )
+        runs = filtered
+
+    return runs
 
 
-def get_commit_ci_status_for_push(
+def get_commit_ci_status_for_push(  # name kept for compatibility
     owner: str,
     repo: str,
     sha: str,
+    workflow_rel_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    Inspect CI status for a commit for push workflows ONLY.
+    CI status for REAL repo owner/repo and commit sha,
+    considering **ALL events** but **ONLY** for the given workflow file.
 
-    Logic:
-    - Fetch all runs with head_sha == sha and event == "push".
-    - If none: has_runs=False, conclusion=None.
-    - Otherwise:
-        - Consider only 'completed' runs.
-        - Take the LATEST completed run by created_at as the canonical one.
-        - conclusion = that run's 'conclusion' ('success', 'failure', etc.).
+    Rule you requested:
 
-    Returns:
-        {
-          "sha": sha,
-          "has_runs": bool,
-          "latest_run": { ... } or None,
-          "conclusion": "success" | "failure" | "cancelled" | None,
-        }
+    - Take all workflow runs whose head_sha == sha and whose .path
+      matches workflow_rel_path (by full path or basename).
+    - Consider only runs with status == 'completed'.
+
+      * If ANY completed run has conclusion == 'failure'  -> commit is FAILED.
+      * Otherwise (no completed 'failure' for that workflow) -> commit is PASSED.
+
+    If there are no runs at all, or no completed runs for that workflow:
+      -> conclusion = None (unknown / no-info).
     """
-    runs = get_runs_for_commit(owner, repo, sha, event="push")
+    sha = _normalize_sha(sha)
+    runs = get_runs_for_commit(
+        owner=owner,
+        repo=repo,
+        sha=sha,
+        per_page=50,
+        workflow_rel_path=workflow_rel_path,
+    )
 
     if not runs:
-        return {
-            "sha": sha,
-            "has_runs": False,
-            "latest_run": None,
-            "conclusion": None,
-        }
+        return {"sha": sha, "has_runs": False, "conclusion": None, "latest_run": None}
 
     completed = [r for r in runs if r.get("status") == "completed"]
     if not completed:
-        # Runs exist but none completed yet
-        return {
-            "sha": sha,
-            "has_runs": True,
-            "latest_run": None,
-            "conclusion": None,
-        }
+        # Runs exist but none are completed yet
+        return {"sha": sha, "has_runs": True, "conclusion": None, "latest_run": None}
 
-    completed.sort(key=lambda r: r["created_at"], reverse=True)
+    # Sort by created_at descending to pick a canonical "latest"
+    completed.sort(key=lambda r: r.get("created_at", ""), reverse=True)
     latest = completed[0]
-    conclusion = latest.get("conclusion")
+
+    # If ANY completed run for this workflow is 'failure' => FAILED commit.
+    has_failure = any(r.get("conclusion") == "failure" for r in completed)
+
+    if has_failure:
+        conclusion = "failure"
+    else:
+        # Your rule: otherwise treat as passed.
+        conclusion = "success"
 
     return {
         "sha": sha,
         "has_runs": True,
-        "latest_run": latest,
         "conclusion": conclusion,
+        "latest_run": latest,
     }
 
 
-def wait_for_push_ci_conclusion(
-    owner: str,
-    repo: str,
-    sha: str,
-    max_wait_seconds: int = 600,
-    poll_interval: int = 15,
-) -> Dict[str, Any]:
-    """
-    Poll until we get a completed push run (success/failure) for this commit,
-    or until timeout.
-
-    Returns the same dict as get_commit_ci_status_for_push().
-    """
-    deadline = time.time() + max_wait_seconds
-
-    while time.time() < deadline:
-        status = get_commit_ci_status_for_push(owner, repo, sha)
-        if status["has_runs"] and status["conclusion"] in ("success", "failure"):
-            print(f"[INFO] Completed push run for {sha} with conclusion={status['conclusion']}.")
-            return status
-
-        if status["has_runs"]:
-            print(f"[INFO] Push runs exist for {sha} but not completed with success/failure yet.")
-        else:
-            print(f"[INFO] Still no push runs for {sha}...")
-
-        time.sleep(poll_interval)
-
-    print(f"[WARN] Timed out waiting for push run for {sha}. Returning last known status.")
-    return get_commit_ci_status_for_push(owner, repo, sha)
-
-
-# ---------------------------------------------------------------------------
-# Workflow rewrite + trigger (for parent commit when no runs exist)
-# ---------------------------------------------------------------------------
-
-def rewrite_workflow_and_push_temp_branch(
-    repo_path: str,
-    base_sha: str,
-    workflow_rel_path: str,
-    workflow_yaml_from_dataset: str,
-    remote: str = "origin",
-    branch_prefix: str = "ci-repair-parent",
-) -> Optional[str]:
-    """
-    Create a temporary branch at `base_sha`, replace the specified workflow file
-    with the given YAML (forcing `on: push`), commit, and push.
-
-    Returns:
-        The new commit SHA (HEAD of the temp branch) if everything succeeds,
-        otherwise None.
-    """
-    temp_branch = f"{branch_prefix}-{base_sha[:7]}"
-
-    try:
-        # Create or reset local branch at base_sha
-        subprocess.run(
-            ["git", "checkout", "-B", temp_branch, base_sha],
-            cwd=repo_path,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Failed to create/reset temp branch {temp_branch}: {e.stderr}")
-        return None
-
-    # Build full workflow path
-    workflow_full_path = os.path.join(repo_path, workflow_rel_path)
-    os.makedirs(os.path.dirname(workflow_full_path), exist_ok=True)
-
-    # Load YAML from dataset and enforce `on: push`
-    try:
-        data = yaml.safe_load(workflow_yaml_from_dataset) or {}
-        # Force event to push
-        # You can choose either this form:
-        #   on:
-        #     push: {}
-        # or simply:
-        #   on: push
-        # Here we use the mapping form:
-        data["on"] = {"push": {}}
-        new_yaml_str = yaml.safe_dump(data, sort_keys=False)
-    except Exception as e:
-        print(f"[WARN] Failed to parse dataset workflow YAML, writing raw content. Error: {e}")
-        # Fallback: just write the raw YAML from dataset
-        new_yaml_str = workflow_yaml_from_dataset
-
-    # Write workflow file
-    with open(workflow_full_path, "w", encoding="utf-8") as f:
-        f.write(new_yaml_str)
-
-    try:
-        # Stage and commit
-        subprocess.run(
-            ["git", "add", workflow_rel_path],
-            cwd=repo_path,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        subprocess.run(
-            ["git", "commit", "-m", f"Temp CI workflow for parent {base_sha}"],
-            cwd=repo_path,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-
-        # Push the temp branch
-        subprocess.run(
-            ["git", "push", remote, f"{temp_branch}:{temp_branch}"],
-            cwd=repo_path,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-
-        # Get the new commit SHA
-        proc = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=repo_path,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        new_sha = proc.stdout.strip()
-        print(f"[INFO] Pushed temp branch '{temp_branch}' with new commit {new_sha}.")
-        return new_sha
-
-    except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Failed to commit/push temp branch {temp_branch}: {e.stderr}")
-        return None
-
-
-# ---------------------------------------------------------------------------
-# High-level function: sha_fail + its parent (one step back)
-# ---------------------------------------------------------------------------
+# =====================================================================
+# High-level function: sha_fail + previous failed commits (backwards)
+# =====================================================================
 
 def collect_changed_files_for_fail_and_parent(
     owner: str,
@@ -347,158 +370,142 @@ def collect_changed_files_for_fail_and_parent(
     repo_path: str,
     sha_fail: str,
     workflow_rel_path: str,
-    workflow_yaml_from_dataset: str,
-    max_wait_seconds: int = 600,
-    poll_interval: int = 4,
+    workflow_yaml_from_dataset: str,  # kept for signature compatibility (unused)
+    max_previous_commits: int = 5,
 ) -> Dict[str, Any]:
     """
-    1) First, collect changed files for the given `sha_fail` commit.
-    2) Then, inspect the parent commit of `sha_fail`:
+    Backward CI-failure chain based on a single workflow file:
 
-       - Check if push CI runs exist for the parent:
-           * If YES, inspect the conclusion:
-               - If conclusion == 'failure':
-                   -> collect changed files for the parent (without overriding
-                      any files already collected from sha_fail).
-               - If conclusion == 'success' or anything else:
-                   -> stop and return current results.
-           * If NO runs exist:
-               - Use the given workflow path + workflow YAML from dataset,
-                 overwrite the workflow file for the parent on a temp branch
-                 (forcing `on: push`), push that branch to trigger CI,
-                 wait for a completed push run, and interpret its conclusion:
-                   - If 'failure': collect changed files for the parent as above.
-                   - Otherwise: stop and return current results.
+    1) Given a failed commit sha_fail (from dataset):
+       - Fetch changed_files + diffs for sha_fail (once).
 
-    Dedup rule:
-    - If the same file_path appears in both `sha_fail` and parent,
-      we keep ONLY the info from `sha_fail` (more recent commit).
+    2) Then go backwards up to `max_previous_commits`:
 
-    Return:
+       For each current_sha:
+         * parent_sha = parent(current_sha)
+         * Get CI status for parent_sha in REAL repo, but ONLY for
+           the workflow at `workflow_rel_path`.
+
+         * If has_runs and conclusion == 'failure':
+               - Treat parent_sha as FAILED, collect its changed_files + diffs.
+               - current_sha = parent_sha and continue.
+
+         * If has_runs and conclusion == 'success':
+               - Treat parent_sha as PASSED, STOP traversal.
+
+         * If no runs or no completed runs:
+               - STOP traversal (no reliable info).
+
+    3) Return:
         {
           "sha_fail": sha_fail,
           "changed_files": [
-            {
-              "commit": <commit_sha>,
-              "file_path": <path/to/file>,
-              "diff": "<file-level unified diff>",
-            },
+            { "commit": <commit_sha>, "file_path": <path>, "diff": "<unified diff>" },
             ...
           ]
         }
-    """
-    # For dedup: file_path -> record (newest first)
-    file_records: Dict[str, Dict[str, Any]] = {}
 
-    # --- Step 1: collect changed files for sha_fail ---
+    All changed files (sha_fail + failed parents) live under one top-level sha_fail.
+    """
+    sha_fail = _normalize_sha(sha_fail)
+
+    file_records: List[Dict[str, Any]] = []
+    seen_pairs = set()  # (commit_sha, file_path)
+
+    # --- Step 1: ALWAYS collect changed files for sha_fail ---
     print(f"[INFO] Collecting changed files for sha_fail={sha_fail}...")
     fail_changed_files = get_commit_changed_files(repo_path, sha_fail)
-    for fp in fail_changed_files:
-        diff_text = get_file_diff_for_commit(repo_path, sha_fail, fp)
-        file_records[fp] = {
-            "commit": sha_fail,
-            "file_path": fp,
-            "diff": diff_text,
-        }
 
-    # --- Step 2: look at the parent commit of sha_fail ---
-    parent_sha = get_parent_commit_sha(repo_path, sha_fail)
-    if not parent_sha:
-        print(f"[INFO] Commit {sha_fail} has no parent. Returning only sha_fail data.")
-        return {
-            "sha_fail": sha_fail,
-            "changed_files": list(file_records.values()),
-        }
-
-    print(f"[INFO] Checking parent commit {parent_sha}...")
-
-    status = get_commit_ci_status_for_push(owner, repo, parent_sha)
-
-    if status["has_runs"]:
-        # There are already push CI runs for the parent
-        conclusion = status["conclusion"]
-        print(f"[INFO] Parent {parent_sha} has push runs with conclusion={conclusion}.")
-
-        if conclusion == "failure":
-            # Collect parent changed files (without overriding sha_fail data)
-            print(f"[INFO] Parent {parent_sha} is FAILED. Collecting its changes...")
-            parent_changed_files = get_commit_changed_files(repo_path, parent_sha)
-            for fp in parent_changed_files:
-                if fp in file_records:
-                    # sha_fail already changed this file -> keep sha_fail info
-                    print(f"[INFO] Skipping '{fp}' from parent {parent_sha} "
-                          f"because sha_fail already has it.")
-                    continue
-                diff_text = get_file_diff_for_commit(repo_path, parent_sha, fp)
-                file_records[fp] = {
-                    "commit": parent_sha,
+    if not fail_changed_files:
+        print(
+            f"[WARN] No changed files found for sha_fail={sha_fail}. "
+            "This is unexpected for a failed commit."
+        )
+    else:
+        print(f"[INFO] Found {len(fail_changed_files)} changed files for sha_fail.")
+        for fp in fail_changed_files:
+            diff_text = get_file_diff_for_commit(repo_path, sha_fail, fp)
+            key = (sha_fail, fp)
+            if key in seen_pairs:
+                continue
+            seen_pairs.add(key)
+            file_records.append(
+                {
+                    "commit": sha_fail,
                     "file_path": fp,
                     "diff": diff_text,
                 }
+            )
 
-        else:
-            # success or cancelled/skipped/None -> stop and return
-            print(f"[INFO] Parent {parent_sha} is not a failed commit "
-                  f"(conclusion={conclusion}). Stopping here.")
+    # --- Step 2: walk backwards through previous commits (only if FAILED) ---
+    current_sha = sha_fail
+    steps_back = 0
 
-        # Either way (failure or not), we are done (only one step back)
-        return {
-            "sha_fail": sha_fail,
-            "changed_files": list(file_records.values()),
-        }
+    while steps_back < max_previous_commits:
+        parent_sha = ensure_parent_commit_available(repo_path, current_sha)
+        if not parent_sha:
+            print(
+                f"[INFO] Commit {current_sha} has no parent (or parent unavailable). "
+                "Stopping parent traversal."
+            )
+            break
 
-    # No push runs exist for parent_sha: we need to rewrite workflow and trigger
-    print(f"[INFO] No push runs exist for parent {parent_sha}. "
-          f"Rewriting workflow '{workflow_rel_path}' from dataset and triggering CI...")
+        steps_back += 1
+        print(f"[INFO] Checking parent #{steps_back}: {parent_sha} of {current_sha}...")
 
-    new_ci_sha = rewrite_workflow_and_push_temp_branch(
-        repo_path=repo_path,
-        base_sha=parent_sha,
-        workflow_rel_path=workflow_rel_path,
-        workflow_yaml_from_dataset=workflow_yaml_from_dataset,
-    )
+        status = get_commit_ci_status_for_push(
+            owner=owner,
+            repo=repo,
+            sha=parent_sha,
+            workflow_rel_path=workflow_rel_path,
+        )
+        conclusion = status["conclusion"]
+        has_runs = status["has_runs"]
 
-    if not new_ci_sha:
-        print(f"[WARN] Failed to create/push temp CI branch for parent {parent_sha}. "
-              f"Returning only sha_fail data.")
-        return {
-            "sha_fail": sha_fail,
-            "changed_files": list(file_records.values()),
-        }
+        if not has_runs or conclusion is None:
+            print(
+                f"[INFO] Parent {parent_sha} has no usable runs "
+                "for this workflow (no runs or none completed). Stopping traversal."
+            )
+            break
 
-    # Wait for CI result on the new temp commit
-    ci_status = wait_for_push_ci_conclusion(
-        owner=owner,
-        repo=repo,
-        sha=new_ci_sha,
-        max_wait_seconds=max_wait_seconds,
-        poll_interval=poll_interval,
-    )
-    conclusion = ci_status["conclusion"]
-    print(f"[INFO] Temp CI commit {new_ci_sha} for parent {parent_sha} "
-          f"completed with conclusion={conclusion}.")
+        print(
+            f"[INFO] REAL repo parent {parent_sha} has CI conclusion={conclusion} "
+            f"for workflow='{workflow_rel_path}'."
+        )
 
-    if conclusion == "failure":
-        # Parent behaves as failed under this workflow. Collect its changed files.
-        print(f"[INFO] Treating parent {parent_sha} as FAILED under dataset workflow. "
-              f"Collecting its changes...")
-        parent_changed_files = get_commit_changed_files(repo_path, parent_sha)
-        for fp in parent_changed_files:
-            if fp in file_records:
-                print(f"[INFO] Skipping '{fp}' from parent {parent_sha} "
-                      f"because sha_fail already has it.")
-                continue
-            diff_text = get_file_diff_for_commit(repo_path, parent_sha, fp)
-            file_records[fp] = {
-                "commit": parent_sha,
-                "file_path": fp,
-                "diff": diff_text,
-            }
-    else:
-        print(f"[INFO] Under dataset workflow, parent {parent_sha} is not failed "
-              f"(conclusion={conclusion}). Not adding its changes.")
+        if conclusion == "failure":
+            # Failed parent: collect its changed files and continue further back
+            print(
+                f"[INFO] Parent {parent_sha} is FAILED. "
+                "Collecting its changed files..."
+            )
+            parent_changed_files = get_commit_changed_files(repo_path, parent_sha)
+            for fp in parent_changed_files:
+                key = (parent_sha, fp)
+                if key in seen_pairs:
+                    continue
+                diff_text = get_file_diff_for_commit(repo_path, parent_sha, fp)
+                seen_pairs.add(key)
+                file_records.append(
+                    {
+                        "commit": parent_sha,
+                        "file_path": fp,
+                        "diff": diff_text,
+                    }
+                )
+
+            current_sha = parent_sha
+            continue
+
+        # Any non-failure conclusion => treat as passed and stop
+        print(
+            f"[INFO] Parent {parent_sha} is not failed "
+            f"(conclusion={conclusion}). Stopping traversal."
+        )
+        break
 
     return {
         "sha_fail": sha_fail,
-        "changed_files": list(file_records.values()),
+        "changed_files": file_records,
     }

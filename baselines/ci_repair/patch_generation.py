@@ -187,12 +187,12 @@ class PatchGeneration:
                 logger.error(f"Failed to parse LLM response: {e}")
                 logger.debug(f"Raw LLM Output:\n{response}")
         return None
-    
+
     def _extract_outline_block_for_fault(
-    self,
-    outline: List[Dict[str, Any]],
-    file_content: str,
-    line_range: List[int]
+        self,
+        outline: List[Dict[str, Any]],
+        file_content: str,
+        line_range: List[int]
     ) -> Dict[str, Any]:
         """
         Given an outline and a fault's line_range, find the enclosing block (class/func/const)
@@ -211,12 +211,10 @@ class PatchGeneration:
             for node in nodes:
                 start, end = node["start"], node["end"]
                 if start <= fault_start <= end or start <= fault_end <= end:
-                    # Candidate node
                     span = end - start
-                    if span < best_span:  # prefer smaller enclosing scope
+                    if span < best_span:
                         best_match = node
                         best_span = span
-                # recurse into children
                 if node.get("children"):
                     search_outline(node["children"])
 
@@ -235,13 +233,16 @@ class PatchGeneration:
                 },
             }
 
-        # Fallback: not inside any outline block
         snippet = "\n".join(lines[fault_start - 1:fault_end])
         return {
             "original_snippet": snippet,
-            "block_info": {"name": "top_level", "kind": "unknown", "start": fault_start, "end": fault_end},
+            "block_info": {
+                "name": "top_level",
+                "kind": "unknown",
+                "start": fault_start,
+                "end": fault_end,
+            },
         }
-
 
     # =========================================================
     # ---------------- AUTOMATED TOOL FIX ---------------------
@@ -336,62 +337,7 @@ Select the most accurate automated fix strategy that:
   ],
   "tool_explanation": "Briefly explain which tools were chosen, why they apply to this error type, and how they align with the CI workflow."
 }}
-
----
-
-### EXAMPLES
-
-#### Example 1: Import / Formatting Errors with Ruff Available
-Error: "Import block is un-sorted or un-formatted"
-Workflow uses: a command containing "ruff"
-Output:
-{{
-  "installation_commands": ["pip install ruff"],
-  "fix_commands": [
-    "ruff check --fix {full_path}",
-    "ruff format {full_path}"
-  ],
-  "tool_explanation": "Ruff is part of the CI workflow and can handle import sorting, linting, and formatting. We use only Ruff (check --fix + format) to avoid redundant tools like black or isort."
-}}
-
-#### Example 2: Line-Length Violation (E501) with Ruff Available
-Error: "line too long (E501)"
-Workflow uses: a command containing "ruff"
-Output:
-{{
-  "installation_commands": ["pip install ruff"],
-  "fix_commands": [
-    "ruff check --fix {full_path}",
-    "ruff format {full_path}"
-  ],
-  "tool_explanation": "Ruff can automatically fix E501 and other style violations. We rely solely on Ruff since it is included in the workflow."
-}}
-
-#### Example 3: Logical or Type Error (Not Auto-fixable)
-Error: "Function missing a return statement"
-Workflow uses: `pytest`, `mypy`
-
-### RESPONSE RULES (CRITICAL)
-- Your **entire** response must be a single JSON value.
-- Do NOT include markdown headings, backticks, or any text before or after the JSON.
-- Do NOT wrap the JSON in ```json``` fences.
-- No explanations outside the JSON object.
-
-
-Output:
-{{
-  "installation_commands": [
-    "pip install <tool1>",
-    "pip install <tool2>"
-  ],
-  "fix_commands": [
-    "<command1>",
-    "<command2>"
-  ],
-  "tool_explanation": "Briefly explain which tools were chosen, why they apply to this error type, and how they align with the CI workflow."
-}}
 """.strip()
-
 
         try:
             result = self._call_llm_directly(prompt)
@@ -401,7 +347,6 @@ Output:
 
             install_cmds = result.get("installation_commands", [])
             fix_cmds = result.get("fix_commands", [])
-
             explanation = result.get("tool_explanation", "")
 
             logger.info(f"Tool explanation: {explanation}")
@@ -412,9 +357,12 @@ Output:
                     cmd_parts = cmd.split()
                     logger.info(f"Installing tool: {cmd}")
                     result = subprocess.run(
-                        cmd_parts, cwd=self.repo_path, capture_output=True, text=True, timeout=120
+                        cmd_parts,
+                        cwd=self.repo_path,
+                        capture_output=True,
+                        text=True,
+                        timeout=120,
                     )
-                    
                     if result.returncode == 0:
                         logger.info(f"Tool installed successfully: {cmd}")
                     else:
@@ -429,7 +377,11 @@ Output:
                     cmd_parts = cmd.split()
                     logger.info(f"Running automated fix command: {cmd}")
                     fix_proc = subprocess.run(
-                        cmd_parts, cwd=self.repo_path, capture_output=True, text=True, timeout=120
+                        cmd_parts,
+                        cwd=self.repo_path,
+                        capture_output=True,
+                        text=True,
+                        timeout=120,
                     )
 
                     if fix_proc.returncode == 0:
@@ -479,12 +431,10 @@ Each fault entry describes a specific issue detected by CI validation tools.
 
 ### INSTRUCTIONS
 - For each issue, identify the **exact original snippet** to fix.
-- Return a **list** of patches, each containing:
-  - `original_snippet`: exact code to replace
-  - `fixed_snippet`: corrected version
-  - `explanation`: short summary
-- Keep structure and indentation consistent.
-- Do NOT return the entire file content.
+- ALWAYS return full, syntactically valid code blocks so that we can replace the given one with updated one.
+- Do NOT remove or modify unrelated code.
+- Keep indentation and structure consistent with the original code.
+- Do NOT return the entire file content, only the minimally necessary blocks.
 
 ---
 
@@ -493,8 +443,7 @@ Each fault entry describes a specific issue detected by CI validation tools.
 - Do NOT include markdown headings, backticks, or any text before or after the JSON.
 - Do NOT wrap the JSON in ```json``` fences.
 - No explanations outside the JSON object. No markdown, commentary, or code fences.
-- code formate should be as it, return patched code without any corruption.
-
+- Code format should be preserved as-is; return patched code without any corruption.
 
 ### RESPONSE FORMAT
 [
@@ -538,22 +487,21 @@ Each fault entry describes a specific issue detected by CI validation tools.
                     logger.info(f"Patch {idx} applied successfully to {file_path}: {explanation}")
                 else:
                     logger.error(f"Patch {idx} failed to apply to {file_path}.")
-            
                     return False
-            
+
             return success
-        
+
         except Exception as e:
             logger.error(f"LLM patch generation failed for {file_path}: {e}")
             return False
-        
-
 
     # =========================================================
     # ---------------------- REPLACEMENT ----------------------
     # =========================================================
 
-    def _replace_snippet_in_code(self, code: str, original_snippet: str, fixed_snippet: str) -> str:
+    def _replace_snippet_in_code(
+        self, code: str, original_snippet: str, fixed_snippet: str
+    ) -> str:
         """Replace a snippet of code safely with normalization."""
         if not original_snippet.strip():
             return code
@@ -571,11 +519,7 @@ Each fault entry describes a specific issue detected by CI validation tools.
         return code
 
     def _write_updated_file(self, full_path: str, content: str) -> bool:
-        """Write updated content to disk with newline normalization.
-
-        Returns:
-            True if the file was written successfully, False otherwise.
-        """
+        """Write updated content to disk with newline normalization."""
         try:
             with open(full_path, "w", encoding="utf-8") as f:
                 for line in content.splitlines(keepends=True):
@@ -585,7 +529,6 @@ Each fault entry describes a specific issue detected by CI validation tools.
         except Exception as e:
             logger.error(f"Failed to write updated file {full_path}: {e}")
             return False
-
 
     # =========================================================
     # -------------------- PATCH PROCESS ----------------------
@@ -598,7 +541,7 @@ Each fault entry describes a specific issue detected by CI validation tools.
             file_path = faults["file_path"]
             full_path = faults["full_file_path"]
             faults = faults["faults"]
-            
+
             if faults == []:
                 logger.info(f"No faults listed for {file_path}, skipping.")
                 continue
@@ -612,10 +555,16 @@ Each fault entry describes a specific issue detected by CI validation tools.
                 logger.warning(f"Could not read file: {full_path}")
                 continue
 
-            if not self._try_automated_fix(faults, full_path):
+            # 1) Try automated fix first
+            automated_ok = self._try_automated_fix(faults, full_path)
+
+            if not automated_ok:
                 logger.info(f"Falling back to LLM patch for {file_path}")
-                patched_applied = self._generate_llm_patch(faults, file_path, full_path, original)
-            
+                patched_applied = self._generate_llm_patch(
+                    faults, file_path, full_path, original
+                )
+
+                # Only if LLM actually changed the file do we consider running Ruff
                 if patched_applied:
                     try:
                         logger.info("Installing ruff for this repo (if not already installed)...")
@@ -634,38 +583,70 @@ Each fault entry describes a specific issue detected by CI validation tools.
                     except Exception as e:
                         logger.error(f"Error while installing ruff: {e}")
 
-                        # 2) Run Ruff on the *applied* file only
-                        #    We use full_path; ruff can handle absolute paths.
-                        
+                    # 2) Only run Ruff if there are issues after the LLM patch
                     if Path(full_path).suffix == ".py":
-                        for cmd in (
-                            ["ruff", "check", "--fix", full_path],
-                            ["ruff", "format", full_path],
-                        ):
-                            try:
-                                logger.info(f"Running Ruff command: {' '.join(cmd)}")
-                                ruff_proc = subprocess.run(
-                                    cmd,
-                                    cwd=self.repo_path,
-                                    capture_output=True,
-                                    text=True,
-                                    timeout=300,
+                        has_ruff_issues = False
+                        try:
+                            logger.info(
+                                f"Running Ruff check (no fix) on {full_path} after LLM patch"
+                            )
+                            check_proc = subprocess.run(
+                                ["ruff", "check", full_path],
+                                cwd=self.repo_path,
+                                capture_output=True,
+                                text=True,
+                                timeout=300,
+                            )
+                            if check_proc.returncode != 0:
+                                has_ruff_issues = True
+                                logger.info(
+                                    f"Ruff reported issues after LLM patch for {full_path}; "
+                                    "running automated formatting fixes."
                                 )
-                                if ruff_proc.returncode != 0:
-                                    logger.warning(
-                                        f"Ruff command failed: {' '.join(cmd)}\n{ruff_proc.stderr}"
+                            else:
+                                logger.info(
+                                    f"Ruff reported no issues for {full_path}; "
+                                    "skipping automated Ruff fixes."
+                                )
+                        except Exception as e:
+                            logger.error(f"Failed to run Ruff check on {full_path}: {e}")
+                            has_ruff_issues = False
+
+                        if has_ruff_issues:
+                            for cmd in (
+                                ["ruff", "check", "--fix", full_path],
+                                ["ruff", "format", full_path],
+                            ):
+                                try:
+                                    logger.info(f"Running Ruff command: {' '.join(cmd)}")
+                                    ruff_proc = subprocess.run(
+                                        cmd,
+                                        cwd=self.repo_path,
+                                        capture_output=True,
+                                        text=True,
+                                        timeout=300,
                                     )
-                            except Exception as e:
-                                logger.error(f"Failed to run Ruff command {' '.join(cmd)}: {e}")
+                                    if ruff_proc.returncode != 0:
+                                        logger.warning(
+                                            f"Ruff command failed: {' '.join(cmd)}\n{ruff_proc.stderr}"
+                                        )
+                                except Exception as e:
+                                    logger.error(
+                                        f"Failed to run Ruff command {' '.join(cmd)}: {e}"
+                                    )
+
             modified_content = self._read_file(full_path)
-                
+
             if modified_content != original:
-                self.patch_results.append({
-                    "file_path": file_path,
-                    "full_file_path": full_path,
-                    "original_content": original,
-                    "fixed_content": modified_content,
-                    "fix_method": "automated_tool"})
+                self.patch_results.append(
+                    {
+                        "file_path": file_path,
+                        "full_file_path": full_path,
+                        "original_content": original,
+                        "fixed_content": modified_content,
+                        "fix_method": "automated_or_llm",
+                    }
+                )
 
         return self.patch_results
 

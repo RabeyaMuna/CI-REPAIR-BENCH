@@ -1,0 +1,15 @@
+{
+    "sha_fail": "2e41e783672597e2e0c7b2842b5934d879374028",
+    "changed_files": [
+        {
+            "commit": "2e41e783672597e2e0c7b2842b5934d879374028",
+            "file_path": "sanic/compat.py",
+            "diff": "diff --git a/sanic/compat.py b/sanic/compat.py\nindex 62a5df9..d7695a3 100644\n--- a/sanic/compat.py\n+++ b/sanic/compat.py\n@@ -126,11 +126,11 @@ class Header(CIMultiDict):\n         if key.startswith(\"_\"):\n             return self.__getattribute__(key)\n         key = key.rstrip(\"_\").replace(\"_\", \"-\")\n-        return \",\".join(self.getall(key, default=[]))\n+        return \",\".join(self.getall(key, []))\n \n     def get_all(self, key: str):\n         \"\"\"Convenience method mapped to ``getall()``.\"\"\"\n-        return self.getall(key, default=[])\n+        return self.getall(key, [])\n \n \n use_trio = sys.argv[0].endswith(\"hypercorn\") and \"trio\" in sys.argv\n"
+        },
+        {
+            "commit": "2e41e783672597e2e0c7b2842b5934d879374028",
+            "file_path": "tox.ini",
+            "diff": "diff --git a/tox.ini b/tox.ini\nindex 43ba40d..487b4ae 100644\n--- a/tox.ini\n+++ b/tox.ini\n@@ -1,14 +1,15 @@\n [tox]\n-envlist = py38, py39, py310, py311, pyNightly, pypy310, {py38,py39,py310,py311,pyNightly,pypy310}-no-ext, lint, check, security, docs, type-checking\n+envlist = py38, py39, py310, py311, py312, pyNightly, pypy310, {py38,py39,py310,py311,py312,pyNightly,pypy310}-no-ext, lint, check, security, docs, type-checking\n \n [testenv]\n usedevelop = true\n setenv =\n-    {py38,py39,py310,py311,pyNightly}-no-ext: SANIC_NO_UJSON=1\n-    {py38,py39,py310,py311,pyNightly}-no-ext: SANIC_NO_UVLOOP=1\n+    {py38,py39,py310,py311,py312,pyNightly}-no-ext: SANIC_NO_UJSON=1\n+    {py38,py39,py310,py311,py312,pyNightly}-no-ext: SANIC_NO_UVLOOP=1\n extras = test, http3\n deps =\n     httpx>=0.23\n+    setuptools\n allowlist_externals =\n     pytest\n     coverage\n"
+        }
+    ]
+}

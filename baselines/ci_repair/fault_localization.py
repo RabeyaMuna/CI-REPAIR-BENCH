@@ -194,9 +194,8 @@ class FaultLocalization:
 You are a **Suspicious File Selector** for CI failures.
 
 Goal:
-Given a file path, the unified diff of that file for a failed commit,
-and the CI failed jobs description, decide whether this file's changes
-are likely responsible for (or closely related to) the CI failure.
+Given a file path, the unified diff of that file for a failed commit, and the CI failed jobs description, decide whether this file's changes are likely responsible for (or closely related to) the CI failure. 
+If you have strong evident of the change of code(diff) in the failed commit is the reason of failed jobs, only then set `is_suspicious` as true. Do not speculate.
 
 Return **only** a JSON object with this exact schema, as plain text:
 

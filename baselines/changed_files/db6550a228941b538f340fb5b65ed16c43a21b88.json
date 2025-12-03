@@ -1,0 +1,10 @@
+{
+    "sha_fail": "db6550a228941b538f340fb5b65ed16c43a21b88",
+    "changed_files": [
+        {
+            "commit": "db6550a228941b538f340fb5b65ed16c43a21b88",
+            "file_path": "src/diffusers/loaders/ip_adapter.py",
+            "diff": "diff --git a/src/diffusers/loaders/ip_adapter.py b/src/diffusers/loaders/ip_adapter.py\nindex a8e5fa0c..df9caa94 100644\n--- a/src/diffusers/loaders/ip_adapter.py\n+++ b/src/diffusers/loaders/ip_adapter.py\n@@ -49,7 +49,6 @@ class IPAdapterMixin:\n         self,\n         pretrained_model_name_or_path_or_dict: Union[str, Dict[str, torch.Tensor]],\n         weight_name: str,\n-        subfolder: Optional[str] = None,\n         **kwargs,\n     ):\n         \"\"\"\n@@ -97,6 +96,7 @@ class IPAdapterMixin:\n         local_files_only = kwargs.pop(\"local_files_only\", None)\n         token = kwargs.pop(\"token\", None)\n         revision = kwargs.pop(\"revision\", None)\n+        subfolder = kwargs.pop(\"subfolder\", None)\n \n         user_agent = {\n             \"file_type\": \"attn_procs_weights\",\n"
+        }
+    ]
+}

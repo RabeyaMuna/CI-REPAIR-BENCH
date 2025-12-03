@@ -28,6 +28,12 @@ CIBenchPython = CIFixBenchmark(model_name, config_path)
 
 dataset_info = os.path.join(config.get("base_dir"), "dataset", "lca_dataset.parquet")
 
+# Load dataset once
+all_ids = [row["id"] for row in CIBenchPython.get_dataset(dataset_info=dataset_info)]
+
+# Select datapoints from 327 to end
+selected_ids = all_ids[115:]
+
 # ---------- OPTION 2: Online Dataset ----------
 # Uncomment this block if you want to fetch dataset from an online source (e.g., Hugging Face)
 # dataset_info = "JetBrains-Research/lca-ci-builds-repair"  # or any other dataset name/id

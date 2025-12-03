@@ -27,7 +27,7 @@ class CIFixBenchmark:
 
         # Loads a YAML/JSON configuration file using OmegaConf, a part of the Hydra library.
         self.config = OmegaConf.load(config_path)
-        benchmark_owner = self.config.get("benchmark_owner", "RabeyaMuna")
+        benchmark_owner = self.config.get("benchmark_owner")
         
         if not "test_username" in self.config:
             self.config.test_username = self.config.username_gh
@@ -112,7 +112,7 @@ class CIFixBenchmark:
         """
 
         WAIT_INTERVAL = 900       # 10 minutes between polling cycles
-        MAX_ATTEMPTS = 15        # total 2-hour window
+        MAX_ATTEMPTS = 1        # total 2-hour window
         REQ_DELAY = 0.8           # ~0.8s between requests → 4500 req/hour safe margin
 
         if result_filename is None:

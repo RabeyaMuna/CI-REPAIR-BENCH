@@ -11,7 +11,7 @@ from datasets import load_dataset  # (unused right now but kept)
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 
-from baselines.utilities.fetch_failed_commit_changed_files import (
+from utilities.fetch_failed_commit_changed_files import (
     collect_changed_files_for_fail_and_parent,
 )
 from utilities.llm_provider import get_llm
@@ -35,7 +35,7 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
     # If your helper needs a token:
 
     # TEMP: only one datapoint
-    subset = dataset[318:319]
+    subset = dataset[0:120]
     # target_ids = {241, 243, 281, 323}
     # subset = [dp for dp in dataset if dp.get("id") in target_ids]
 
@@ -93,17 +93,10 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
             with open(os.path.join(result_dir, "log_details.json"), "w") as f:
                 json.dump(error_details, f, indent=4)
 
-            if not log_analysis_result.get("relevant_files"):
-                print(f"[MAIN] No relevant files found for {sha_fail}, skipping...")
-                continue
-
         except Exception as e:
             print(f"[ERROR] Failed processing {sha_fail} during error extraction: {e}")
             continue
 
-        # ------------------------------------------------------------------
-        # 2) FETCH & SAVE CHANGED FILES FOR sha_fail (+ parent if failed)
-        # ------------------------------------------------------------------
         try:
             changed_files_info = collect_changed_files_for_fail_and_parent(
                 owner=benchmark_owner,
@@ -111,7 +104,7 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
                 repo_path=repo_path,
                 sha_fail=sha_fail,
                 workflow_rel_path=workflow_path,
-                workflow_yaml_from_dataset=workflow,  # YAML from dataset row
+                workflow_yaml_from_dataset=workflow
             )
 
             # Save to per-commit JSON file in baselines/changed_files/{sha_fail}.json
@@ -136,7 +129,7 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
                 workflow=workflow,
                 llm=llm,
                 model_name=model_key,
-                # changed_files_info=changed_files_info,  # add to __init__ later if you want
+                changed_files_info=changed_files_info,  # add to __init__ later if you want
             ).run()
 
             fault_localization.append(fault_localizer)
@@ -152,9 +145,9 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
             print(f"[ERROR] Failed processing {sha_fail} during fault localization: {e}")
             continue
 
-        # ------------------------------------------------------------------
-        # 4) PATCH GENERATION
-        # ------------------------------------------------------------------
+        # # ------------------------------------------------------------------
+        # # 4) PATCH GENERATION
+        # # ------------------------------------------------------------------
         try:
             patch_generator = PatchGeneration(
                 bug_report=fault_localizer,
@@ -198,7 +191,7 @@ if __name__ == "__main__":
     dataset_df = pd.read_parquet(dataset_path)
     dataset = dataset_df.to_dict(orient="records")
 
-    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="llm")
+    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="bm25")
 
     output_file = os.path.join(config.project_result_dir, "generated_patches.json")
     with open(output_file, "w") as f:
