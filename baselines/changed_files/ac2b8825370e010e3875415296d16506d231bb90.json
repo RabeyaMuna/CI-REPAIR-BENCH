@@ -1,0 +1,10 @@
+{
+    "sha_fail": "ac2b8825370e010e3875415296d16506d231bb90",
+    "changed_files": [
+        {
+            "commit": "ac2b8825370e010e3875415296d16506d231bb90",
+            "file_path": "libs/agno/agno/app/fastapi/async_router.py",
+            "diff": "diff --git a/libs/agno/agno/app/fastapi/async_router.py b/libs/agno/agno/app/fastapi/async_router.py\nindex b5b7fbd95..19dddbc2d 100644\n--- a/libs/agno/agno/app/fastapi/async_router.py\n+++ b/libs/agno/agno/app/fastapi/async_router.py\n@@ -1,7 +1,7 @@\n import json\n from dataclasses import asdict\n from io import BytesIO\n-from typing import Any, AsyncGenerator, Dict, List, Optional, cast\n+from typing import AsyncGenerator, List, Optional, cast\n from uuid import uuid4\n \n from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile\n@@ -260,7 +260,7 @@ def get_async_router(\n         agent_id: Optional[str] = Query(None),\n         team_id: Optional[str] = Query(None),\n         workflow_id: Optional[str] = Query(None),\n-        workflow_input: Optional[Dict[str, Any]] = Form(None),\n+        workflow_input: Optional[str] = Form(None),\n     ):\n         if session_id is not None and session_id != \"\":\n             logger.debug(f\"Continuing session: {session_id}\")\n@@ -297,6 +297,10 @@ def get_async_router(\n                 raise HTTPException(status_code=404, detail=\"Workflow not found\")\n             if not workflow_input:\n                 raise HTTPException(status_code=400, detail=\"Workflow input is required\")\n+            try:\n+                workflow_input = json.loads(workflow_input)\n+            except json.JSONDecodeError:\n+                raise HTTPException(status_code=400, detail=\"Workflow input must be a valid JSON string\")\n \n         if agent:\n             agent.monitoring = bool(monitor)\n"
+        }
+    ]
+}

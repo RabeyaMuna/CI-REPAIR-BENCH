@@ -1,0 +1,30 @@
+{
+    "sha_fail": "5aaeb8cbed2e151ac82976b836a047a964ed5364",
+    "changed_files": [
+        {
+            "commit": "5aaeb8cbed2e151ac82976b836a047a964ed5364",
+            "file_path": "dask/array/_array_expr/_shuffle.py",
+            "diff": "diff --git a/dask/array/_array_expr/_shuffle.py b/dask/array/_array_expr/_shuffle.py\nindex eedc0f82..337e03b6 100644\n--- a/dask/array/_array_expr/_shuffle.py\n+++ b/dask/array/_array_expr/_shuffle.py\n@@ -132,11 +132,11 @@ class Shuffle(ArrayExpr):\n             merges[sorter_key] = DataNode(sorter_key, (1, sorter))\n \n             sorted_array = new_chunk_taker[sorter]\n-            source_chunk_nr, taker_boundary = np.unique(\n+            source_chunk_nr, taker_boundary_ = np.unique(\n                 np.searchsorted(chunk_boundaries, sorted_array, side=\"right\"),\n                 return_index=True,\n             )\n-            taker_boundary = taker_boundary.tolist()\n+            taker_boundary: list[int] = taker_boundary_.tolist()\n             taker_boundary.append(len(new_chunk_taker))\n \n             taker_cache: dict = {}\n"
+        },
+        {
+            "commit": "5aaeb8cbed2e151ac82976b836a047a964ed5364",
+            "file_path": "dask/array/_shuffle.py",
+            "diff": "diff --git a/dask/array/_shuffle.py b/dask/array/_shuffle.py\nindex c3001f9b..c71c68f4 100644\n--- a/dask/array/_shuffle.py\n+++ b/dask/array/_shuffle.py\n@@ -208,7 +208,8 @@ def _shuffle(chunks, indexer, axis, in_name, out_name, token):\n     if len(current_chunk) > 0:\n         new_chunks.append(current_chunk)\n \n-    chunk_boundaries = np.cumsum(chunks[axis])\n+    # force 64 bit to avoid potential integer overflows on win32 and numpy<2\n+    chunk_boundaries = np.cumsum(np.array(chunks[axis], dtype=\"uint64\"))\n \n     # Get existing chunk tuple locations\n     chunk_tuples = list(\n"
+        },
+        {
+            "commit": "5aaeb8cbed2e151ac82976b836a047a964ed5364",
+            "file_path": "dask/array/slicing.py",
+            "diff": "diff --git a/dask/array/slicing.py b/dask/array/slicing.py\nindex 3947e42c..1b2a1459 100644\n--- a/dask/array/slicing.py\n+++ b/dask/array/slicing.py\n@@ -601,10 +601,11 @@ def take(outname, inname, chunks, index, axis=0):\n \n     if not np.isnan(chunks[axis]).any():\n         from dask.array._shuffle import _shuffle\n-        from dask.array.utils import arange_safe, asarray_safe\n+        from dask.array.utils import asarray_safe\n \n-        arange = arange_safe(np.sum(chunks[axis]), like=index)\n-        if len(index) == len(arange) and np.abs(index - arange).sum() == 0:\n+        # verify if this is a full arange (the equivalent of `slice(None)`)\n+        full_length = sum(chunks[axis])\n+        if len(index) == full_length and index[0] == 0 and np.all(np.diff(index) == 1):\n             # TODO: This should be a real no-op, but the call stack is\n             # too deep to do this efficiently for now\n             chunk_tuples = product(*(range(len(c)) for i, c in enumerate(chunks)))\n@@ -614,7 +615,7 @@ def take(outname, inname, chunks, index, axis=0):\n             }\n             return tuple(chunks), graph\n \n-        average_chunk_size = int(sum(chunks[axis]) / len(chunks[axis]))\n+        average_chunk_size = int(full_length / len(chunks[axis]))\n \n         indexer = []\n         index = asarray_safe(index, like=index)\n"
+        },
+        {
+            "commit": "5aaeb8cbed2e151ac82976b836a047a964ed5364",
+            "file_path": "dask/array/tests/test_routines.py",
+            "diff": "diff --git a/dask/array/tests/test_routines.py b/dask/array/tests/test_routines.py\nindex 5a1130cb..f65ac4db 100644\n--- a/dask/array/tests/test_routines.py\n+++ b/dask/array/tests/test_routines.py\n@@ -1598,6 +1598,16 @@ def test_take():\n     assert same_keys(da.take(a, [3, 4, 5], axis=-1), da.take(a, [3, 4, 5], axis=-1))\n \n \n+def test_take_large():\n+    a = da.arange(1_000_000_000_000, chunks=(200_000_000,), dtype=\"int64\")\n+\n+    x = np.arange(20, dtype=\"int64\")\n+    assert_eq(da.take(a, x, axis=0), x)\n+\n+    x = np.arange(50, 300, dtype=\"int64\")\n+    assert_eq(da.take(a, x, axis=0), x)\n+\n+\n def test_take_dask_from_numpy():\n     x = np.arange(5).astype(\"f8\")\n     y = da.from_array(np.array([1, 2, 3, 3, 2, 1]), chunks=3)\n"
+        },
+        {
+            "commit": "5aaeb8cbed2e151ac82976b836a047a964ed5364",
+            "file_path": "dask/bag/core.py",
+            "diff": "diff --git a/dask/bag/core.py b/dask/bag/core.py\nindex f11e5fb4..6597dd16 100644\n--- a/dask/bag/core.py\n+++ b/dask/bag/core.py\n@@ -2576,7 +2576,7 @@ def random_state_data_python(\n \n         random_data = np_rng.bytes(624 * n * 4)  # `n * 624` 32-bit integers\n         arr = np.frombuffer(random_data, dtype=np.uint32).reshape((n, -1))\n-        return [(3, tuple(row) + (624,), None) for row in arr.tolist()]\n+        return [(3, tuple(row) + (624,), None) for row in np.atleast_2d(arr).tolist()]\n \n     except ImportError:\n         # Pure python (much slower)\n"
+        }
+    ]
+}

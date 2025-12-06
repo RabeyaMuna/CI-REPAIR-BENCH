@@ -1,0 +1,10 @@
+{
+    "sha_fail": "7f4d750eaf81c6f8384ed8246180c29bb45ea7bf",
+    "changed_files": [
+        {
+            "commit": "7f4d750eaf81c6f8384ed8246180c29bb45ea7bf",
+            "file_path": "cookbook/agent_concepts/memory/17_builtin_memory_with_session_summary.py",
+            "diff": "diff --git a/cookbook/agent_concepts/memory/17_builtin_memory_with_session_summary.py b/cookbook/agent_concepts/memory/17_builtin_memory_with_session_summary.py\nindex 8e8e4d2d1..4a67176eb 100644\n--- a/cookbook/agent_concepts/memory/17_builtin_memory_with_session_summary.py\n+++ b/cookbook/agent_concepts/memory/17_builtin_memory_with_session_summary.py\n@@ -31,7 +31,10 @@ agent.print_response(\"Hello! How are you today?\", stream=True)\n \n agent.print_response(\"Explain what an LLM is.\", stream=True)\n \n-agent.print_response(\"I'm thinking about learning a new programming language. Any suggestions?\", stream=True)\n+agent.print_response(\n+    \"I'm thinking about learning a new programming language. Any suggestions?\",\n+    stream=True,\n+)\n \n agent.print_response(\"Tell me an interesting fact about space.\", stream=True)\n \n@@ -47,12 +50,7 @@ pprint(\n agent.print_response(\"What have we been talking about?\", stream=True)\n \n # -*- Print the messages used for the last response (only the last 3 is kept in history)\n-pprint(\n-    [\n-        m.model_dump(include={\"role\", \"content\"})\n-        for m in agent.run_response.messages\n-    ]\n-)\n+pprint([m.model_dump(include={\"role\", \"content\"}) for m in agent.run_response.messages])\n \n # We can get the session summary from memory as well\n session_summary = agent.get_session_summary()\n"
+        }
+    ]
+}

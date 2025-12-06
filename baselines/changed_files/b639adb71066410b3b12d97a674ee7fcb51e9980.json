@@ -1,0 +1,10 @@
+{
+    "sha_fail": "b639adb71066410b3b12d97a674ee7fcb51e9980",
+    "changed_files": [
+        {
+            "commit": "b639adb71066410b3b12d97a674ee7fcb51e9980",
+            "file_path": "sky/resources.py",
+            "diff": "diff --git a/sky/resources.py b/sky/resources.py\nindex 875f266e..2f7aebce 100644\n--- a/sky/resources.py\n+++ b/sky/resources.py\n@@ -836,11 +836,13 @@ class Resources:\n             image_size = self.cloud.get_image_size(image_id, region)\n             if image_size >= self.disk_size:\n                 with ux_utils.print_exception_no_traceback():\n-                    size_comparison = \"larger\" if image_size > self.disk_size else \"equal\"\n+                    size_compare = 'larger than' if image_size > self.disk_size \\\n+                        else 'equal to'\n                     raise ValueError(\n                         f'Image {image_id!r} is {image_size}GB, which is '\n-                        f'{size_comparison} than the specified disk_size: {self.disk_size}'\n-                        ' GB. Please specify a larger disk_size to use this image.')\n+                        f'{size_compare} the specified disk_size: '\n+                        f'{self.disk_size} GB. Please specify a larger '\n+                        'disk_size to use this image.')\n \n     def _try_validate_disk_tier(self) -> None:\n         if self.disk_tier is None:\n"
+        }
+    ]
+}

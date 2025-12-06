@@ -1,0 +1,10 @@
+{
+    "sha_fail": "c9c582cbef0e49bb73fb65cb83042e2e5eb849b1",
+    "changed_files": [
+        {
+            "commit": "c9c582cbef0e49bb73fb65cb83042e2e5eb849b1",
+            "file_path": "src/calibre/gui2/preferences/look_feel_tabs/edit_metadata.ui",
+            "diff": "diff --git a/src/calibre/gui2/preferences/look_feel_tabs/edit_metadata.ui b/src/calibre/gui2/preferences/look_feel_tabs/edit_metadata.ui\nindex 0741dde3..d8b25783 100644\n--- a/src/calibre/gui2/preferences/look_feel_tabs/edit_metadata.ui\n+++ b/src/calibre/gui2/preferences/look_feel_tabs/edit_metadata.ui\n@@ -56,7 +56,7 @@ Keyboard shortcut: Ctrl+Up arrow&lt;/p&gt;</string>\n         <property name=\"toolTip\">\n          <string>&lt;p&gt;Click to move the row up 1. Shift+click to move the row up 5.\n Ctrl+click to move the row up 10. Ctrl+Shift+click to move the row to the top.\n-Keyboard shortcut: Ctrl+Down arrow&lt;/p&gt;</string>\n+Keyboard shortcut: Ctrl+Up arrow&lt;/p&gt;</string>\n         </property>\n         <property name=\"icon\">\n          <iconset resource=\"../../../../../resources/images.qrc\">\n"
+        }
+    ]
+}

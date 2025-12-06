@@ -1,0 +1,10 @@
+{
+    "sha_fail": "ba66fb81a0c8db48fed7abe833409f447b95708b",
+    "changed_files": [
+        {
+            "commit": "ba66fb81a0c8db48fed7abe833409f447b95708b",
+            "file_path": "src/diffusers/loaders/single_file.py",
+            "diff": "diff --git a/src/diffusers/loaders/single_file.py b/src/diffusers/loaders/single_file.py\nindex 21670385..d23b2b9e 100644\n--- a/src/diffusers/loaders/single_file.py\n+++ b/src/diffusers/loaders/single_file.py\n@@ -18,10 +18,7 @@ from huggingface_hub.utils import validate_hf_hub_args\n from transformers import AutoFeatureExtractor\n \n from ..models.modeling_utils import load_state_dict\n-from ..pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker\n from ..utils import (\n-    is_accelerate_available,\n-    is_transformers_available,\n     logging,\n )\n from ..utils.hub_utils import _get_model_file\n@@ -36,12 +33,6 @@ from .single_file_utils import (\n )\n \n \n-if is_transformers_available():\n-    pass\n-\n-if is_accelerate_available():\n-    pass\n-\n logger = logging.get_logger(__name__)\n \n \n@@ -126,6 +117,8 @@ def build_sub_model_components(\n \n     if component_name == \"safety_checker\":\n         if load_safety_checker:\n+            from ..pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker\n+\n             safety_checker = StableDiffusionSafetyChecker.from_pretrained(\n                 \"CompVis/stable-diffusion-safety-checker\", local_files_only=local_files_only\n             )\n"
+        }
+    ]
+}

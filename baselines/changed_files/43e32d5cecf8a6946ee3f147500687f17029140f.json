@@ -1,0 +1,10 @@
+{
+    "sha_fail": "43e32d5cecf8a6946ee3f147500687f17029140f",
+    "changed_files": [
+        {
+            "commit": "43e32d5cecf8a6946ee3f147500687f17029140f",
+            "file_path": "tests/test_job_helper.py",
+            "diff": "diff --git a/tests/test_job_helper.py b/tests/test_job_helper.py\nindex 08fe6f8..1f724bb 100644\n--- a/tests/test_job_helper.py\n+++ b/tests/test_job_helper.py\n@@ -6,3 +6,4 @@ from facefusion.jobs.job_helper import get_step_output_path\n def test_get_step_output_path() -> None:\n \tassert get_step_output_path('test-job', 0, 'test.mp4') == 'test-test-job-0.mp4'\n \tassert get_step_output_path('test-job', 0, 'test/test.mp4') == os.path.join('test', 'test-test-job-0.mp4')\n+\tassert get_step_output_path('test-job', 0, 'invalid') is None\n"
+        }
+    ]
+}

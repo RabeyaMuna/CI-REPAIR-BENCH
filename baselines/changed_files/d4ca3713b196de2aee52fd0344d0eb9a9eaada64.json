@@ -1,0 +1,10 @@
+{
+    "sha_fail": "d4ca3713b196de2aee52fd0344d0eb9a9eaada64",
+    "changed_files": [
+        {
+            "commit": "d4ca3713b196de2aee52fd0344d0eb9a9eaada64",
+            "file_path": "import_export/admin.py",
+            "diff": "diff --git a/import_export/admin.py b/import_export/admin.py\nindex 167a4fe..66964e4 100644\n--- a/import_export/admin.py\n+++ b/import_export/admin.py\n@@ -207,7 +207,7 @@ class ImportMixin(BaseImportMixin, ImportExportMixinBase):\n     def generate_log_entries(self, result, request):\n         if not self.get_skip_admin_log():\n             # Add imported objects to LogEntry\n-            if django.VERSION >= (5, 0):\n+            if django.VERSION >= (6, 0):\n                 self._log_actions(result, request)\n             else:\n                 logentry_map = {\n"
+        }
+    ]
+}

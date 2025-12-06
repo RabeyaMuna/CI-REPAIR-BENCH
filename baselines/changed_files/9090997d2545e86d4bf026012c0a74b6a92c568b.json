@@ -1,0 +1,10 @@
+{
+    "sha_fail": "9090997d2545e86d4bf026012c0a74b6a92c568b",
+    "changed_files": [
+        {
+            "commit": "9090997d2545e86d4bf026012c0a74b6a92c568b",
+            "file_path": "faster_whisper/transcribe.py",
+            "diff": "diff --git a/faster_whisper/transcribe.py b/faster_whisper/transcribe.py\nindex 6e57ff7..ae1d6f1 100644\n--- a/faster_whisper/transcribe.py\n+++ b/faster_whisper/transcribe.py\n@@ -1778,7 +1778,7 @@ class WhisperModel:\n \n         Returns:\n             language: Detected language.\n-            languege_probability: Probability of the detected language.\n+            language_probability: Probability of the detected language.\n             all_language_probs: List of tuples with all language names and probabilities.\n         \"\"\"\n         assert (\n"
+        }
+    ]
+}

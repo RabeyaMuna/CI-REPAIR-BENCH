@@ -1,0 +1,10 @@
+{
+    "sha_fail": "8a04007d606de7a355f904407294f8ad5d2b7374",
+    "changed_files": [
+        {
+            "commit": "8a04007d606de7a355f904407294f8ad5d2b7374",
+            "file_path": "tests/commands_test.py",
+            "diff": "diff --git a/tests/commands_test.py b/tests/commands_test.py\nindex 397596e..cdbfa21 100644\n--- a/tests/commands_test.py\n+++ b/tests/commands_test.py\n@@ -113,7 +113,8 @@ def test_plugin_cycle(testbot):\n \n     for plugin in plugins:\n         testbot.assertInCommand(\n-            \"!repos install {0}\".format(plugin), \"Installing {0}...\".format(plugin)\n+            f\"!repos install {plugin}\",\n+            f\"Installing {plugin}...\"\n         ),\n         assert (\n             \"A new plugin repository has been installed correctly from errbotio/err-helloworld\"\n@@ -231,7 +232,7 @@ def test_webserver_webhook_test(testbot):\n \n def test_activate_reload_and_deactivate(testbot):\n     for command in (\"activate\", \"reload\", \"deactivate\"):\n-        testbot.push_message(\"!plugin {}\".format(command))\n+        testbot.push_message(f\"!plugin {command}\")\n         m = testbot.pop_message()\n         assert \"Please tell me which of the following plugins to\" in m\n         assert \"ChatRoom\" in m\n@@ -350,7 +351,7 @@ def test_callback_no_command(testbot):\n     )\n \n     cmd = \"!this_is_not_a_real_command_at_all\"\n-    expected_str = \"Command fell through: {}\".format(cmd)\n+    expected_str = f\"Command fell through: {cmd}\"\n \n     testbot.exec_command(\"!plugin deactivate CommandNotFoundFilter\")\n     testbot.bot.plugin_manager._extra_plugin_dir = extra_plugin_dir\n"
+        }
+    ]
+}

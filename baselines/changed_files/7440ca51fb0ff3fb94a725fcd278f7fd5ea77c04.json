@@ -1,0 +1,10 @@
+{
+    "sha_fail": "7440ca51fb0ff3fb94a725fcd278f7fd5ea77c04",
+    "changed_files": [
+        {
+            "commit": "7440ca51fb0ff3fb94a725fcd278f7fd5ea77c04",
+            "file_path": "beetsplug/listenbrainz.py",
+            "diff": "diff --git a/beetsplug/listenbrainz.py b/beetsplug/listenbrainz.py\nindex 8a57d75e..d7ef0d44 100644\n--- a/beetsplug/listenbrainz.py\n+++ b/beetsplug/listenbrainz.py\n@@ -160,8 +160,11 @@ class ListenBrainzPlugin(BeetsPlugin):\n                 playlist_type = (\n                     \"Exploration\" if \"Exploration\" in title else \"Jams\"\n                 )\n-                date_str = title.split(\"week of \")[1].split(\" \")[0]\n-                date = datetime.datetime.strptime(date_str, \"%Y-%m-%d\").date()\n+                if \"week of \" in title:\n+                    date_str = title.split(\"week of \")[1].split(\" \")[0]\n+                    date = datetime.datetime.strptime(date_str, \"%Y-%m-%d\").date()\n+                else:\n+                    date = None\n                 identifier = playlist_info.get(\"identifier\")\n                 id = identifier.split(\"/\")[-1]\n                 listenbrainz_playlists.append(\n"
+        }
+    ]
+}

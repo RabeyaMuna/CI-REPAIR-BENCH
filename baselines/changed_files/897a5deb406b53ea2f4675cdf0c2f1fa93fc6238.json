@@ -1,0 +1,10 @@
+{
+    "sha_fail": "897a5deb406b53ea2f4675cdf0c2f1fa93fc6238",
+    "changed_files": [
+        {
+            "commit": "897a5deb406b53ea2f4675cdf0c2f1fa93fc6238",
+            "file_path": "httpx/__init__.py",
+            "diff": "diff --git a/httpx/__init__.py b/httpx/__init__.py\nindex 23b9f31..bfb1867 100644\n--- a/httpx/__init__.py\n+++ b/httpx/__init__.py\n@@ -2,7 +2,7 @@ from .__version__ import __description__, __title__, __version__\n from ._api import delete, get, head, options, patch, post, put, request, stream\n from ._auth import Auth, BasicAuth, DigestAuth, NetRCAuth\n from ._client import USE_CLIENT_DEFAULT, AsyncClient, Client\n-from ._config import Limits, Proxy, SSLContext, Timeout\n+from ._config import Limits, Proxy, Timeout, SSLContext\n from ._content import ByteStream\n from ._exceptions import (\n     CloseError,\n"
+        }
+    ]
+}

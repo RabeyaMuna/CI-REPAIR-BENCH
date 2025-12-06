@@ -1,0 +1,35 @@
+{
+    "sha_fail": "cbb7561e4e0d81a027fbd7ff6482fea13ee17398",
+    "changed_files": [
+        {
+            "commit": "cbb7561e4e0d81a027fbd7ff6482fea13ee17398",
+            "file_path": "framework/e2e/test_serverapp_heartbeat.py",
+            "diff": "diff --git a/framework/e2e/test_serverapp_heartbeat.py b/framework/e2e/test_serverapp_heartbeat.py\nindex 583c43284..05217409e 100644\n--- a/framework/e2e/test_serverapp_heartbeat.py\n+++ b/framework/e2e/test_serverapp_heartbeat.py\n@@ -34,9 +34,9 @@ def add_e2e_federation() -> None:\n \n def run_superlink(is_simulation: bool) -> subprocess.Popen:\n     \"\"\"Run the SuperLink.\"\"\"\n-    executor_arg = \"flwr.superlink.executor.deployment:executor\"\n+    executor_arg = \"flwr.superexec.deployment:executor\"\n     if is_simulation:\n-        executor_arg = \"flwr.superlink.executor.simulation:executor\"\n+        executor_arg = \"flwr.superexec.simulation:executor\"\n     return subprocess.Popen(\n         [\n             \"flower-superlink\",\n"
+        },
+        {
+            "commit": "cbb7561e4e0d81a027fbd7ff6482fea13ee17398",
+            "file_path": "framework/py/flwr/server/app.py",
+            "diff": "diff --git a/framework/py/flwr/server/app.py b/framework/py/flwr/server/app.py\nindex 0cd8f6a78..9436f8ebc 100644\n--- a/framework/py/flwr/server/app.py\n+++ b/framework/py/flwr/server/app.py\n@@ -73,7 +73,7 @@ from flwr.server.serverapp.app import flwr_serverapp\n from flwr.simulation.app import flwr_simulation\n from flwr.supercore.ffs import FfsFactory\n from flwr.supercore.object_store import ObjectStoreFactory\n-from flwr.superlink.executor import load_executor\n+from flwr.superexec import load_executor\n from flwr.superlink.servicer.exec import run_exec_api_grpc\n \n from .superlink.fleet.grpc_adapter.grpc_adapter_servicer import GrpcAdapterServicer\n@@ -786,8 +786,8 @@ def _add_args_exec_api(parser: argparse.ArgumentParser) -> None:\n     parser.add_argument(\n         \"--executor\",\n         help=\"For example: `deployment:exec` or `project.package.module:wrapper.exec`. \"\n-        \"The default is `flwr.superlink.executor.deployment:executor`\",\n-        default=\"flwr.superlink.executor.deployment:executor\",\n+        \"The default is `flwr.superexec.deployment:executor`\",\n+        default=\"flwr.superexec.deployment:executor\",\n     )\n     parser.add_argument(\n         \"--executor-dir\",\n"
+        },
+        {
+            "commit": "cbb7561e4e0d81a027fbd7ff6482fea13ee17398",
+            "file_path": "framework/py/flwr/superexec/__init__.py",
+            "diff": "diff --git a/framework/py/flwr/superexec/__init__.py b/framework/py/flwr/superexec/__init__.py\nnew file mode 100644\nindex 000000000..855a06704\n--- /dev/null\n+++ b/framework/py/flwr/superexec/__init__.py\n@@ -0,0 +1,15 @@\n+# Copyright 2025 Flower Labs GmbH. All Rights Reserved.\n+#\n+# Licensed under the Apache License, Version 2.0 (the \"License\");\n+# you may not use this file except in compliance with the License.\n+# You may obtain a copy of the License at\n+#\n+#     http://www.apache.org/licenses/LICENSE-2.0\n+#\n+# Unless required by applicable law or agreed to in writing, software\n+# distributed under the License is distributed on an \"AS IS\" BASIS,\n+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n+# See the License for the specific language governing permissions and\n+# limitations under the License.\n+# ==============================================================================\n+\"\"\"Flower SuperExec service.\"\"\"\n"
+        },
+        {
+            "commit": "cbb7561e4e0d81a027fbd7ff6482fea13ee17398",
+            "file_path": "framework/py/flwr/superexec/deployment.py",
+            "diff": "diff --git a/framework/py/flwr/superexec/deployment.py b/framework/py/flwr/superexec/deployment.py\nnew file mode 100644\nindex 000000000..c0877c415\n--- /dev/null\n+++ b/framework/py/flwr/superexec/deployment.py\n@@ -0,0 +1,20 @@\n+# Copyright 2025 Flower Labs GmbH. All Rights Reserved.\n+#\n+# Licensed under the Apache License, Version 2.0 (the \"License\");\n+# you may not use this file except in compliance with the License.\n+# You may obtain a copy of the License at\n+#\n+#     http://www.apache.org/licenses/LICENSE-2.0\n+#\n+# Unless required by applicable law or agreed to in writing, software\n+# distributed under the License is distributed on an \"AS IS\" BASIS,\n+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n+# See the License for the specific language governing permissions and\n+# limitations under the License.\n+# ==============================================================================\n+\"\"\"Deployment engine executor for backward compatibility.\"\"\"\n+\n+\n+from flwr.superlink.executor import DeploymentEngine\n+\n+executor = DeploymentEngine()\n"
+        },
+        {
+            "commit": "cbb7561e4e0d81a027fbd7ff6482fea13ee17398",
+            "file_path": "framework/py/flwr/superexec/simulation.py",
+            "diff": "diff --git a/framework/py/flwr/superexec/simulation.py b/framework/py/flwr/superexec/simulation.py\nnew file mode 100644\nindex 000000000..116a684e0\n--- /dev/null\n+++ b/framework/py/flwr/superexec/simulation.py\n@@ -0,0 +1,20 @@\n+# Copyright 2025 Flower Labs GmbH. All Rights Reserved.\n+#\n+# Licensed under the Apache License, Version 2.0 (the \"License\");\n+# you may not use this file except in compliance with the License.\n+# You may obtain a copy of the License at\n+#\n+#     http://www.apache.org/licenses/LICENSE-2.0\n+#\n+# Unless required by applicable law or agreed to in writing, software\n+# distributed under the License is distributed on an \"AS IS\" BASIS,\n+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n+# See the License for the specific language governing permissions and\n+# limitations under the License.\n+# ==============================================================================\n+\"\"\"Simulation engine executor for backward compatibility.\"\"\"\n+\n+\n+from flwr.superlink.executor import SimulationEngine\n+\n+executor = SimulationEngine()\n"
+        },
+        {
+            "commit": "cbb7561e4e0d81a027fbd7ff6482fea13ee17398",
+            "file_path": "framework/py/flwr/superlink/executor/__init__.py",
+            "diff": "diff --git a/framework/py/flwr/superlink/executor/__init__.py b/framework/py/flwr/superlink/executor/__init__.py\nindex 9919e95b7..6974c8b2b 100644\n--- a/framework/py/flwr/superlink/executor/__init__.py\n+++ b/framework/py/flwr/superlink/executor/__init__.py\n@@ -16,9 +16,13 @@\n \n \n from .app import load_executor\n+from .deployment import DeploymentEngine\n from .executor import Executor\n+from .simulation import SimulationEngine\n \n __all__ = [\n+    \"DeploymentEngine\",\n     \"Executor\",\n+    \"SimulationEngine\",\n     \"load_executor\",\n ]\n"
+        }
+    ]
+}

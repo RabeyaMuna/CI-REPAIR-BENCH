@@ -1,0 +1,15 @@
+{
+    "sha_fail": "bddc230cc11627fdbb8bdd98b67489afcad87d98",
+    "changed_files": [
+        {
+            "commit": "bddc230cc11627fdbb8bdd98b67489afcad87d98",
+            "file_path": "sqlglot/dialects/dremio.py",
+            "diff": "diff --git a/sqlglot/dialects/dremio.py b/sqlglot/dialects/dremio.py\nindex d1bd9b9..490ea79 100644\n--- a/sqlglot/dialects/dremio.py\n+++ b/sqlglot/dialects/dremio.py\n@@ -7,6 +7,7 @@ from sqlglot import parser, generator, tokens\n from sqlglot.dialects.dialect import (\n     Dialect,\n     build_timetostr_or_tochar,\n+    build_formatted_time,\n     rename_func,\n     unit_to_var,\n )\n@@ -113,6 +114,8 @@ class Dremio(Dialect):\n         FUNCTIONS = {\n             **parser.Parser.FUNCTIONS,\n             \"TO_CHAR\": to_char_is_numeric_handler,\n+            \"DATE_FORMAT\": build_formatted_time(exp.TimeToStr, \"dremio\"),\n+            \"TO_DATE\": build_formatted_time(exp.TsOrDsToDate, \"dremio\"),\n         }\n \n     class Generator(generator.Generator):\n"
+        },
+        {
+            "commit": "bddc230cc11627fdbb8bdd98b67489afcad87d98",
+            "file_path": "tests/dialects/test_dremio.py",
+            "diff": "diff --git a/tests/dialects/test_dremio.py b/tests/dialects/test_dremio.py\nindex 844ff00..d5fc362 100644\n--- a/tests/dialects/test_dremio.py\n+++ b/tests/dialects/test_dremio.py\n@@ -180,3 +180,16 @@ class TestDremio(Validator):\n         self.validate_identity(\n             \"SELECT DATE_SUB(col, a, 'HOUR')\", \"SELECT TIMESTAMPADD(HOUR, a * -1, col)\"\n         )\n+\n+    def test_datetime_parsing(self):\n+        ts = \"CAST('2025-08-18 15:30:00' AS TIMESTAMP)\"\n+\n+        self.validate_identity(\n+            f\"SELECT DATE_FORMAT({ts}, 'yyyy-mm-dd')\",\n+            f\"SELECT TO_CHAR({ts}, 'yyyy-mm-dd')\",\n+        )\n+\n+        self.validate_all(\n+            \"SELECT DATE_FORMAT(CAST('2025-08-18 15:30:00' AS TIMESTAMP), 'yyyy-mm-dd')\",\n+            \"SELECT TO_CHAR(CAST('2025-08-18 15:30:00' AS TIMESTAMP), 'yyyy-mm-dd')\",\n+        )\n"
+        }
+    ]
+}

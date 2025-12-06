@@ -1,0 +1,10 @@
+{
+    "sha_fail": "14df8e5918cb5d6c4ca62d23b5a1f653a0e92212",
+    "changed_files": [
+        {
+            "commit": "14df8e5918cb5d6c4ca62d23b5a1f653a0e92212",
+            "file_path": "framework/py/flwr/server/grid/grpc_grid_test.py",
+            "diff": "diff --git a/framework/py/flwr/server/grid/grpc_grid_test.py b/framework/py/flwr/server/grid/grpc_grid_test.py\nindex f85e08354..2bcb493aa 100644\n--- a/framework/py/flwr/server/grid/grpc_grid_test.py\n+++ b/framework/py/flwr/server/grid/grpc_grid_test.py\n@@ -174,14 +174,8 @@ class TestGrpcGrid(unittest.TestCase):\n         self.mock_stub.PullMessages.return_value = Mock(\n             messages_list=[message_to_proto(ok_msg), message_to_proto(err_msg)],\n             message_object_trees=[\n-                ObjectTree(\n-                    object_id=ok_msg.object_id,\n-                    children=[\n-                        ObjectTree(object_id=child_id)\n-                        for child_id in ok_msg_descendant_ids\n-                    ],\n-                ),\n-                ObjectTree(object_id=err_msg.object_id, children=[]),\n+                get_object_tree(ok_msg),\n+                get_object_tree(err_msg),\n             ],\n         )\n         # Prepare: Mock response of PullObject\n@@ -226,9 +220,7 @@ class TestGrpcGrid(unittest.TestCase):\n         reply.metadata.__dict__[\"_message_id\"] = reply.object_id\n         self.mock_stub.PullMessages.return_value = Mock(\n             messages_list=[message_to_proto(reply)],\n-            message_object_trees=[\n-                ObjectTree(object_id=reply.object_id, children=[]),\n-            ],\n+            get_object_tree(reply),\n         )\n         self.mock_stub.PullObject.return_value = Mock(\n             object_found=True, object_available=True, object_content=reply.deflate()\n"
+        }
+    ]
+}

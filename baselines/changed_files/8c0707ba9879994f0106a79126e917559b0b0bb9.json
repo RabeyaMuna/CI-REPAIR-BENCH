@@ -1,0 +1,25 @@
+{
+    "sha_fail": "8c0707ba9879994f0106a79126e917559b0b0bb9",
+    "changed_files": [
+        {
+            "commit": "8c0707ba9879994f0106a79126e917559b0b0bb9",
+            "file_path": "ChatTTS/core.py",
+            "diff": "diff --git a/ChatTTS/core.py b/ChatTTS/core.py\nindex a056604..f1d7c47 100644\n--- a/ChatTTS/core.py\n+++ b/ChatTTS/core.py\n@@ -24,6 +24,7 @@ from .utils import (\n     del_all,\n )\n from .utils import logger as utils_logger\n+from .utils import FileLike\n \n from .norm import Normalizer\n \n@@ -66,7 +67,7 @@ class Chat:\n         self,\n         source: Literal[\"huggingface\", \"local\", \"custom\"] = \"local\",\n         force_redownload=False,\n-        custom_path: Optional[torch.serialization.FILE_LIKE] = None,\n+        custom_path: Optional[FileLike] = None,\n     ) -> Optional[str]:\n         if source == \"local\":\n             download_path = custom_path if custom_path is not None else os.getcwd()\n@@ -138,7 +139,7 @@ class Chat:\n         source: Literal[\"huggingface\", \"local\", \"custom\"] = \"local\",\n         force_redownload=False,\n         compile: bool = False,\n-        custom_path: Optional[torch.serialization.FILE_LIKE] = None,\n+        custom_path: Optional[FileLike] = None,\n         device: Optional[torch.device] = None,\n         coef: Optional[torch.Tensor] = None,\n         use_flash_attn=False,\n"
+        },
+        {
+            "commit": "8c0707ba9879994f0106a79126e917559b0b0bb9",
+            "file_path": "ChatTTS/model/tokenizer.py",
+            "diff": "diff --git a/ChatTTS/model/tokenizer.py b/ChatTTS/model/tokenizer.py\nindex 20f7c7e..b8e9d3d 100644\n--- a/ChatTTS/model/tokenizer.py\n+++ b/ChatTTS/model/tokenizer.py\n@@ -10,13 +10,13 @@ from typing import List, Tuple, Optional, Union\n import torch\n from transformers import BertTokenizerFast\n \n-from ..utils import del_all\n+from ..utils import del_all, FileLike\n \n \n class Tokenizer:\n     def __init__(\n         self,\n-        tokenizer_path: torch.serialization.FILE_LIKE,\n+        tokenizer_path: FileLike,\n     ):\n         \"\"\"\n         tokenizer: BertTokenizerFast = torch.load(\n"
+        },
+        {
+            "commit": "8c0707ba9879994f0106a79126e917559b0b0bb9",
+            "file_path": "ChatTTS/utils/__init__.py",
+            "diff": "diff --git a/ChatTTS/utils/__init__.py b/ChatTTS/utils/__init__.py\nindex ecdbfc9..4648604 100644\n--- a/ChatTTS/utils/__init__.py\n+++ b/ChatTTS/utils/__init__.py\n@@ -1,4 +1,4 @@\n from .dl import check_all_assets, download_all_assets\n from .gpu import select_device\n-from .io import load_safetensors, get_latest_modified_file, del_all\n+from .io import load_safetensors, get_latest_modified_file, del_all, FileLike\n from .log import logger\n"
+        },
+        {
+            "commit": "8c0707ba9879994f0106a79126e917559b0b0bb9",
+            "file_path": "ChatTTS/utils/io.py",
+            "diff": "diff --git a/ChatTTS/utils/io.py b/ChatTTS/utils/io.py\nindex f3faa8f..dc90e0e 100644\n--- a/ChatTTS/utils/io.py\n+++ b/ChatTTS/utils/io.py\n@@ -1,6 +1,6 @@\n import os\n import logging\n-from typing import Union\n+from typing import Union, IO\n from dataclasses import is_dataclass\n \n from safetensors import safe_open\n@@ -8,6 +8,13 @@ import torch\n \n from .log import logger\n \n+if hasattr(torch.serialization, \"FILE_LIKE\"):\n+    FileLike = torch.serialization.FILE_LIKE\n+elif hasattr(torch.types, \"FILE_LIKE\"):\n+    FileLike = torch.types.FileLike\n+else:\n+    FileLike = Union[str, os.PathLike, IO[bytes]]\n+\n \n @torch.inference_mode()\n def load_safetensors(filename: str):\n"
+        }
+    ]
+}

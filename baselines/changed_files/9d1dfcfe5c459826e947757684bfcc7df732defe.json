@@ -1,0 +1,10 @@
+{
+    "sha_fail": "9d1dfcfe5c459826e947757684bfcc7df732defe",
+    "changed_files": [
+        {
+            "commit": "9d1dfcfe5c459826e947757684bfcc7df732defe",
+            "file_path": "tox.ini",
+            "diff": "diff --git a/tox.ini b/tox.ini\nindex db9cf563..a1b50595 100644\n--- a/tox.ini\n+++ b/tox.ini\n@@ -213,14 +213,14 @@ deps =\n allowlist_externals = bash\n commands = bash scripts/dev/run_shellcheck.sh {posargs}\n \n-[testenv:mypy-{pyqt5,pyqt6}]\n+[testenv:mypy{,-pyqt5,-pyqt6}]\n basepython = {env:PYTHON:python3}\n passenv =\n     TERM\n     MYPY_FORCE_TERMINAL_WIDTH\n setenv =\n     # See qutebrowser/qt/machinery.py\n-    pyqt6: QUTE_CONSTANTS_ARGS=--always-true=USE_PYQT6 --always-false=USE_PYQT5 --always-false=USE_PYSIDE6 --always-false=IS_QT5 --always-true=IS_QT6 --always-true=IS_PYQT --always-false=IS_PYSIDE\n+    !pyqt5: QUTE_CONSTANTS_ARGS=--always-true=USE_PYQT6 --always-false=USE_PYQT5 --always-false=USE_PYSIDE6 --always-false=IS_QT5 --always-true=IS_QT6 --always-true=IS_PYQT --always-false=IS_PYSIDE\n     pyqt5: QUTE_CONSTANTS_ARGS=--always-false=USE_PYQT6 --always-true=USE_PYQT5 --always-false=USE_PYSIDE6 --always-true=IS_QT5 --always-false=IS_QT6 --always-true=IS_PYQT --always-false=IS_PYSIDE\n deps =\n     -r{toxinidir}/requirements.txt\n"
+        }
+    ]
+}

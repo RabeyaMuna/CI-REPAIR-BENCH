@@ -1,0 +1,10 @@
+{
+    "sha_fail": "b0ad27a67681f1b6fb473cc75c642efa1f4941d5",
+    "changed_files": [
+        {
+            "commit": "b0ad27a67681f1b6fb473cc75c642efa1f4941d5",
+            "file_path": "src/openai/_version.py",
+            "diff": "diff --git a/src/openai/_version.py b/src/openai/_version.py\nindex ca89066..a5c9b3d 100644\n--- a/src/openai/_version.py\n+++ b/src/openai/_version.py\n@@ -1,4 +1,4 @@\n # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.\n \n __title__ = \"openai\"\n-__version__ = \"1.98.0\"  # x-release-please-version\n+__version__ = \"1.99.0\"  # x-release-please-version\n"
+        }
+    ]
+}

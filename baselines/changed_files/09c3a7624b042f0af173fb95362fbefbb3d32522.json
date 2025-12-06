@@ -1,0 +1,10 @@
+{
+    "sha_fail": "09c3a7624b042f0af173fb95362fbefbb3d32522",
+    "changed_files": [
+        {
+            "commit": "09c3a7624b042f0af173fb95362fbefbb3d32522",
+            "file_path": "libs/agno/agno/utils/response.py",
+            "diff": "diff --git a/libs/agno/agno/utils/response.py b/libs/agno/agno/utils/response.py\nindex ebfe64451..25874d402 100644\n--- a/libs/agno/agno/utils/response.py\n+++ b/libs/agno/agno/utils/response.py\n@@ -149,9 +149,13 @@ def get_paused_content(run_response: RunResponse) -> str:\n     return paused_content\n \n \n-def generator_wrapper(event: Union[RunResponseEvent, TeamRunResponseEvent]) -> Iterator[Union[RunResponseEvent, TeamRunResponseEvent]]:\n+def generator_wrapper(\n+    event: Union[RunResponseEvent, TeamRunResponseEvent],\n+) -> Iterator[Union[RunResponseEvent, TeamRunResponseEvent]]:\n     yield event\n \n \n-async def async_generator_wrapper(event: Union[RunResponseEvent, TeamRunResponseEvent]) -> AsyncIterator[Union[RunResponseEvent, TeamRunResponseEvent]]:\n+async def async_generator_wrapper(\n+    event: Union[RunResponseEvent, TeamRunResponseEvent],\n+) -> AsyncIterator[Union[RunResponseEvent, TeamRunResponseEvent]]:\n     yield event\n"
+        }
+    ]
+}

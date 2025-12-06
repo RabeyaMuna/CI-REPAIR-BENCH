@@ -1,0 +1,10 @@
+{
+    "sha_fail": "3ce60d176f3497dc22d1f831fa1babeca511042c",
+    "changed_files": [
+        {
+            "commit": "3ce60d176f3497dc22d1f831fa1babeca511042c",
+            "file_path": "deepface/models/face_detection/TinaFace.py",
+            "diff": "diff --git a/deepface/models/face_detection/TinaFace.py b/deepface/models/face_detection/TinaFace.py\nindex aeee66c..3607640 100644\n--- a/deepface/models/face_detection/TinaFace.py\n+++ b/deepface/models/face_detection/TinaFace.py\n@@ -52,15 +52,15 @@ class TinaFaceClient(Detector):\n         try:\n             import onnxruntime as ort  # type: ignore\n             providers = (['CUDAExecutionProvider', 'CPUExecutionProvider']\n-                         if 'CUDAExecutionProvider' in ort.get_available_providers()\n-                         else ['CPUExecutionProvider'])\n+                        if 'CUDAExecutionProvider' in ort.get_available_providers()\n+                        else ['CPUExecutionProvider'])\n         except ImportError as exc:\n             raise ValueError(\n-                \"onnxruntime is required for TinaFace. Please install it with: pip install onnxruntime\"\n+                \"onnxruntime is required for TinaFace. Please install it with: \"\n+                \"pip install onnxruntime\"\n             ) from exc\n \n         # Download the ONNX weights directly to weights directory\n-        home = folder_utils.get_deepface_home()\n \n         weight_file = weight_utils.download_weights_if_necessary(\n             file_name=WEIGHT_FILENAME,\n"
+        }
+    ]
+}

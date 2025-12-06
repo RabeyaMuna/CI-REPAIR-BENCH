@@ -1,0 +1,10 @@
+{
+    "sha_fail": "fdf5d0ecff09bdd75fcd9a15b83f381d6e08b780",
+    "changed_files": [
+        {
+            "commit": "fdf5d0ecff09bdd75fcd9a15b83f381d6e08b780",
+            "file_path": "locust/test/test_parser.py",
+            "diff": "diff --git a/locust/test/test_parser.py b/locust/test/test_parser.py\nindex e053c6f..4ece189 100644\n--- a/locust/test/test_parser.py\n+++ b/locust/test/test_parser.py\n@@ -57,7 +57,7 @@ class TestParser(unittest.TestCase):\n         self.assertTrue(options.headless)\n         self.assertEqual([\"Critical\", \"Normal\"], options.tags)\n         self.assertEqual(\"https://example.com\", options.host)\n-    \n+\n     def test_parse_options_from_conf_file_headless_true(self):\n         with NamedTemporaryFile(mode=\"w\", suffix=\".conf\") as file:\n             config_data = \"\"\"\\\n"
+        }
+    ]
+}

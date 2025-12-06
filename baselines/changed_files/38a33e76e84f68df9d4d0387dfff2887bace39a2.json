@@ -1,0 +1,45 @@
+{
+    "sha_fail": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+    "changed_files": [
+        {
+            "commit": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+            "file_path": "docs/topics/addons.rst",
+            "diff": "diff --git a/docs/topics/addons.rst b/docs/topics/addons.rst\nindex 815501e6..dba14e74 100644\n--- a/docs/topics/addons.rst\n+++ b/docs/topics/addons.rst\n@@ -88,7 +88,7 @@ recommend that such custom components should be written in the following way:\n \n 1. The custom component (e.g. ``MyDownloadHandler``) shouldn't inherit from the\n    default Scrapy one (e.g.\n-   ``scrapy.core.downloader.handlers.http.HTTPDownloadHandler``), but instead\n+   ``scrapy.core.downloader.handlers.http11.HTTP11DownloadHandler``), but instead\n    be able to load the class of the fallback component from a special setting\n    (e.g. ``MY_FALLBACK_DOWNLOAD_HANDLER``), create an instance of it and use\n    it.\n@@ -166,7 +166,6 @@ Use a fallback component:\n \n .. code-block:: python\n \n-    from scrapy.core.downloader.handlers.http import HTTPDownloadHandler\n     from scrapy.utils.misc import build_from_crawler\n \n \n"
+        },
+        {
+            "commit": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+            "file_path": "docs/topics/settings.rst",
+            "diff": "diff --git a/docs/topics/settings.rst b/docs/topics/settings.rst\nindex 9dc26d70..5e56de05 100644\n--- a/docs/topics/settings.rst\n+++ b/docs/topics/settings.rst\n@@ -711,7 +711,7 @@ connections (for ``HTTP10DownloadHandler``).\n     so you can safely ignore this setting,\n     unless you really want to use HTTP/1.0 and override\n     :setting:`DOWNLOAD_HANDLERS` for ``http(s)`` scheme accordingly,\n-    i.e. to ``'scrapy.core.downloader.handlers.http.HTTP10DownloadHandler'``.\n+    i.e. to ``'scrapy.core.downloader.handlers.http10.HTTP10DownloadHandler'``.\n \n .. setting:: DOWNLOADER_CLIENTCONTEXTFACTORY\n \n@@ -909,8 +909,8 @@ Default:\n     {\n         \"data\": \"scrapy.core.downloader.handlers.datauri.DataURIDownloadHandler\",\n         \"file\": \"scrapy.core.downloader.handlers.file.FileDownloadHandler\",\n-        \"http\": \"scrapy.core.downloader.handlers.http.HTTPDownloadHandler\",\n-        \"https\": \"scrapy.core.downloader.handlers.http.HTTPDownloadHandler\",\n+        \"http\": \"scrapy.core.downloader.handlers.http11.HTTP11DownloadHandler\",\n+        \"https\": \"scrapy.core.downloader.handlers.http11.HTTP11DownloadHandler\",\n         \"s3\": \"scrapy.core.downloader.handlers.s3.S3DownloadHandler\",\n         \"ftp\": \"scrapy.core.downloader.handlers.ftp.FTPDownloadHandler\",\n     }\n"
+        },
+        {
+            "commit": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+            "file_path": "scrapy/core/downloader/handlers/http.py",
+            "diff": "diff --git a/scrapy/core/downloader/handlers/http.py b/scrapy/core/downloader/handlers/http.py\nindex 93b96c77..bc343e37 100644\n--- a/scrapy/core/downloader/handlers/http.py\n+++ b/scrapy/core/downloader/handlers/http.py\n@@ -1,7 +1,18 @@\n+import warnings\n+\n from scrapy.core.downloader.handlers.http10 import HTTP10DownloadHandler\n from scrapy.core.downloader.handlers.http11 import (\n     HTTP11DownloadHandler as HTTPDownloadHandler,\n )\n+from scrapy.exceptions import ScrapyDeprecationWarning\n+\n+warnings.warn(\n+    \"The scrapy.core.downloader.handlers.http module is deprecated,\"\n+    \" please import scrapy.core.downloader.handlers.http11.HTTP11DownloadHandler\"\n+    \" instead of its deprecated alias scrapy.core.downloader.handlers.http.HTTPDownloadHandler\",\n+    ScrapyDeprecationWarning,\n+    stacklevel=2,\n+)\n \n __all__ = [\n     \"HTTP10DownloadHandler\",\n"
+        },
+        {
+            "commit": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+            "file_path": "scrapy/core/downloader/handlers/s3.py",
+            "diff": "diff --git a/scrapy/core/downloader/handlers/s3.py b/scrapy/core/downloader/handlers/s3.py\nindex 02beb2f8..05a71b74 100644\n--- a/scrapy/core/downloader/handlers/s3.py\n+++ b/scrapy/core/downloader/handlers/s3.py\n@@ -2,7 +2,7 @@ from __future__ import annotations\n \n from typing import TYPE_CHECKING, Any\n \n-from scrapy.core.downloader.handlers.http import HTTPDownloadHandler\n+from scrapy.core.downloader.handlers.http11 import HTTP11DownloadHandler\n from scrapy.exceptions import NotConfigured\n from scrapy.utils.boto import is_botocore_available\n from scrapy.utils.httpobj import urlparse_cached\n@@ -29,7 +29,7 @@ class S3DownloadHandler:\n         aws_access_key_id: str | None = None,\n         aws_secret_access_key: str | None = None,\n         aws_session_token: str | None = None,\n-        httpdownloadhandler: type[HTTPDownloadHandler] = HTTPDownloadHandler,\n+        httpdownloadhandler: type[HTTP11DownloadHandler] = HTTP11DownloadHandler,\n         **kw: Any,\n     ):\n         if not is_botocore_available():\n"
+        },
+        {
+            "commit": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+            "file_path": "scrapy/robotstxt.py",
+            "diff": "diff --git a/scrapy/robotstxt.py b/scrapy/robotstxt.py\nindex e1a12be0..18b62254 100644\n--- a/scrapy/robotstxt.py\n+++ b/scrapy/robotstxt.py\n@@ -28,7 +28,7 @@ def decode_robotstxt(\n         if to_native_str_type:\n             body_decoded = to_unicode(robotstxt_body)\n         else:\n-            body_decoded = robotstxt_body.decode(\"utf-8\", errors=\"ignore\")\n+            body_decoded = robotstxt_body.decode(\"utf-8-sig\", errors=\"ignore\")\n     except UnicodeDecodeError:\n         # If we found garbage or robots.txt in an encoding other than UTF-8, disregard it.\n         # Switch to 'allow all' state.\n"
+        },
+        {
+            "commit": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+            "file_path": "scrapy/settings/default_settings.py",
+            "diff": "diff --git a/scrapy/settings/default_settings.py b/scrapy/settings/default_settings.py\nindex 624e7177..543e5c04 100644\n--- a/scrapy/settings/default_settings.py\n+++ b/scrapy/settings/default_settings.py\n@@ -251,8 +251,8 @@ DOWNLOAD_HANDLERS = {}\n DOWNLOAD_HANDLERS_BASE = {\n     \"data\": \"scrapy.core.downloader.handlers.datauri.DataURIDownloadHandler\",\n     \"file\": \"scrapy.core.downloader.handlers.file.FileDownloadHandler\",\n-    \"http\": \"scrapy.core.downloader.handlers.http.HTTPDownloadHandler\",\n-    \"https\": \"scrapy.core.downloader.handlers.http.HTTPDownloadHandler\",\n+    \"http\": \"scrapy.core.downloader.handlers.http11.HTTP11DownloadHandler\",\n+    \"https\": \"scrapy.core.downloader.handlers.http11.HTTP11DownloadHandler\",\n     \"s3\": \"scrapy.core.downloader.handlers.s3.S3DownloadHandler\",\n     \"ftp\": \"scrapy.core.downloader.handlers.ftp.FTPDownloadHandler\",\n }\n"
+        },
+        {
+            "commit": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+            "file_path": "tests/test_addons.py",
+            "diff": "diff --git a/tests/test_addons.py b/tests/test_addons.py\nindex 0383fa62..457945ea 100644\n--- a/tests/test_addons.py\n+++ b/tests/test_addons.py\n@@ -149,7 +149,7 @@ class TestAddonManager:\n         )\n         assert (\n             crawler.settings.get(FALLBACK_SETTING)\n-            == \"scrapy.core.downloader.handlers.http.HTTPDownloadHandler\"\n+            == \"scrapy.core.downloader.handlers.http11.HTTP11DownloadHandler\"\n         )\n \n         settings_dict = {\n"
+        },
+        {
+            "commit": "38a33e76e84f68df9d4d0387dfff2887bace39a2",
+            "file_path": "tests/test_robotstxt_interface.py",
+            "diff": "diff --git a/tests/test_robotstxt_interface.py b/tests/test_robotstxt_interface.py\nindex 6a24d2e9..bc79e3a1 100644\n--- a/tests/test_robotstxt_interface.py\n+++ b/tests/test_robotstxt_interface.py\n@@ -129,6 +129,12 @@ class TestDecodeRobotsTxt:\n         decoded_content = decode_robotstxt(robotstxt_body, spider=None)\n         assert decoded_content == \"User-agent: *\\nDisallow: /\\n\"\n \n+    # UTF-8 BOM at the beginning of the file ignored\n+    def test_decode_utf8_bom(self):\n+        robotstxt_body = b\"\\xef\\xbb\\xbfUser-agent: *\\nDisallow: /\\n\"\n+        decoded_content = decode_robotstxt(robotstxt_body, spider=None)\n+        assert decoded_content == \"User-agent: *\\nDisallow: /\\n\"\n+\n \n class TestPythonRobotParser(BaseRobotParserTest):\n     def setup_method(self):\n"
+        }
+    ]
+}

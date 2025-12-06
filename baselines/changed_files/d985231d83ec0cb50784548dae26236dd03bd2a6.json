@@ -1,0 +1,30 @@
+{
+    "sha_fail": "d985231d83ec0cb50784548dae26236dd03bd2a6",
+    "changed_files": [
+        {
+            "commit": "d985231d83ec0cb50784548dae26236dd03bd2a6",
+            "file_path": "tests/common.py",
+            "diff": "diff --git a/tests/common.py b/tests/common.py\nindex 3617d17..e061a75 100644\n--- a/tests/common.py\n+++ b/tests/common.py\n@@ -96,6 +96,13 @@ _CATEGORY_TEST_DATA: tuple[CategoryTestData] = (\n         version_base=\"1.0.0\",\n         version_update=\"2.0.0\",\n     ),\n+    CategoryTestData(\n+        category=HacsCategory.PYTHON_SCRIPT,\n+        repository=\"hacs-test-org/python_script-basic\",\n+        files=[\"example.py\"],\n+        version_base=\"1.0.0\",\n+        version_update=\"2.0.0\",\n+    ),\n     CategoryTestData(\n         category=HacsCategory.TEMPLATE,\n         repository=\"hacs-test-org/template-basic\",\n@@ -113,13 +120,18 @@ _CATEGORY_TEST_DATA: tuple[CategoryTestData] = (\n )\n \n \n-def category_test_data_parametrized(*, skip_categories: list[HacsCategory] | None = None, **kwargs):\n+def category_test_data_parametrized(\n+    *,\n+    skip_categories: list[HacsCategory] | None = None,\n+    skip_reason: str | None = None,\n+    **kwargs,\n+):\n     return (\n         pytest.param(\n             entry,\n             marks=pytest.mark.skipif(\n                 skip_categories and entry[\"category\"] in skip_categories,\n-                reason=f\"Skipping {entry['category']}\",\n+                reason=f\"Skipping {entry['category']} {skip_reason or ''}\",\n             ),\n             id=entry[\"repository\"],\n         )\n"
+        },
+        {
+            "commit": "d985231d83ec0cb50784548dae26236dd03bd2a6",
+            "file_path": "tests/fixtures/proxy/raw.githubusercontent.com/hacs-test-org/python_script-basic/1.0.0/python_scripts/example.py",
+            "diff": "diff --git a/tests/fixtures/proxy/raw.githubusercontent.com/hacs-test-org/python_script-basic/1.0.0/python_scripts/example.py b/tests/fixtures/proxy/raw.githubusercontent.com/hacs-test-org/python_script-basic/1.0.0/python_scripts/example.py\nnew file mode 100644\nindex 0000000..e69de29\n"
+        },
+        {
+            "commit": "d985231d83ec0cb50784548dae26236dd03bd2a6",
+            "file_path": "tests/fixtures/proxy/raw.githubusercontent.com/hacs-test-org/python_script-basic/2.0.0/python_scripts/example.py",
+            "diff": "diff --git a/tests/fixtures/proxy/raw.githubusercontent.com/hacs-test-org/python_script-basic/2.0.0/python_scripts/example.py b/tests/fixtures/proxy/raw.githubusercontent.com/hacs-test-org/python_script-basic/2.0.0/python_scripts/example.py\nnew file mode 100644\nindex 0000000..e69de29\n"
+        },
+        {
+            "commit": "d985231d83ec0cb50784548dae26236dd03bd2a6",
+            "file_path": "tests/repositories/test_remove_repository.py",
+            "diff": "diff --git a/tests/repositories/test_remove_repository.py b/tests/repositories/test_remove_repository.py\nindex c82b167..57effda 100644\n--- a/tests/repositories/test_remove_repository.py\n+++ b/tests/repositories/test_remove_repository.py\n@@ -5,6 +5,8 @@ from typing import Generator\n from homeassistant.core import HomeAssistant\n import pytest\n \n+from custom_components.hacs.enums import HacsCategory\n+\n from tests.common import (\n     CategoryTestData,\n     WSClient,\n@@ -14,7 +16,13 @@ from tests.common import (\n from tests.conftest import SnapshotFixture\n \n \n-@pytest.mark.parametrize(\"category_test_data\", category_test_data_parametrized())\n+@pytest.mark.parametrize(\n+    \"category_test_data\",\n+    category_test_data_parametrized(\n+        skip_categories=[HacsCategory.PYTHON_SCRIPT],\n+        skip_reason=\"bug in cleanup, using repo name instad of file name.\",\n+    ),\n+)\n async def test_remove_repository(\n     hass: HomeAssistant,\n     setup_integration: Generator,\n@@ -31,7 +39,7 @@ async def test_remove_repository(\n \n     assert len(hacs.repositories.list_downloaded) == 2\n \n-    if repo.data.category == \"theme\":\n+    if repo.data.category in (\"theme\", \"python_script\"):\n         repo.data.file_name = category_test_data[\"files\"][0]\n \n     # workaround for local path bug in tests\n"
+        },
+        {
+            "commit": "d985231d83ec0cb50784548dae26236dd03bd2a6",
+            "file_path": "tests/test_data_client.py",
+            "diff": "diff --git a/tests/test_data_client.py b/tests/test_data_client.py\nindex 47947c3..9ab9717 100644\n--- a/tests/test_data_client.py\n+++ b/tests/test_data_client.py\n@@ -2,7 +2,9 @@\n \n import asyncio\n from types import NoneType\n+\n import pytest\n+\n from custom_components.hacs.base import HacsBase\n from custom_components.hacs.exceptions import HacsException, HacsNotModifiedException\n \n"
+        }
+    ]
+}

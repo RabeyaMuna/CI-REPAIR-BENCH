@@ -1,0 +1,10 @@
+{
+    "sha_fail": "1a41bfdce3fbdd13b1269f0acc04885762c39dd1",
+    "changed_files": [
+        {
+            "commit": "1a41bfdce3fbdd13b1269f0acc04885762c39dd1",
+            "file_path": "libs/agno/agno/memory/team.py",
+            "diff": "diff --git a/libs/agno/agno/memory/team.py b/libs/agno/agno/memory/team.py\nindex a21c6fbdf..b4a8f6138 100644\n--- a/libs/agno/agno/memory/team.py\n+++ b/libs/agno/agno/memory/team.py\n@@ -326,7 +326,7 @@ class TeamMemory:\n \n         self.classifier.existing_memories = self.memories\n         classifier_response = await self.classifier.arun(input)\n-        if classifier_response == \"yes\":\n+        if classifier_response.lower() == \"yes\":\n             return True\n         return False\n \n"
+        }
+    ]
+}

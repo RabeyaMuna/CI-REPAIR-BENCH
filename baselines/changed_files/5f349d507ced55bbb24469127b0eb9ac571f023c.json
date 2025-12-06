@@ -1,0 +1,285 @@
+{
+    "sha_fail": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+    "changed_files": [
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/__init__.py",
+            "diff": "diff --git a/lightrag/api/__init__.py b/lightrag/api/__init__.py\nindex 1f47cde0..4ed1a2e9 100644\n--- a/lightrag/api/__init__.py\n+++ b/lightrag/api/__init__.py\n@@ -1 +1 @@\n-__api_version__ = \"0215\"\n+__api_version__ = \"0216\"\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/_basePickBy-BPAKxgo7.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/_basePickBy-BPAKxgo7.js b/lightrag/api/webui/assets/_basePickBy-BPAKxgo7.js\nnew file mode 100644\nindex 00000000..7be0abc6\nBinary files /dev/null and b/lightrag/api/webui/assets/_basePickBy-BPAKxgo7.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/_baseUniq-I-HKKcQv.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/_baseUniq-I-HKKcQv.js b/lightrag/api/webui/assets/_baseUniq-I-HKKcQv.js\nnew file mode 100644\nindex 00000000..b8f98a0a\nBinary files /dev/null and b/lightrag/api/webui/assets/_baseUniq-I-HKKcQv.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/architectureDiagram-SUXI7LT5-C6pkR9f0.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/architectureDiagram-SUXI7LT5-C6pkR9f0.js b/lightrag/api/webui/assets/architectureDiagram-SUXI7LT5-C6pkR9f0.js\nnew file mode 100644\nindex 00000000..288b781f\nBinary files /dev/null and b/lightrag/api/webui/assets/architectureDiagram-SUXI7LT5-C6pkR9f0.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/blockDiagram-6J76NXCF-CJVoYSim.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/blockDiagram-6J76NXCF-CJVoYSim.js b/lightrag/api/webui/assets/blockDiagram-6J76NXCF-CJVoYSim.js\nnew file mode 100644\nindex 00000000..8f248109\nBinary files /dev/null and b/lightrag/api/webui/assets/blockDiagram-6J76NXCF-CJVoYSim.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/c4Diagram-6F6E4RAY-B5BAu3-h.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/c4Diagram-6F6E4RAY-B5BAu3-h.js b/lightrag/api/webui/assets/c4Diagram-6F6E4RAY-B5BAu3-h.js\nnew file mode 100644\nindex 00000000..6b49c70e\nBinary files /dev/null and b/lightrag/api/webui/assets/c4Diagram-6F6E4RAY-B5BAu3-h.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/chunk-353BL4L5-_6GQP54L.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/chunk-353BL4L5-_6GQP54L.js b/lightrag/api/webui/assets/chunk-353BL4L5-_6GQP54L.js\nnew file mode 100644\nindex 00000000..fd3ef06c\nBinary files /dev/null and b/lightrag/api/webui/assets/chunk-353BL4L5-_6GQP54L.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/chunk-67H74DCK-CRR2oQaz.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/chunk-67H74DCK-CRR2oQaz.js b/lightrag/api/webui/assets/chunk-67H74DCK-CRR2oQaz.js\nnew file mode 100644\nindex 00000000..d1e90186\nBinary files /dev/null and b/lightrag/api/webui/assets/chunk-67H74DCK-CRR2oQaz.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/chunk-AACKK3MU-CWgYRJdq.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/chunk-AACKK3MU-CWgYRJdq.js b/lightrag/api/webui/assets/chunk-AACKK3MU-CWgYRJdq.js\nnew file mode 100644\nindex 00000000..f6b33231\nBinary files /dev/null and b/lightrag/api/webui/assets/chunk-AACKK3MU-CWgYRJdq.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/chunk-BFAMUDN2-U-jvyawD.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/chunk-BFAMUDN2-U-jvyawD.js b/lightrag/api/webui/assets/chunk-BFAMUDN2-U-jvyawD.js\nnew file mode 100644\nindex 00000000..2419ee4e\nBinary files /dev/null and b/lightrag/api/webui/assets/chunk-BFAMUDN2-U-jvyawD.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/chunk-E2GYISFI-Cy7NDsKx.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/chunk-E2GYISFI-Cy7NDsKx.js b/lightrag/api/webui/assets/chunk-E2GYISFI-Cy7NDsKx.js\nnew file mode 100644\nindex 00000000..98a20135\nBinary files /dev/null and b/lightrag/api/webui/assets/chunk-E2GYISFI-Cy7NDsKx.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/chunk-OW32GOEJ-DFogk2Dj.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/chunk-OW32GOEJ-DFogk2Dj.js b/lightrag/api/webui/assets/chunk-OW32GOEJ-DFogk2Dj.js\nnew file mode 100644\nindex 00000000..5a287f5c\nBinary files /dev/null and b/lightrag/api/webui/assets/chunk-OW32GOEJ-DFogk2Dj.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/chunk-SKB7J2MH-Dh8Tfa_E.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/chunk-SKB7J2MH-Dh8Tfa_E.js b/lightrag/api/webui/assets/chunk-SKB7J2MH-Dh8Tfa_E.js\nnew file mode 100644\nindex 00000000..8917e6d8\nBinary files /dev/null and b/lightrag/api/webui/assets/chunk-SKB7J2MH-Dh8Tfa_E.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/chunk-SZ463SBG-CFfqCI7r.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/chunk-SZ463SBG-CFfqCI7r.js b/lightrag/api/webui/assets/chunk-SZ463SBG-CFfqCI7r.js\nnew file mode 100644\nindex 00000000..84e4afeb\nBinary files /dev/null and b/lightrag/api/webui/assets/chunk-SZ463SBG-CFfqCI7r.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/classDiagram-M3E45YP4-BYz0bX7R.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/classDiagram-M3E45YP4-BYz0bX7R.js b/lightrag/api/webui/assets/classDiagram-M3E45YP4-BYz0bX7R.js\nnew file mode 100644\nindex 00000000..b89205c0\nBinary files /dev/null and b/lightrag/api/webui/assets/classDiagram-M3E45YP4-BYz0bX7R.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/classDiagram-M3E45YP4-z9jmLgrr.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/classDiagram-M3E45YP4-z9jmLgrr.js b/lightrag/api/webui/assets/classDiagram-M3E45YP4-z9jmLgrr.js\ndeleted file mode 100644\nindex cc5d078f..00000000\nBinary files a/lightrag/api/webui/assets/classDiagram-M3E45YP4-z9jmLgrr.js and /dev/null differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/classDiagram-v2-YAWTLIQI-BYz0bX7R.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/classDiagram-v2-YAWTLIQI-BYz0bX7R.js b/lightrag/api/webui/assets/classDiagram-v2-YAWTLIQI-BYz0bX7R.js\nnew file mode 100644\nindex 00000000..b89205c0\nBinary files /dev/null and b/lightrag/api/webui/assets/classDiagram-v2-YAWTLIQI-BYz0bX7R.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/classDiagram-v2-YAWTLIQI-z9jmLgrr.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/classDiagram-v2-YAWTLIQI-z9jmLgrr.js b/lightrag/api/webui/assets/classDiagram-v2-YAWTLIQI-z9jmLgrr.js\ndeleted file mode 100644\nindex cc5d078f..00000000\nBinary files a/lightrag/api/webui/assets/classDiagram-v2-YAWTLIQI-z9jmLgrr.js and /dev/null differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/clone-CzYyPqW9.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/clone-CzYyPqW9.js b/lightrag/api/webui/assets/clone-CzYyPqW9.js\ndeleted file mode 100644\nindex 3663b786..00000000\nBinary files a/lightrag/api/webui/assets/clone-CzYyPqW9.js and /dev/null differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/clone-DwaenhoE.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/clone-DwaenhoE.js b/lightrag/api/webui/assets/clone-DwaenhoE.js\nnew file mode 100644\nindex 00000000..8fb0ee7b\nBinary files /dev/null and b/lightrag/api/webui/assets/clone-DwaenhoE.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/dagre-JOIXM2OF-C1BNp1oF.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/dagre-JOIXM2OF-C1BNp1oF.js b/lightrag/api/webui/assets/dagre-JOIXM2OF-C1BNp1oF.js\nnew file mode 100644\nindex 00000000..723e7474\nBinary files /dev/null and b/lightrag/api/webui/assets/dagre-JOIXM2OF-C1BNp1oF.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/diagram-5UYTHUR4-WtLUDKpc.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/diagram-5UYTHUR4-WtLUDKpc.js b/lightrag/api/webui/assets/diagram-5UYTHUR4-WtLUDKpc.js\nnew file mode 100644\nindex 00000000..e9fdeba5\nBinary files /dev/null and b/lightrag/api/webui/assets/diagram-5UYTHUR4-WtLUDKpc.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/diagram-VMROVX33-DTqtuH3F.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/diagram-VMROVX33-DTqtuH3F.js b/lightrag/api/webui/assets/diagram-VMROVX33-DTqtuH3F.js\nnew file mode 100644\nindex 00000000..e9edaed5\nBinary files /dev/null and b/lightrag/api/webui/assets/diagram-VMROVX33-DTqtuH3F.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/diagram-ZTM2IBQH-DGGGqNvP.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/diagram-ZTM2IBQH-DGGGqNvP.js b/lightrag/api/webui/assets/diagram-ZTM2IBQH-DGGGqNvP.js\nnew file mode 100644\nindex 00000000..b67383d6\nBinary files /dev/null and b/lightrag/api/webui/assets/diagram-ZTM2IBQH-DGGGqNvP.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/erDiagram-3M52JZNH-CmsenD1Y.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/erDiagram-3M52JZNH-CmsenD1Y.js b/lightrag/api/webui/assets/erDiagram-3M52JZNH-CmsenD1Y.js\nnew file mode 100644\nindex 00000000..2eeec2a1\nBinary files /dev/null and b/lightrag/api/webui/assets/erDiagram-3M52JZNH-CmsenD1Y.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/feature-documents-D26P2AXA.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/feature-documents-D26P2AXA.js b/lightrag/api/webui/assets/feature-documents-D26P2AXA.js\nnew file mode 100644\nindex 00000000..5de989b1\nBinary files /dev/null and b/lightrag/api/webui/assets/feature-documents-D26P2AXA.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/feature-graph-BWr9U7tw.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/feature-graph-BWr9U7tw.js b/lightrag/api/webui/assets/feature-graph-BWr9U7tw.js\nnew file mode 100644\nindex 00000000..7266d2be\nBinary files /dev/null and b/lightrag/api/webui/assets/feature-graph-BWr9U7tw.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/feature-retrieval-C9bVJc_U.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/feature-retrieval-C9bVJc_U.js b/lightrag/api/webui/assets/feature-retrieval-C9bVJc_U.js\ndeleted file mode 100644\nindex b9233782..00000000\nBinary files a/lightrag/api/webui/assets/feature-retrieval-C9bVJc_U.js and /dev/null differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/feature-retrieval-Cz5issgY.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/feature-retrieval-Cz5issgY.js b/lightrag/api/webui/assets/feature-retrieval-Cz5issgY.js\nnew file mode 100644\nindex 00000000..caf19802\nBinary files /dev/null and b/lightrag/api/webui/assets/feature-retrieval-Cz5issgY.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/flowDiagram-KYDEHFYC-K8KoBQ5E.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/flowDiagram-KYDEHFYC-K8KoBQ5E.js b/lightrag/api/webui/assets/flowDiagram-KYDEHFYC-K8KoBQ5E.js\nnew file mode 100644\nindex 00000000..da41ad0d\nBinary files /dev/null and b/lightrag/api/webui/assets/flowDiagram-KYDEHFYC-K8KoBQ5E.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/ganttDiagram-EK5VF46D-BPMfaWFZ.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/ganttDiagram-EK5VF46D-BPMfaWFZ.js b/lightrag/api/webui/assets/ganttDiagram-EK5VF46D-BPMfaWFZ.js\nnew file mode 100644\nindex 00000000..78162eab\nBinary files /dev/null and b/lightrag/api/webui/assets/ganttDiagram-EK5VF46D-BPMfaWFZ.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/gitGraphDiagram-GW3U2K7C-D2nfEfy6.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/gitGraphDiagram-GW3U2K7C-D2nfEfy6.js b/lightrag/api/webui/assets/gitGraphDiagram-GW3U2K7C-D2nfEfy6.js\nnew file mode 100644\nindex 00000000..2ae4826f\nBinary files /dev/null and b/lightrag/api/webui/assets/gitGraphDiagram-GW3U2K7C-D2nfEfy6.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/graph-Ay_vBBag.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/graph-Ay_vBBag.js b/lightrag/api/webui/assets/graph-Ay_vBBag.js\nnew file mode 100644\nindex 00000000..0725d35c\nBinary files /dev/null and b/lightrag/api/webui/assets/graph-Ay_vBBag.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/index-BFuU8FUw.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/index-BFuU8FUw.js b/lightrag/api/webui/assets/index-BFuU8FUw.js\nnew file mode 100644\nindex 00000000..efd7329a\nBinary files /dev/null and b/lightrag/api/webui/assets/index-BFuU8FUw.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/index-BvrNHAMA.css",
+            "diff": "diff --git a/lightrag/api/webui/assets/index-BvrNHAMA.css b/lightrag/api/webui/assets/index-BvrNHAMA.css\nnew file mode 100644\nindex 00000000..0f0467bf\nBinary files /dev/null and b/lightrag/api/webui/assets/index-BvrNHAMA.css differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/index-DE6_fC_3.css",
+            "diff": "diff --git a/lightrag/api/webui/assets/index-DE6_fC_3.css b/lightrag/api/webui/assets/index-DE6_fC_3.css\ndeleted file mode 100644\nindex 89b711ef..00000000\nBinary files a/lightrag/api/webui/assets/index-DE6_fC_3.css and /dev/null differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/infoDiagram-LHK5PUON-JaXCNgx_.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/infoDiagram-LHK5PUON-JaXCNgx_.js b/lightrag/api/webui/assets/infoDiagram-LHK5PUON-JaXCNgx_.js\nnew file mode 100644\nindex 00000000..c110814c\nBinary files /dev/null and b/lightrag/api/webui/assets/infoDiagram-LHK5PUON-JaXCNgx_.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/journeyDiagram-EWQZEKCU-DYNdz1ep.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/journeyDiagram-EWQZEKCU-DYNdz1ep.js b/lightrag/api/webui/assets/journeyDiagram-EWQZEKCU-DYNdz1ep.js\nnew file mode 100644\nindex 00000000..f02e7da9\nBinary files /dev/null and b/lightrag/api/webui/assets/journeyDiagram-EWQZEKCU-DYNdz1ep.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/kanban-definition-ZSS6B67P-CqjCfcLR.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/kanban-definition-ZSS6B67P-CqjCfcLR.js b/lightrag/api/webui/assets/kanban-definition-ZSS6B67P-CqjCfcLR.js\nnew file mode 100644\nindex 00000000..e4970ec7\nBinary files /dev/null and b/lightrag/api/webui/assets/kanban-definition-ZSS6B67P-CqjCfcLR.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/layout-CrX5nS2o.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/layout-CrX5nS2o.js b/lightrag/api/webui/assets/layout-CrX5nS2o.js\nnew file mode 100644\nindex 00000000..9a7bd38e\nBinary files /dev/null and b/lightrag/api/webui/assets/layout-CrX5nS2o.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/mermaid-vendor-BNDdXxLk.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/mermaid-vendor-BNDdXxLk.js b/lightrag/api/webui/assets/mermaid-vendor-BNDdXxLk.js\nnew file mode 100644\nindex 00000000..e19615d3\nBinary files /dev/null and b/lightrag/api/webui/assets/mermaid-vendor-BNDdXxLk.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/mindmap-definition-6CBA2TL7-CxYzlZw-.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/mindmap-definition-6CBA2TL7-CxYzlZw-.js b/lightrag/api/webui/assets/mindmap-definition-6CBA2TL7-CxYzlZw-.js\nnew file mode 100644\nindex 00000000..8470e521\nBinary files /dev/null and b/lightrag/api/webui/assets/mindmap-definition-6CBA2TL7-CxYzlZw-.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/pieDiagram-NIOCPIFQ-CZRK67EL.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/pieDiagram-NIOCPIFQ-CZRK67EL.js b/lightrag/api/webui/assets/pieDiagram-NIOCPIFQ-CZRK67EL.js\nnew file mode 100644\nindex 00000000..4587c57f\nBinary files /dev/null and b/lightrag/api/webui/assets/pieDiagram-NIOCPIFQ-CZRK67EL.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/quadrantDiagram-2OG54O6I-CPjfid_3.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/quadrantDiagram-2OG54O6I-CPjfid_3.js b/lightrag/api/webui/assets/quadrantDiagram-2OG54O6I-CPjfid_3.js\nnew file mode 100644\nindex 00000000..48133624\nBinary files /dev/null and b/lightrag/api/webui/assets/quadrantDiagram-2OG54O6I-CPjfid_3.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/requirementDiagram-QOLK2EJ7-Md3o8wmn.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/requirementDiagram-QOLK2EJ7-Md3o8wmn.js b/lightrag/api/webui/assets/requirementDiagram-QOLK2EJ7-Md3o8wmn.js\nnew file mode 100644\nindex 00000000..7f52dfef\nBinary files /dev/null and b/lightrag/api/webui/assets/requirementDiagram-QOLK2EJ7-Md3o8wmn.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/sankeyDiagram-4UZDY2LN-BwoTAMvm.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/sankeyDiagram-4UZDY2LN-BwoTAMvm.js b/lightrag/api/webui/assets/sankeyDiagram-4UZDY2LN-BwoTAMvm.js\nnew file mode 100644\nindex 00000000..700febff\nBinary files /dev/null and b/lightrag/api/webui/assets/sankeyDiagram-4UZDY2LN-BwoTAMvm.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/sequenceDiagram-SKLFT4DO-C_01YOml.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/sequenceDiagram-SKLFT4DO-C_01YOml.js b/lightrag/api/webui/assets/sequenceDiagram-SKLFT4DO-C_01YOml.js\nnew file mode 100644\nindex 00000000..bb91c181\nBinary files /dev/null and b/lightrag/api/webui/assets/sequenceDiagram-SKLFT4DO-C_01YOml.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/stateDiagram-MI5ZYTHO-xvMXNnMH.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/stateDiagram-MI5ZYTHO-xvMXNnMH.js b/lightrag/api/webui/assets/stateDiagram-MI5ZYTHO-xvMXNnMH.js\nnew file mode 100644\nindex 00000000..9ce445f4\nBinary files /dev/null and b/lightrag/api/webui/assets/stateDiagram-MI5ZYTHO-xvMXNnMH.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/stateDiagram-v2-5AN5P6BG-DpBniL_j.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/stateDiagram-v2-5AN5P6BG-DpBniL_j.js b/lightrag/api/webui/assets/stateDiagram-v2-5AN5P6BG-DpBniL_j.js\nnew file mode 100644\nindex 00000000..daa0b6ec\nBinary files /dev/null and b/lightrag/api/webui/assets/stateDiagram-v2-5AN5P6BG-DpBniL_j.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/timeline-definition-MYPXXCX6-DtlWY2ii.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/timeline-definition-MYPXXCX6-DtlWY2ii.js b/lightrag/api/webui/assets/timeline-definition-MYPXXCX6-DtlWY2ii.js\nnew file mode 100644\nindex 00000000..13caca9d\nBinary files /dev/null and b/lightrag/api/webui/assets/timeline-definition-MYPXXCX6-DtlWY2ii.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/treemap-75Q7IDZK-BTRfYg24.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/treemap-75Q7IDZK-BTRfYg24.js b/lightrag/api/webui/assets/treemap-75Q7IDZK-BTRfYg24.js\nnew file mode 100644\nindex 00000000..d23ca5d4\nBinary files /dev/null and b/lightrag/api/webui/assets/treemap-75Q7IDZK-BTRfYg24.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/assets/xychartDiagram-H2YORKM3-BfS-oTi0.js",
+            "diff": "diff --git a/lightrag/api/webui/assets/xychartDiagram-H2YORKM3-BfS-oTi0.js b/lightrag/api/webui/assets/xychartDiagram-H2YORKM3-BfS-oTi0.js\nnew file mode 100644\nindex 00000000..30a3a1fa\nBinary files /dev/null and b/lightrag/api/webui/assets/xychartDiagram-H2YORKM3-BfS-oTi0.js differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag/api/webui/index.html",
+            "diff": "diff --git a/lightrag/api/webui/index.html b/lightrag/api/webui/index.html\nindex eaf506d8..4f016383 100644\nBinary files a/lightrag/api/webui/index.html and b/lightrag/api/webui/index.html differ\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag_webui/src/api/lightrag.ts",
+            "diff": "diff --git a/lightrag_webui/src/api/lightrag.ts b/lightrag_webui/src/api/lightrag.ts\nindex 265126c7..a47c8e4c 100644\n--- a/lightrag_webui/src/api/lightrag.ts\n+++ b/lightrag_webui/src/api/lightrag.ts\n@@ -99,6 +99,9 @@ export type QueryMode = 'naive' | 'local' | 'global' | 'hybrid' | 'mix' | 'bypas\n export type Message = {\n   role: 'user' | 'assistant' | 'system'\n   content: string\n+  thinkingContent?: string\n+  displayContent?: string\n+  thinkingTime?: number | null\n }\n \n export type QueryRequest = {\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag_webui/src/components/retrieval/ChatMessage.tsx",
+            "diff": "diff --git a/lightrag_webui/src/components/retrieval/ChatMessage.tsx b/lightrag_webui/src/components/retrieval/ChatMessage.tsx\nindex 0314fd92..13cb74ed 100644\n--- a/lightrag_webui/src/components/retrieval/ChatMessage.tsx\n+++ b/lightrag_webui/src/components/retrieval/ChatMessage.tsx\n@@ -15,12 +15,13 @@ import type { Element } from 'hast'\n import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'\n import { oneLight, oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'\n \n-import { LoaderIcon, CopyIcon } from 'lucide-react'\n+import { LoaderIcon, CopyIcon, ChevronDownIcon } from 'lucide-react'\n import { useTranslation } from 'react-i18next'\n \n export type MessageWithError = Message & {\n   id: string // Unique identifier for stable React keys\n   isError?: boolean\n+  isThinking?: boolean // Flag to indicate if the message is in a \"thinking\" state\n   /**\n    * Indicates if the mermaid diagram in this message has been rendered.\n    * Used to persist the rendering state across updates and prevent flickering.\n@@ -33,6 +34,26 @@ export const ChatMessage = ({ message }: { message: MessageWithError }) => { //\n   const { t } = useTranslation()\n   const { theme } = useTheme()\n   const [katexPlugin, setKatexPlugin] = useState<any>(null)\n+  const [isThinkingExpanded, setIsThinkingExpanded] = useState<boolean>(false)\n+\n+  // Directly use props passed from the parent.\n+  const { thinkingContent, displayContent, thinkingTime, isThinking } = message\n+\n+  // Reset expansion state when new thinking starts\n+  useEffect(() => {\n+    if (isThinking) {\n+      // When thinking starts, always reset to collapsed state\n+      setIsThinkingExpanded(false)\n+    }\n+  }, [isThinking, message.id])\n+\n+  // The content to display is now non-ambiguous.\n+  const finalThinkingContent = thinkingContent\n+  // For user messages, displayContent will be undefined, so we fall back to content.\n+  // For assistant messages, we prefer displayContent and don't fallback to avoid content leakage during thinking\n+  const finalDisplayContent = message.role === 'user'\n+    ? message.content\n+    : displayContent || ''\n \n   // Load KaTeX dynamically\n   useEffect(() => {\n@@ -59,6 +80,27 @@ export const ChatMessage = ({ message }: { message: MessageWithError }) => { //\n     }\n   }, [message, t]) // Added t to dependency array\n \n+  const mainMarkdownComponents = useMemo(() => ({\n+    code: (props: any) => (\n+      <CodeHighlight\n+        {...props}\n+        renderAsDiagram={message.mermaidRendered ?? false}\n+      />\n+    ),\n+    p: ({ children }: { children?: ReactNode }) => <p className=\"my-2\">{children}</p>,\n+    h1: ({ children }: { children?: ReactNode }) => <h1 className=\"text-xl font-bold mt-4 mb-2\">{children}</h1>,\n+    h2: ({ children }: { children?: ReactNode }) => <h2 className=\"text-lg font-bold mt-4 mb-2\">{children}</h2>,\n+    h3: ({ children }: { children?: ReactNode }) => <h3 className=\"text-base font-bold mt-3 mb-2\">{children}</h3>,\n+    h4: ({ children }: { children?: ReactNode }) => <h4 className=\"text-base font-semibold mt-3 mb-2\">{children}</h4>,\n+    ul: ({ children }: { children?: ReactNode }) => <ul className=\"list-disc pl-5 my-2\">{children}</ul>,\n+    ol: ({ children }: { children?: ReactNode }) => <ol className=\"list-decimal pl-5 my-2\">{children}</ol>,\n+    li: ({ children }: { children?: ReactNode }) => <li className=\"my-1\">{children}</li>\n+  }), [message.mermaidRendered]);\n+\n+  const thinkingMarkdownComponents = useMemo(() => ({\n+    code: (props: any) => (<CodeHighlight {...props} renderAsDiagram={message.mermaidRendered ?? false} />)\n+  }), [message.mermaidRendered]);\n+\n   return (\n     <div\n       className={`${\n@@ -69,55 +111,93 @@ export const ChatMessage = ({ message }: { message: MessageWithError }) => { //\n             : 'w-[95%] bg-muted'\n       } rounded-lg px-4 py-2`}\n     >\n-      <div className=\"relative\">\n-        <ReactMarkdown\n-          className=\"prose dark:prose-invert max-w-none text-sm break-words prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 [&_.katex]:text-current [&_.katex-display]:my-4 [&_.katex-display]:overflow-x-auto\"\n-          remarkPlugins={[remarkGfm, remarkMath]}\n-          rehypePlugins={[\n-            ...(katexPlugin ? [[\n-              katexPlugin,\n-              {\n-                errorColor: theme === 'dark' ? '#ef4444' : '#dc2626',\n-                throwOnError: false,\n-                displayMode: false\n+      {/* Thinking process display - only for assistant messages */}\n+      {message.role === 'assistant' && (isThinking || thinkingTime !== null) && (\n+        <div className=\"mb-2\">\n+          <div\n+            className=\"flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200 text-sm cursor-pointer select-none\"\n+            onClick={() => {\n+              // Allow expansion when there's thinking content, even during thinking process\n+              if (finalThinkingContent && finalThinkingContent.trim() !== '') {\n+                setIsThinkingExpanded(!isThinkingExpanded)\n               }\n-            ] as any] : []),\n-            rehypeReact\n-          ]}\n-          skipHtml={false}\n-          // Memoize the components object to prevent unnecessary re-renders of ReactMarkdown children\n-          components={useMemo(() => ({\n-            code: (props: any) => ( // Add type annotation if needed, e.g., props: CodeProps from 'react-markdown/lib/ast-to-react'\n-              <CodeHighlight\n-                {...props}\n-                renderAsDiagram={message.mermaidRendered ?? false}\n-              />\n-            ),\n-            p: ({ children }: { children?: ReactNode }) => <p className=\"my-2\">{children}</p>,\n-            h1: ({ children }: { children?: ReactNode }) => <h1 className=\"text-xl font-bold mt-4 mb-2\">{children}</h1>,\n-            h2: ({ children }: { children?: ReactNode }) => <h2 className=\"text-lg font-bold mt-4 mb-2\">{children}</h2>,\n-            h3: ({ children }: { children?: ReactNode }) => <h3 className=\"text-base font-bold mt-3 mb-2\">{children}</h3>,\n-            h4: ({ children }: { children?: ReactNode }) => <h4 className=\"text-base font-semibold mt-3 mb-2\">{children}</h4>,\n-            ul: ({ children }: { children?: ReactNode }) => <ul className=\"list-disc pl-5 my-2\">{children}</ul>,\n-            ol: ({ children }: { children?: ReactNode }) => <ol className=\"list-decimal pl-5 my-2\">{children}</ol>,\n-            li: ({ children }: { children?: ReactNode }) => <li className=\"my-1\">{children}</li>\n-          }), [message.mermaidRendered])} // Dependency ensures update if mermaid state changes\n-        >\n-          {message.content}\n-        </ReactMarkdown>\n-        {message.role === 'assistant' && message.content && message.content.length > 0 && ( // Added check for message.content existence\n-          <Button\n-            onClick={handleCopyMarkdown}\n-            className=\"absolute right-0 bottom-0 size-6 rounded-md opacity-20 transition-opacity hover:opacity-100\"\n-            tooltip={t('retrievePanel.chatMessage.copyTooltip')}\n-            variant=\"default\"\n-            size=\"icon\"\n+            }}\n+          >\n+            {isThinking ? (\n+              <>\n+                <LoaderIcon className=\"mr-2 size-4 animate-spin\" />\n+                <span>{t('retrievePanel.chatMessage.thinking')}</span>\n+              </>\n+            ) : (\n+              typeof thinkingTime === 'number' && <span>{t('retrievePanel.chatMessage.thinkingTime', { time: thinkingTime })}</span>\n+            )}\n+            {/* Show chevron when there's thinking content, even during thinking process */}\n+            {finalThinkingContent && finalThinkingContent.trim() !== '' && <ChevronDownIcon className={`ml-2 size-4 shrink-0 transition-transform ${isThinkingExpanded ? 'rotate-180' : ''}`} />}\n+          </div>\n+          {/* Show thinking content when expanded and content exists, even during thinking process */}\n+          {isThinkingExpanded && finalThinkingContent && finalThinkingContent.trim() !== '' && (\n+            <div className=\"mt-2 pl-4 border-l-2 border-primary/20 text-sm prose dark:prose-invert max-w-none break-words prose-p:my-1 prose-headings:my-2\">\n+              {isThinking && (\n+                <div className=\"mb-2 text-xs text-gray-400 dark:text-gray-500 italic\">\n+                  {t('retrievePanel.chatMessage.thinkingInProgress', 'Thinking in progress...')}\n+                </div>\n+              )}\n+              <ReactMarkdown\n+                remarkPlugins={[remarkGfm, remarkMath]}\n+                rehypePlugins={[\n+                  ...(katexPlugin ? [[katexPlugin, { errorColor: theme === 'dark' ? '#ef4444' : '#dc2626', throwOnError: false, displayMode: false }] as any] : []),\n+                  rehypeReact\n+                ]}\n+                skipHtml={false}\n+                components={thinkingMarkdownComponents}\n+              >\n+                {finalThinkingContent}\n+              </ReactMarkdown>\n+            </div>\n+          )}\n+        </div>\n+      )}\n+      {/* Main content display */}\n+      {finalDisplayContent && (\n+        <div className=\"relative\">\n+          <ReactMarkdown\n+            className=\"prose dark:prose-invert max-w-none text-sm break-words prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 [&_.katex]:text-current [&_.katex-display]:my-4 [&_.katex-display]:overflow-x-auto\"\n+            remarkPlugins={[remarkGfm, remarkMath]}\n+            rehypePlugins={[\n+              ...(katexPlugin ? [[\n+                katexPlugin,\n+                {\n+                  errorColor: theme === 'dark' ? '#ef4444' : '#dc2626',\n+                  throwOnError: false,\n+                  displayMode: false\n+                }\n+              ] as any] : []),\n+              rehypeReact\n+            ]}\n+            skipHtml={false}\n+            components={mainMarkdownComponents}\n           >\n-            <CopyIcon className=\"size-4\" /> {/* Explicit size */}\n-          </Button>\n-        )}\n-      </div>\n-      {message.content === '' && <LoaderIcon className=\"animate-spin duration-2000\" />} {/* Check for empty string specifically */}\n+            {finalDisplayContent}\n+          </ReactMarkdown>\n+          {message.role === 'assistant' && finalDisplayContent && finalDisplayContent.length > 0 && (\n+            <Button\n+              onClick={handleCopyMarkdown}\n+              className=\"absolute right-0 bottom-0 size-6 rounded-md opacity-20 transition-opacity hover:opacity-100\"\n+              tooltip={t('retrievePanel.chatMessage.copyTooltip')}\n+              variant=\"default\"\n+              size=\"icon\"\n+            >\n+              <CopyIcon className=\"size-4\" /> {/* Explicit size */}\n+            </Button>\n+          )}\n+        </div>\n+      )}\n+      {(() => {\n+        // More comprehensive loading state check\n+        const hasVisibleContent = finalDisplayContent && finalDisplayContent.trim() !== '';\n+        const isLoadingState = !hasVisibleContent && !isThinking && !thinkingTime;\n+        return isLoadingState && <LoaderIcon className=\"animate-spin duration-2000\" />;\n+      })()}\n     </div>\n   )\n }\n"
+        },
+        {
+            "commit": "5f349d507ced55bbb24469127b0eb9ac571f023c",
+            "file_path": "lightrag_webui/src/features/RetrievalTesting.tsx",
+            "diff": "diff --git a/lightrag_webui/src/features/RetrievalTesting.tsx b/lightrag_webui/src/features/RetrievalTesting.tsx\nindex 0744ae5e..2ee823bf 100644\n--- a/lightrag_webui/src/features/RetrievalTesting.tsx\n+++ b/lightrag_webui/src/features/RetrievalTesting.tsx\n@@ -58,6 +58,8 @@ export default function RetrievalTesting() {\n   const [inputError, setInputError] = useState('') // Error message for input\n   // Reference to track if we should follow scroll during streaming (using ref for synchronous updates)\n   const shouldFollowScrollRef = useRef(true)\n+  const thinkingStartTime = useRef<number | null>(null)\n+  const thinkingProcessed = useRef(false)\n   // Reference to track if user interaction is from the form area\n   const isFormInteractionRef = useRef(false)\n   // Reference to track if scroll was triggered programmatically\n@@ -67,6 +69,16 @@ export default function RetrievalTesting() {\n   const messagesEndRef = useRef<HTMLDivElement>(null)\n   const messagesContainerRef = useRef<HTMLDivElement>(null)\n \n+  // Add cleanup effect for memory leak prevention\n+  useEffect(() => {\n+    // Component cleanup - reset timer state to prevent memory leaks\n+    return () => {\n+      if (thinkingStartTime.current) {\n+        thinkingStartTime.current = null;\n+      }\n+    };\n+  }, []);\n+\n   // Scroll to bottom function - restored smooth scrolling with better handling\n   const scrollToBottom = useCallback(() => {\n     // Set flag to indicate this is a programmatic scroll\n@@ -115,6 +127,10 @@ export default function RetrievalTesting() {\n       // Clear error message\n       setInputError('')\n \n+      // Reset thinking timer state for new query to prevent confusion\n+      thinkingStartTime.current = null\n+      thinkingProcessed.current = false\n+\n       // Create messages\n       // Save the original input (with prefix if any) in userMessage.content for display\n       const userMessage: MessageWithError = {\n@@ -127,7 +143,11 @@ export default function RetrievalTesting() {\n         id: generateUniqueId(), // Use browser-compatible ID generation\n         content: '',\n         role: 'assistant',\n-        mermaidRendered: false\n+        mermaidRendered: false,\n+        thinkingTime: null,        // Explicitly initialize to null\n+        thinkingContent: undefined, // Explicitly initialize to undefined\n+        displayContent: undefined,  // Explicitly initialize to undefined\n+        isThinking: false          // Explicitly initialize to false\n       }\n \n       const prevMessages = [...messages]\n@@ -153,6 +173,47 @@ export default function RetrievalTesting() {\n       const updateAssistantMessage = (chunk: string, isError?: boolean) => {\n         assistantMessage.content += chunk\n \n+        // Start thinking timer on first sight of think tag\n+        if (assistantMessage.content.includes('<think>') && !thinkingStartTime.current) {\n+          thinkingStartTime.current = Date.now()\n+        }\n+\n+        // Real-time parsing for streaming\n+        const thinkStartTag = '<think>'\n+        const thinkEndTag = '</think>'\n+        const thinkStartIndex = assistantMessage.content.indexOf(thinkStartTag)\n+        const thinkEndIndex = assistantMessage.content.indexOf(thinkEndTag)\n+\n+        if (thinkStartIndex !== -1) {\n+          if (thinkEndIndex !== -1) {\n+            // Thinking has finished for this chunk\n+            assistantMessage.isThinking = false\n+            \n+            // Only calculate time and extract thinking content once\n+            if (!thinkingProcessed.current) {\n+              if (thinkingStartTime.current && !assistantMessage.thinkingTime) {\n+                const duration = (Date.now() - thinkingStartTime.current) / 1000\n+                assistantMessage.thinkingTime = parseFloat(duration.toFixed(2))\n+              }\n+              assistantMessage.thinkingContent = assistantMessage.content\n+                .substring(thinkStartIndex + thinkStartTag.length, thinkEndIndex)\n+                .trim()\n+              thinkingProcessed.current = true\n+            }\n+            \n+            // Always update display content as content after </think> may grow\n+            assistantMessage.displayContent = assistantMessage.content.substring(thinkEndIndex + thinkEndTag.length).trim()\n+          } else {\n+            // Still thinking - update thinking content in real-time\n+            assistantMessage.isThinking = true\n+            assistantMessage.thinkingContent = assistantMessage.content.substring(thinkStartIndex + thinkStartTag.length)\n+            assistantMessage.displayContent = ''\n+          }\n+        } else {\n+          assistantMessage.isThinking = false\n+          assistantMessage.displayContent = assistantMessage.content\n+        }\n+\n         // Detect if the assistant message contains a complete mermaid code block\n         // Simple heuristic: look for ```mermaid ... ```\n         const mermaidBlockRegex = /```mermaid\\s+([\\s\\S]+?)```/g\n@@ -167,13 +228,21 @@ export default function RetrievalTesting() {\n         }\n         assistantMessage.mermaidRendered = mermaidRendered\n \n+        // Single unified update to avoid race conditions\n         setMessages((prev) => {\n           const newMessages = [...prev]\n           const lastMessage = newMessages[newMessages.length - 1]\n-          if (lastMessage.role === 'assistant') {\n-            lastMessage.content = assistantMessage.content\n-            lastMessage.isError = isError\n-            lastMessage.mermaidRendered = assistantMessage.mermaidRendered\n+          if (lastMessage && lastMessage.id === assistantMessage.id) {\n+            // Update all properties at once to maintain consistency\n+            Object.assign(lastMessage, {\n+              content: assistantMessage.content,\n+              thinkingContent: assistantMessage.thinkingContent,\n+              displayContent: assistantMessage.displayContent,\n+              isThinking: assistantMessage.isThinking,\n+              isError: isError,\n+              mermaidRendered: assistantMessage.mermaidRendered,\n+              thinkingTime: assistantMessage.thinkingTime\n+            })\n           }\n           return newMessages\n         })\n@@ -223,9 +292,30 @@ export default function RetrievalTesting() {\n         // Clear loading and add messages to state\n         setIsLoading(false)\n         isReceivingResponseRef.current = false\n-        useSettingsStore\n-          .getState()\n-          .setRetrievalHistory([...prevMessages, userMessage, assistantMessage])\n+\n+        // Enhanced cleanup with error handling to prevent memory leaks\n+        try {\n+          // Final calculation for thinking time, only if not already calculated\n+          if (assistantMessage.thinkingContent && thinkingStartTime.current && !assistantMessage.thinkingTime) {\n+            const duration = (Date.now() - thinkingStartTime.current) / 1000\n+            assistantMessage.thinkingTime = parseFloat(duration.toFixed(2))\n+          }\n+        } catch (error) {\n+          console.error('Error calculating thinking time:', error)\n+        } finally {\n+          // Ensure cleanup happens regardless of errors\n+          assistantMessage.isThinking = false;\n+          thinkingStartTime.current = null;\n+        }\n+\n+        // Save history with error handling\n+        try {\n+          useSettingsStore\n+            .getState()\n+            .setRetrievalHistory([...prevMessages, userMessage, assistantMessage])\n+        } catch (error) {\n+          console.error('Error saving retrieval history:', error)\n+        }\n       }\n     },\n     [inputValue, isLoading, messages, setMessages, t, scrollToBottom]\n"
+        }
+    ]
+}

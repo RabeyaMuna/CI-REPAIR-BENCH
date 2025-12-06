@@ -1,0 +1,10 @@
+{
+    "sha_fail": "5af3fcc465a2dfaebc52f7b3ce7177440b712298",
+    "changed_files": [
+        {
+            "commit": "5af3fcc465a2dfaebc52f7b3ce7177440b712298",
+            "file_path": "t/unit/backends/test_couchdb.py",
+            "diff": "diff --git a/t/unit/backends/test_couchdb.py b/t/unit/backends/test_couchdb.py\nindex 2225127..781f633 100644\n--- a/t/unit/backends/test_couchdb.py\n+++ b/t/unit/backends/test_couchdb.py\n@@ -1,8 +1,8 @@\n from unittest.mock import MagicMock, Mock, sentinel\n+from urllib.parse import urlparse\n \n import pytest\n from kombu.utils.encoding import str_to_bytes\n-from urllib.parse import urlparse\n \n from celery import states, uuid\n from celery.app import backends\n"
+        }
+    ]
+}

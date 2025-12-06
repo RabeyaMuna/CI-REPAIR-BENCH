@@ -1,0 +1,10 @@
+{
+    "sha_fail": "f4e4c63e0b2c623663f0970e9532273fd22c9a20",
+    "changed_files": [
+        {
+            "commit": "f4e4c63e0b2c623663f0970e9532273fd22c9a20",
+            "file_path": "tests/asgi/tests.py",
+            "diff": "diff --git a/tests/asgi/tests.py b/tests/asgi/tests.py\nindex 0810a463..aa008f28 100644\n--- a/tests/asgi/tests.py\n+++ b/tests/asgi/tests.py\n@@ -765,9 +765,9 @@ class ASGITest(SimpleTestCase):\n \n     async def test_streaming_response_ends_with_more_body_false(self):\n         \"\"\"\n-        Test that streaming responses end with an explicit more_body=False signal.\n+        Test that streaming responses end with explicit more_body=False signal.\n \n-        This ensures compatibility with ASGI servers like Vercel's that require\n+        Ensures compatibility with ASGI servers like Vercel that require\n         explicit signaling to finalize responses.\n         \"\"\"\n \n@@ -799,7 +799,7 @@ class ASGITest(SimpleTestCase):\n                 message = await communicator.receive_output(timeout=1)\n                 messages.append(message)\n                 if message[\"type\"] == \"http.response.body\":\n-                    # If this message doesn't have more_body=True, it should be the final one\n+                    # If message lacks more_body=True, it should be the final one\n                     if not message.get(\"more_body\", False):\n                         break\n             except asyncio.TimeoutError:\n"
+        }
+    ]
+}

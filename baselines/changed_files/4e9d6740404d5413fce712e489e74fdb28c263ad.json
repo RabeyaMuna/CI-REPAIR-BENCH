@@ -1,0 +1,10 @@
+{
+    "sha_fail": "4e9d6740404d5413fce712e489e74fdb28c263ad",
+    "changed_files": [
+        {
+            "commit": "4e9d6740404d5413fce712e489e74fdb28c263ad",
+            "file_path": "test/scapy/layers/smb2.uts",
+            "diff": "diff --git a/test/scapy/layers/smb2.uts b/test/scapy/layers/smb2.uts\nindex a6081c4..2e05b83 100644\n--- a/test/scapy/layers/smb2.uts\n+++ b/test/scapy/layers/smb2.uts\n@@ -575,3 +575,5 @@ assert sd.DACLOffset == 44\n assert sd.OwnerSid.summary() == \"S-1-1-0\"\n assert sd.GroupSid.summary() == \"S-1-1-0\"\n assert sd.DACL.toSDDL() == ['(A;;;;;S-1-1-0)']\n+\n+assert sd.DACL.AclSize == len(sd.DACL)\n\\ No newline at end of file\n"
+        }
+    ]
+}

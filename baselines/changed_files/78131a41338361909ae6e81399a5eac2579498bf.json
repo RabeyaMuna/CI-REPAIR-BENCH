@@ -1,0 +1,10 @@
+{
+    "sha_fail": "78131a41338361909ae6e81399a5eac2579498bf",
+    "changed_files": [
+        {
+            "commit": "78131a41338361909ae6e81399a5eac2579498bf",
+            "file_path": "framework/py/flwr/supernode/start_client_internal.py",
+            "diff": "diff --git a/framework/py/flwr/supernode/start_client_internal.py b/framework/py/flwr/supernode/start_client_internal.py\nindex 09473de36..4b72469ad 100644\n--- a/framework/py/flwr/supernode/start_client_internal.py\n+++ b/framework/py/flwr/supernode/start_client_internal.py\n@@ -353,9 +353,9 @@ def _pull_and_store_message(  # pylint: disable=too-many-positional-arguments\n \n def _push_messages(\n     state: NodeState,\n-    object_store: ObjectStore,  # pylint: disable=W0613\n+    object_store: ObjectStore,\n     send: Callable[[Message, ObjectTree], set[str]],\n-    push_object: Callable[[int, str, bytes], None],  # pylint: disable=W0613\n+    push_object: Callable[[int, str, bytes], None],\n ) -> None:\n     \"\"\"Push reply messages to the SuperLink.\"\"\"\n     # Get messages to send\n"
+        }
+    ]
+}

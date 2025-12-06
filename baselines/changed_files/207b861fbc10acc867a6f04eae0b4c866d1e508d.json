@@ -1,0 +1,10 @@
+{
+    "sha_fail": "207b861fbc10acc867a6f04eae0b4c866d1e508d",
+    "changed_files": [
+        {
+            "commit": "207b861fbc10acc867a6f04eae0b4c866d1e508d",
+            "file_path": "uvicorn/server.py",
+            "diff": "diff --git a/uvicorn/server.py b/uvicorn/server.py\nindex b795e35..896b3df 100644\n--- a/uvicorn/server.py\n+++ b/uvicorn/server.py\n@@ -85,6 +85,7 @@ class Server:\n         color_message = \"Started server process [\" + click.style(\"%d\", fg=\"cyan\") + \"]\"\n         logger.info(message, process_id, extra={\"color_message\": color_message})\n         await self.startup(sockets=sockets)\n+\n         if self.should_exit:\n             yield\n         else:\n"
+        }
+    ]
+}

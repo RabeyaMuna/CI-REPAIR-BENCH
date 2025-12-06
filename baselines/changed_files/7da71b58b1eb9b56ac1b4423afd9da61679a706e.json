@@ -1,0 +1,10 @@
+{
+    "sha_fail": "7da71b58b1eb9b56ac1b4423afd9da61679a706e",
+    "changed_files": [
+        {
+            "commit": "7da71b58b1eb9b56ac1b4423afd9da61679a706e",
+            "file_path": "libs/agno/agno/workflow/v2/types.py",
+            "diff": "diff --git a/libs/agno/agno/workflow/v2/types.py b/libs/agno/agno/workflow/v2/types.py\nindex d897e9e2d..3b4de7021 100644\n--- a/libs/agno/agno/workflow/v2/types.py\n+++ b/libs/agno/agno/workflow/v2/types.py\n@@ -7,10 +7,6 @@ from agno.media import AudioArtifact, ImageArtifact, VideoArtifact\n from agno.run.response import RunResponse\n from agno.run.team import TeamRunResponse\n \n-if TYPE_CHECKING:\n-    from agno.workflow.v2.workflow import WorkflowRunResponse\n-\n-\n @dataclass\n class WorkflowExecutionInput:\n     \"\"\"Input data for a step execution\"\"\"\n"
+        }
+    ]
+}

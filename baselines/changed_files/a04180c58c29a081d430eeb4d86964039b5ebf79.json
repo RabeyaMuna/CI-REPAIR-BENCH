@@ -1,0 +1,10 @@
+{
+    "sha_fail": "a04180c58c29a081d430eeb4d86964039b5ebf79",
+    "changed_files": [
+        {
+            "commit": "a04180c58c29a081d430eeb4d86964039b5ebf79",
+            "file_path": "dask/array/tests/test_ufunc.py",
+            "diff": "diff --git a/dask/array/tests/test_ufunc.py b/dask/array/tests/test_ufunc.py\nindex f75b16c4..b3a32c63 100644\n--- a/dask/array/tests/test_ufunc.py\n+++ b/dask/array/tests/test_ufunc.py\n@@ -557,7 +557,7 @@ def test_ufunc_where_no_out():\n     d_left = da.from_array(left, chunks=2)\n     d_right = da.from_array(right, chunks=2)\n \n-    expected = np.add(left, right, where=where)\n+    expected = np.add(left, right, where=where, out=None)\n     result = da.add(d_left, d_right, where=d_where)\n \n     # If no `out` is provided, numpy leaves elements that don't match `where`\n"
+        }
+    ]
+}

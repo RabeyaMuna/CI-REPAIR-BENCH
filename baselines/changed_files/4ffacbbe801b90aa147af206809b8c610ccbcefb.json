@@ -1,0 +1,10 @@
+{
+    "sha_fail": "4ffacbbe801b90aa147af206809b8c610ccbcefb",
+    "changed_files": [
+        {
+            "commit": "4ffacbbe801b90aa147af206809b8c610ccbcefb",
+            "file_path": ".github/workflows/ci.py",
+            "diff": "diff --git a/.github/workflows/ci.py b/.github/workflows/ci.py\nindex ebf80d7..c83f522 100644\n--- a/.github/workflows/ci.py\n+++ b/.github/workflows/ci.py\n@@ -266,6 +266,12 @@ def main() -> None:\n         package_kitty()\n     elif action == 'test':\n         test_kitty()\n+    elif action == 'test':\n+        test_kitty()\n+    elif action == 'govulncheck':\n+        subprocess.check_call(['go', 'install', 'golang.org/x/vuln/cmd/govulncheck@latest'])\n+        with open('govulncheck.sarif', 'wb') as f:\n+            subprocess.check_call(['govulncheck', '-format', 'sarif', './...'], stdout=f)\n     elif action == 'gofmt':\n         q = subprocess.check_output('gofmt -s -l tools kittens'.split()).decode()\n         if q.strip():\n"
+        }
+    ]
+}

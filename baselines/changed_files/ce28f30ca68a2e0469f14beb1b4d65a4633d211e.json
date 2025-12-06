@@ -1,0 +1,10 @@
+{
+    "sha_fail": "ce28f30ca68a2e0469f14beb1b4d65a4633d211e",
+    "changed_files": [
+        {
+            "commit": "ce28f30ca68a2e0469f14beb1b4d65a4633d211e",
+            "file_path": "lightrag/api/lightrag_server.py",
+            "diff": "diff --git a/lightrag/api/lightrag_server.py b/lightrag/api/lightrag_server.py\nindex f36d88df..60fae05d 100644\n--- a/lightrag/api/lightrag_server.py\n+++ b/lightrag/api/lightrag_server.py\n@@ -605,7 +605,7 @@ def create_app(args):\n         Uses lazy imports for all bindings and avoids repeated configuration parsing.\n         \"\"\"\n \n-        async def optimized_embedding_function(texts):\n+        async def optimized_embedding_function(texts, embedding_dim=None):\n             try:\n                 if binding == \"lollms\":\n                     from lightrag.llm.lollms import lollms_embed\n@@ -643,12 +643,14 @@ def create_app(args):\n                 elif binding == \"jina\":\n                     from lightrag.llm.jina import jina_embed\n \n-                    return await jina_embed(texts, base_url=host, api_key=api_key)\n+                    return await jina_embed(\n+                        texts, embedding_dim=embedding_dim, base_url=host, api_key=api_key\n+                    )\n                 else:  # openai and compatible\n                     from lightrag.llm.openai import openai_embed\n \n                     return await openai_embed(\n-                        texts, model=model, base_url=host, api_key=api_key\n+                        texts, model=model, base_url=host, api_key=api_key, embedding_dim=embedding_dim\n                     )\n             except ImportError as e:\n                 raise Exception(f\"Failed to import {binding} embedding: {e}\")\n"
+        }
+    ]
+}

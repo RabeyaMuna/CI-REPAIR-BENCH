@@ -1,0 +1,10 @@
+{
+    "sha_fail": "96cab6eebb5bd0c37a60a93f3e3495fdb08793f9",
+    "changed_files": [
+        {
+            "commit": "96cab6eebb5bd0c37a60a93f3e3495fdb08793f9",
+            "file_path": "libs/agno/agno/models/anthropic/claude.py",
+            "diff": "diff --git a/libs/agno/agno/models/anthropic/claude.py b/libs/agno/agno/models/anthropic/claude.py\nindex b8557bcbf..9b027f30c 100644\n--- a/libs/agno/agno/models/anthropic/claude.py\n+++ b/libs/agno/agno/models/anthropic/claude.py\n@@ -510,14 +510,14 @@ class Claude(Model):\n                 if not citations:\n                     continue\n                 for citation in citations:\n-                    model_response.citations.raw.append(citation.model_dump())\n+                    model_response.citations.raw.append(citation.model_dump())  # type: ignore\n                     # Web search citations\n                     if isinstance(citation, CitationsWebSearchResultLocation):\n-                        model_response.citations.urls.append(UrlCitation(url=citation.url, title=citation.cited_text))\n+                        model_response.citations.urls.append(UrlCitation(url=citation.url, title=citation.cited_text))  # type: ignore\n                     # Document citations\n                     elif isinstance(citation, CitationPageLocation):\n                         model_response.citations.documents.append(\n-                            DocumentCitation(document_title=citation.document_title, cited_text=citation.cited_text)\n+                            DocumentCitation(document_title=citation.document_title, cited_text=citation.cited_text)  # type: ignore\n                         )\n \n         # Handle message completion and usage metrics\n"
+        }
+    ]
+}

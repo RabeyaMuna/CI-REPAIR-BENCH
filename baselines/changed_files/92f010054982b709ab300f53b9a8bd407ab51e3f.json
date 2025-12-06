@@ -1,0 +1,20 @@
+{
+    "sha_fail": "92f010054982b709ab300f53b9a8bd407ab51e3f",
+    "changed_files": [
+        {
+            "commit": "92f010054982b709ab300f53b9a8bd407ab51e3f",
+            "file_path": "taipy/core/data/_file_datanode_mixin.py",
+            "diff": "diff --git a/taipy/core/data/_file_datanode_mixin.py b/taipy/core/data/_file_datanode_mixin.py\nindex bc7db186..5d4f6282 100644\n--- a/taipy/core/data/_file_datanode_mixin.py\n+++ b/taipy/core/data/_file_datanode_mixin.py\n@@ -14,7 +14,7 @@ import pathlib\n import shutil\n from datetime import datetime\n from os.path import isfile\n-from typing import Any, Callable, Dict, Optional\n+from typing import Any, Callable, Dict, Optional, cast\n \n from taipy.common.config import Config\n from taipy.common.logger._taipy_logger import _TaipyLogger\n@@ -47,7 +47,7 @@ class _FileDataNodeMixin:\n     __logger = _TaipyLogger._get_logger()\n \n     def __init__(self, properties: Dict) -> None:\n-        self._path: str = properties.get(self._PATH_KEY, properties.get(self._DEFAULT_PATH_KEY))\n+        self._path: str = cast(str, properties.get(self._PATH_KEY, properties.get(self._DEFAULT_PATH_KEY)))\n         self._is_generated: bool = properties.get(self._IS_GENERATED_KEY, self._path is None)\n         self._last_edit_date: Optional[datetime] = None\n \n@@ -248,5 +248,5 @@ class _FileDataNodeMixin:\n             else:\n                 shutil.copy(self._path, new_path)\n             normalize_path = _normalize_path(new_path)\n-            dest._path = normalize_path\n+            dest._path = normalize_path # type: ignore[attr-defined]\n             dest._properties[self._PATH_KEY] = normalize_path\n"
+        },
+        {
+            "commit": "92f010054982b709ab300f53b9a8bd407ab51e3f",
+            "file_path": "taipy/core/data/excel.py",
+            "diff": "diff --git a/taipy/core/data/excel.py b/taipy/core/data/excel.py\nindex 471e7907..9697cb34 100644\n--- a/taipy/core/data/excel.py\n+++ b/taipy/core/data/excel.py\n@@ -10,7 +10,7 @@\n # specific language governing permissions and limitations under the License.\n \n from datetime import datetime, timedelta\n-from typing import Any, Dict, List, Optional, Set, Union\n+from typing import Any, Dict, List, Optional, Set, Union, cast\n \n import numpy as np\n import pandas as pd\n@@ -225,7 +225,7 @@ class ExcelDataNode(DataNode, _FileDataNodeMixin, _TabularDataNodeMixin):\n             excel_file.close()\n \n         if len(user_provided_sheet_names) == 1:\n-            return work_books[user_provided_sheet_names[0]]\n+            return work_books[cast(list, user_provided_sheet_names)[0]]\n \n         return work_books\n \n"
+        },
+        {
+            "commit": "92f010054982b709ab300f53b9a8bd407ab51e3f",
+            "file_path": "taipy/gui/page.py",
+            "diff": "diff --git a/taipy/gui/page.py b/taipy/gui/page.py\nindex 67a2faa5..6624112c 100644\n--- a/taipy/gui/page.py\n+++ b/taipy/gui/page.py\n@@ -76,7 +76,7 @@ class Page:\n         # Special variables only use for page reloading in notebook context\n         self._notebook_gui: t.Optional[\"Gui\"] = None\n         self._notebook_page: t.Optional[\"_Page\"] = None\n-        self.set_style(kwargs.get(\"style\", None))\n+        self.set_style(t.cast(dict, kwargs.get(\"style\", None)))\n         self._script_paths(kwargs.get(\"script_paths\", None))\n \n     def create_page(self) -> t.Union[Page, str, None]:\n"
+        }
+    ]
+}

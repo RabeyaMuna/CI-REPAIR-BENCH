@@ -1,0 +1,10 @@
+{
+    "sha_fail": "d1b0280fb92d0d8590cf403ca46af3550507d4d2",
+    "changed_files": [
+        {
+            "commit": "d1b0280fb92d0d8590cf403ca46af3550507d4d2",
+            "file_path": "tornado/test/iostream_test.py",
+            "diff": "diff --git a/tornado/test/iostream_test.py b/tornado/test/iostream_test.py\nindex 8a285180..02318db3 100644\n--- a/tornado/test/iostream_test.py\n+++ b/tornado/test/iostream_test.py\n@@ -1210,7 +1210,7 @@ class TestIOStreamCheckHostname(AsyncTestCase):\n                     )\n             # The server logs a warning while cleaning up the failed connection.\n             # Unfortunately there's no good hook to wait for this logging.\n-            await asyncio.sleep(0.1)\n+            await asyncio.sleep(1 if platform.system() == \"Windows\" else 0.1)\n \n     @gen_test\n     async def test_check_disabled(self):\n"
+        }
+    ]
+}

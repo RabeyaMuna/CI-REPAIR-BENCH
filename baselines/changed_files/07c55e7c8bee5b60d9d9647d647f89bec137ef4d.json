@@ -1,0 +1,10 @@
+{
+    "sha_fail": "07c55e7c8bee5b60d9d9647d647f89bec137ef4d",
+    "changed_files": [
+        {
+            "commit": "07c55e7c8bee5b60d9d9647d647f89bec137ef4d",
+            "file_path": "framework/py/flwr/supernode/start_client_internal.py",
+            "diff": "diff --git a/framework/py/flwr/supernode/start_client_internal.py b/framework/py/flwr/supernode/start_client_internal.py\nindex 9b0642186..077163eb8 100644\n--- a/framework/py/flwr/supernode/start_client_internal.py\n+++ b/framework/py/flwr/supernode/start_client_internal.py\n@@ -386,7 +386,7 @@ def _push_messages(\n         # This will yield (object_id, content) pairs\n         def yield_object_contents(_obj_tree: ObjectTree) -> Iterator[tuple[str, bytes]]:\n             for tree in iterate_object_tree(_obj_tree):\n-                while (content := object_store.get(tree.object_id)) is None:\n+                while (content := object_store.get(tree.object_id)) is b\"\":\n                     # Wait for the content to be available\n                     time.sleep(0.5)\n \n"
+        }
+    ]
+}

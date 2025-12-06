@@ -1,0 +1,10 @@
+{
+    "sha_fail": "d2a7890921a901795f0e33404b0d7b2f53836483",
+    "changed_files": [
+        {
+            "commit": "d2a7890921a901795f0e33404b0d7b2f53836483",
+            "file_path": "dspy/teleprompt/gepa/gepa.py",
+            "diff": "diff --git a/dspy/teleprompt/gepa/gepa.py b/dspy/teleprompt/gepa/gepa.py\nindex e52593b9..480b0fe7 100644\n--- a/dspy/teleprompt/gepa/gepa.py\n+++ b/dspy/teleprompt/gepa/gepa.py\n@@ -282,7 +282,7 @@ class GEPA(Teleprompter):\n         track_best_outputs: bool = False,\n         # Reproducibility\n         seed: int | None = 0,\n-        keep_module_scores: bool = False\n+        keep_module_scores: bool = False,\n     ):\n         try:\n             inspect.signature(metric).bind(None, None, None, None, None)\n"
+        }
+    ]
+}

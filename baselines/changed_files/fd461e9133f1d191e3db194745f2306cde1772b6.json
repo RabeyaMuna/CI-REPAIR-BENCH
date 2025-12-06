@@ -1,0 +1,10 @@
+{
+    "sha_fail": "fd461e9133f1d191e3db194745f2306cde1772b6",
+    "changed_files": [
+        {
+            "commit": "fd461e9133f1d191e3db194745f2306cde1772b6",
+            "file_path": "river/test_estimators.py",
+            "diff": "diff --git a/river/test_estimators.py b/river/test_estimators.py\nindex 18aacf3..5cc1ab4 100644\n--- a/river/test_estimators.py\n+++ b/river/test_estimators.py\n@@ -54,6 +54,7 @@ def iter_estimators_which_can_be_tested():\n         River2SKLBase,\n         SKL2RiverBase,\n         anomaly.LocalOutlierFactor,  # needs warm-start to work correctly\n+        anomaly.StandardAbsoluteDeviation,  # SAD only works with data points as dictionaries with length 1.\n         compose.FuncTransformer,\n         compose.Grouper,\n         compose.Pipeline,\n"
+        }
+    ]
+}

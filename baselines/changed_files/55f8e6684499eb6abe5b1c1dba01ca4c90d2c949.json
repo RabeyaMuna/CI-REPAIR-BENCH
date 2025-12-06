@@ -1,0 +1,10 @@
+{
+    "sha_fail": "55f8e6684499eb6abe5b1c1dba01ca4c90d2c949",
+    "changed_files": [
+        {
+            "commit": "55f8e6684499eb6abe5b1c1dba01ca4c90d2c949",
+            "file_path": "etc/cowrie.cfg.dist",
+            "diff": "diff --git a/etc/cowrie.cfg.dist b/etc/cowrie.cfg.dist\nindex 82df3c3..3f46f67 100644\n--- a/etc/cowrie.cfg.dist\n+++ b/etc/cowrie.cfg.dist\n@@ -1075,7 +1075,7 @@ service = honeypot\n # For more information on Oracle Cloud user principal authentication method: https://docs.oracle.com/en-us/iaas/Content/API/Concepts/apisigningkey.htm#five\n # For more information on Oracle Cloud instance principal authentication method: https://blogs.oracle.com/developers/post/accessing-the-oracle-cloud-infrastructure-api-using-instance-principals\n [output_oraclecloud]\n-enabled = true\n+enabled = false\n # authtype must be set either to user_principals or to instance_principals\n authtype = instance_principals\n # following parameters must be set in case user_principals is used. keyfile is the absolute path to your API pem key file.\n"
+        }
+    ]
+}

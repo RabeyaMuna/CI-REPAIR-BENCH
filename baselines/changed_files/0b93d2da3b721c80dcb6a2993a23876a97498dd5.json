@@ -1,0 +1,10 @@
+{
+    "sha_fail": "0b93d2da3b721c80dcb6a2993a23876a97498dd5",
+    "changed_files": [
+        {
+            "commit": "0b93d2da3b721c80dcb6a2993a23876a97498dd5",
+            "file_path": "tests/protocols/test_websocket.py",
+            "diff": "diff --git a/tests/protocols/test_websocket.py b/tests/protocols/test_websocket.py\nindex d240bef..1b0a93c 100644\n--- a/tests/protocols/test_websocket.py\n+++ b/tests/protocols/test_websocket.py\n@@ -794,7 +794,6 @@ async def test_client_connection_lost_on_send(\n         async with websockets.client.connect(url):\n             await asyncio.sleep(0.1)\n         disconnect.set()\n-        await asyncio.sleep(0.1)\n \n     assert got_disconnect_event is True\n \n"
+        }
+    ]
+}

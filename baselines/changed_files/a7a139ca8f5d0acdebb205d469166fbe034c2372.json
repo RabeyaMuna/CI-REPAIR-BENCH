@@ -1,0 +1,10 @@
+{
+    "sha_fail": "a7a139ca8f5d0acdebb205d469166fbe034c2372",
+    "changed_files": [
+        {
+            "commit": "a7a139ca8f5d0acdebb205d469166fbe034c2372",
+            "file_path": "framework/py/flwr/superexec/deployment.py",
+            "diff": "diff --git a/framework/py/flwr/superexec/deployment.py b/framework/py/flwr/superexec/deployment.py\nindex 0461dd591..761c9746b 100644\n--- a/framework/py/flwr/superexec/deployment.py\n+++ b/framework/py/flwr/superexec/deployment.py\n@@ -168,8 +168,7 @@ class DeploymentEngine(Executor):\n \n             # Call SuperLink to create run\n             run_id = self._create_run(\n-                Fab(hashlib.sha256(fab_file).hexdigest(), fab_file),\n-                override_config,\n+                Fab(hashlib.sha256(fab_file).hexdigest(), fab_file), override_config\n             )\n \n             # Register context for the Run\n"
+        }
+    ]
+}

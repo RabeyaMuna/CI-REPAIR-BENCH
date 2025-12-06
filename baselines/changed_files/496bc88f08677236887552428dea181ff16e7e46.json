@@ -1,0 +1,10 @@
+{
+    "sha_fail": "496bc88f08677236887552428dea181ff16e7e46",
+    "changed_files": [
+        {
+            "commit": "496bc88f08677236887552428dea181ff16e7e46",
+            "file_path": "src/calibre/srv/utils.py",
+            "diff": "diff --git a/src/calibre/srv/utils.py b/src/calibre/srv/utils.py\nindex 83e15776..18ea7043 100644\n--- a/src/calibre/srv/utils.py\n+++ b/src/calibre/srv/utils.py\n@@ -285,7 +285,7 @@ def set_output(self):\n             self.stream = share_open(self.filename, 'a', newline='')\n         else:\n             # see https://bugs.python.org/issue27805\n-            self.stream = open(os.open(self.filename, os.O_WRONLY|os.O_APPEND|os.O_CREAT|os.O_CLOEXEC), 'w')\n+            self.stream = open(os.open(self.filename, os.O_WRONLY|os.O_APPEND|os.O_CREAT|os.O_CLOEXEC, mode=0o666), 'w')\n         try:\n             self.stream.tell()\n         except OSError:\n"
+        }
+    ]
+}

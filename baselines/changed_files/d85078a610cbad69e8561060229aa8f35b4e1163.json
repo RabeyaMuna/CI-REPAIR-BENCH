@@ -1,0 +1,10 @@
+{
+    "sha_fail": "d85078a610cbad69e8561060229aa8f35b4e1163",
+    "changed_files": [
+        {
+            "commit": "d85078a610cbad69e8561060229aa8f35b4e1163",
+            "file_path": "aider/io.py",
+            "diff": "diff --git a/aider/io.py b/aider/io.py\nindex f8cf78cd..46621cfc 100644\n--- a/aider/io.py\n+++ b/aider/io.py\n@@ -308,9 +308,11 @@ class InputOutput:\n         self.yes = yes\n \n         self.input_history_file = input_history_file\n+        Path(self.input_history_file).parent.mkdir(parents=True, exist_ok=True)\n         self.llm_history_file = llm_history_file\n         if chat_history_file is not None:\n             self.chat_history_file = Path(chat_history_file)\n+            self.chat_history_file.parent.mkdir(parents=True, exist_ok=True)\n         else:\n             self.chat_history_file = None\n \n"
+        }
+    ]
+}

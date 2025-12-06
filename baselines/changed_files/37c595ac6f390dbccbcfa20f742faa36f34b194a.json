@@ -1,0 +1,10 @@
+{
+    "sha_fail": "37c595ac6f390dbccbcfa20f742faa36f34b194a",
+    "changed_files": [
+        {
+            "commit": "37c595ac6f390dbccbcfa20f742faa36f34b194a",
+            "file_path": "cookbook/tools/googlecalendar_tools.py",
+            "diff": "diff --git a/cookbook/tools/googlecalendar_tools.py b/cookbook/tools/googlecalendar_tools.py\nindex c6db3d7c2..160605a0a 100644\n--- a/cookbook/tools/googlecalendar_tools.py\n+++ b/cookbook/tools/googlecalendar_tools.py\n@@ -46,7 +46,7 @@ from agno.tools.googlecalendar import GoogleCalendarTools\n agent = Agent(\n     tools=[\n         GoogleCalendarTools(\n-            credentials_path=\"./tmp/desktop_credentials.json\",  # Path to your downloaded OAuth credentials\n+            credentials_path=\"./credentials.json\",  # Path to your downloaded OAuth credentials\n         )\n     ],\n     # show_tool_calls=True,\n"
+        }
+    ]
+}

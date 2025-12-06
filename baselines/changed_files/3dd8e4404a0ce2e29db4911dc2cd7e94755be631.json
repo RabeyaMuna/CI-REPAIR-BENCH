@@ -1,0 +1,10 @@
+{
+    "sha_fail": "3dd8e4404a0ce2e29db4911dc2cd7e94755be631",
+    "changed_files": [
+        {
+            "commit": "3dd8e4404a0ce2e29db4911dc2cd7e94755be631",
+            "file_path": "tests/deepspeed/test_deepspeed.py",
+            "diff": "diff --git a/tests/deepspeed/test_deepspeed.py b/tests/deepspeed/test_deepspeed.py\nindex 20b9448..035965c 100644\n--- a/tests/deepspeed/test_deepspeed.py\n+++ b/tests/deepspeed/test_deepspeed.py\n@@ -338,7 +338,7 @@ class DeepSpeedConfigIntegration(AccelerateTestCase):\n                     model, optimizer, lr_scheduler = accelerator.prepare(model, optimizer, lr_scheduler)\n                 self.assertTrue(\n                     \"When using DeepSpeed `accelerate.prepare()` requires you to pass at least one of training or evaluation dataloaders \"\n-                    \"or alternatively set an integer value in `train_micro_batch_size_per_gpu` in the deepspeed config file\"\n+                    \"or alternatively set an integer value in `train_micro_batch_size_per_gpu` in the deepspeed config file \"\n                     \"or assign integer value to `AcceleratorState().deepspeed_plugin.deepspeed_config['train_micro_batch_size_per_gpu']`.\"\n                     in str(cm.exception)\n                 )\n"
+        }
+    ]
+}

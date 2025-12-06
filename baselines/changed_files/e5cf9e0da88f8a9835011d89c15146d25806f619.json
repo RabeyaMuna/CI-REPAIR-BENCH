@@ -1,0 +1,30 @@
+{
+    "sha_fail": "e5cf9e0da88f8a9835011d89c15146d25806f619",
+    "changed_files": [
+        {
+            "commit": "e5cf9e0da88f8a9835011d89c15146d25806f619",
+            "file_path": "CHANGES.rst",
+            "diff": "diff --git a/CHANGES.rst b/CHANGES.rst\nindex 3a90d66..ec602f9 100644\n--- a/CHANGES.rst\n+++ b/CHANGES.rst\n@@ -68,6 +68,8 @@ Features added\n   Patch by Jean-Fran\u00e7ois B.\n * #13508: Initial support for :pep:`695` type aliases.\n   Patch by Martin Matou\u0161, Jeremy Maitin-Shepard, and Adam Turner.\n+* 14023: Allow ``mathjax3_config`` to be a string pointing to a JS file.\n+  Patch by Randolf Scholz.\n \n Bugs fixed\n ----------\n"
+        },
+        {
+            "commit": "e5cf9e0da88f8a9835011d89c15146d25806f619",
+            "file_path": "doc/usage/extensions/math.rst",
+            "diff": "diff --git a/doc/usage/extensions/math.rst b/doc/usage/extensions/math.rst\nindex fb41d66..e8885cb 100644\n--- a/doc/usage/extensions/math.rst\n+++ b/doc/usage/extensions/math.rst\n@@ -264,12 +264,13 @@ Sphinx but is set to automatically include it from a third-party site.\n       or \"defer\" key is set.\n \n .. confval:: mathjax3_config\n-   :type: :code-py:`dict[str, Any] | None`\n+   :type: :code-py:`str | dict[str, Any] | None`\n    :default: :code-py:`None`\n \n    The configuration options for MathJax v3 (which is used by default).\n-   The given dictionary is assigned to the JavaScript variable\n-   ``window.MathJax``.\n+   A custom javascript file path can be given as a string.\n+   If a dictionary is given, it is converted to a JSON object and assigned\n+   to the JavaScript variable ``window.MathJax``.\n    For more information, please read `Configuring MathJax`__.\n \n    __ https://docs.mathjax.org/en/latest/web/configuration.html#configuration\n"
+        },
+        {
+            "commit": "e5cf9e0da88f8a9835011d89c15146d25806f619",
+            "file_path": "sphinx/ext/mathjax.py",
+            "diff": "diff --git a/sphinx/ext/mathjax.py b/sphinx/ext/mathjax.py\nindex 62220cc..cf06670 100644\n--- a/sphinx/ext/mathjax.py\n+++ b/sphinx/ext/mathjax.py\n@@ -105,9 +105,27 @@ def install_mathjax(\n                 )\n             body = 'MathJax.Hub.Config(%s)' % json.dumps(app.config.mathjax2_config)\n             builder.add_js_file('', type='text/x-mathjax-config', body=body)\n-        if app.config.mathjax3_config:\n-            body = 'window.MathJax = %s' % json.dumps(app.config.mathjax3_config)\n-            builder.add_js_file('', body=body)\n+        match app.config.mathjax3_config:\n+            case None:\n+                pass\n+            case str(config_filename):\n+                config_filepath = app.srcdir / config_filename\n+                if not config_filepath.exists():\n+                    raise ExtensionError(f'mathjax3_config file not found')\n+                if not config_filepath.is_file():\n+                    raise ExtensionError('mathjax3_config is not a file')\n+                if config_filepath.suffix != '.js':\n+                    raise ExtensionError('mathjax3_config must be a .js file')\n+                with config_filepath.open(encoding='utf-8') as f:\n+                    body = f.read()\n+                builder.add_js_file('', body=body)\n+            case dict(config_dict):\n+                body = f\"window.MathJax = {json.dumps(config_dict)}\"\n+                builder.add_js_file('', body=body)\n+            case _:\n+                raise ExtensionError(\n+                    'mathjax3_config must be a str (filename), dict, or None'\n+                )\n \n         options = {}\n         if app.config.mathjax_options:\n@@ -147,7 +165,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:\n         types=frozenset({dict, NoneType}),\n     )\n     app.add_config_value(\n-        'mathjax3_config', None, 'html', types=frozenset({dict, NoneType})\n+        'mathjax3_config', None, 'html', types=frozenset({dict, str, NoneType})\n     )\n     app.connect('html-page-context', install_mathjax)\n \n"
+        },
+        {
+            "commit": "e5cf9e0da88f8a9835011d89c15146d25806f619",
+            "file_path": "tests/roots/test-ext-math/_static/custom_mathjax_config.js",
+            "diff": "diff --git a/tests/roots/test-ext-math/_static/custom_mathjax_config.js b/tests/roots/test-ext-math/_static/custom_mathjax_config.js\nnew file mode 100644\nindex 0000000..7a2bda3\n--- /dev/null\n+++ b/tests/roots/test-ext-math/_static/custom_mathjax_config.js\n@@ -0,0 +1 @@\n+window.MathJax = {\"extensions\": [\"tex2jax.js\"]}\n\\ No newline at end of file\n"
+        },
+        {
+            "commit": "e5cf9e0da88f8a9835011d89c15146d25806f619",
+            "file_path": "tests/test_extensions/test_ext_math.py",
+            "diff": "diff --git a/tests/test_extensions/test_ext_math.py b/tests/test_extensions/test_ext_math.py\nindex 9c8e620..529a591 100644\n--- a/tests/test_extensions/test_ext_math.py\n+++ b/tests/test_extensions/test_ext_math.py\n@@ -376,6 +376,23 @@ def test_mathjax3_config(app: SphinxTestApp) -> None:\n     assert '<script>window.MathJax = {\"extensions\": [\"tex2jax.js\"]}</script>' in content\n \n \n+@pytest.mark.sphinx(\n+    'html',\n+    testroot='ext-math',\n+    confoverrides={\n+        'extensions': ['sphinx.ext.mathjax'],\n+        'mathjax3_config': \"_static/custom_mathjax_config.js\",\n+    },\n+)\n+def test_mathjax3_js_config(app: SphinxTestApp) -> None:\n+    app.build(force_all=True)\n+\n+    content = (app.outdir / 'index.html').read_text(encoding='utf8')\n+    assert MATHJAX_URL in content\n+    assert '<script defer=\"defer\" src=\"%s\">' % MATHJAX_URL in content\n+    assert '<script>window.MathJax = {\"extensions\": [\"tex2jax.js\"]}</script>' in content\n+\n+\n @pytest.mark.sphinx(\n     'html',\n     testroot='ext-math',\n"
+        }
+    ]
+}

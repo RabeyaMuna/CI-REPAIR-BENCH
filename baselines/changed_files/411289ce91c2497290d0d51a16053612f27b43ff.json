@@ -1,0 +1,75 @@
+{
+    "sha_fail": "411289ce91c2497290d0d51a16053612f27b43ff",
+    "changed_files": [
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "rqalpha/const.py",
+            "diff": "diff --git a/rqalpha/const.py b/rqalpha/const.py\nindex 953454bf..5565da09 100644\n--- a/rqalpha/const.py\n+++ b/rqalpha/const.py\n@@ -158,6 +158,7 @@ class INSTRUMENT_TYPE(CustomEnum):\n     SPOT = \"Spot\"\n     REPO = \"Repo\"\n     REITs = \"REITs\"\n+    FutureArbitrage = \"FutureArbitrage\"\n \n \n # noinspection PyPep8Naming\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "rqalpha/data/base_data_source/data_source.py",
+            "diff": "diff --git a/rqalpha/data/base_data_source/data_source.py b/rqalpha/data/base_data_source/data_source.py\nindex 79f0ffa7..99b71aac 100644\n--- a/rqalpha/data/base_data_source/data_source.py\n+++ b/rqalpha/data/base_data_source/data_source.py\n@@ -31,6 +31,7 @@ from rqalpha.utils.datetime_func import (convert_date_to_int, convert_int_to_dat\n from rqalpha.utils.exception import RQInvalidArgument\n from rqalpha.utils.functools import lru_cache\n from rqalpha.utils.typing import DateLike\n+from rqalpha.utils.logger import system_log\n from rqalpha.environment import Environment\n from rqalpha.data.base_data_source.adjust import FIELDS_REQUIRE_ADJUSTMENT, adjust_bars\n from rqalpha.data.base_data_source.storage_interface import (AbstractCalendarStore, AbstractDateSet,\n@@ -94,10 +95,16 @@ class BaseDataSource(AbstractDataSource):\n         instruments = []\n         \n         env = Environment.get_instance()\n+        unsupported_types = []\n         with open(_p('instruments.pk'), 'rb') as f:\n             for i in pickle.load(f):\n                 if i[\"type\"] == \"Future\" and Instrument.is_future_continuous_contract(i[\"order_book_id\"]):\n                     i[\"listed_date\"] = datetime(1990, 1, 1)\n+                if i[\"type\"] not in INSTRUMENT_TYPE:\n+                    if i[\"type\"] not in unsupported_types:\n+                        unsupported_types.append(i[\"type\"])\n+                        system_log.warning(f\"Unsupported type: {i['type']}\")\n+                    continue\n                 instruments.append(Instrument(\n                     i, \n                     lambda i: self._future_info_store.get_tick_size(i),\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "rqalpha/data/base_data_source/storages.py",
+            "diff": "diff --git a/rqalpha/data/base_data_source/storages.py b/rqalpha/data/base_data_source/storages.py\nindex ddccf0df..56c20731 100644\n--- a/rqalpha/data/base_data_source/storages.py\n+++ b/rqalpha/data/base_data_source/storages.py\n@@ -135,7 +135,7 @@ class InstrumentStore(AbstractInstrumentStore):\n \n         for ins in instruments:\n             if ins.type != instrument_type:\n-                continue\n+                    continue\n             self._instruments[ins.order_book_id] = ins\n             self._sym_id_map[ins.symbol] = ins.order_book_id\n \n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "rqalpha/mod/rqalpha_mod_sys_analyser/__init__.py",
+            "diff": "diff --git a/rqalpha/mod/rqalpha_mod_sys_analyser/__init__.py b/rqalpha/mod/rqalpha_mod_sys_analyser/__init__.py\nindex 04bfa884..ceaf048d 100644\n--- a/rqalpha/mod/rqalpha_mod_sys_analyser/__init__.py\n+++ b/rqalpha/mod/rqalpha_mod_sys_analyser/__init__.py\n@@ -108,7 +108,6 @@ def plot(result_pickle_file_path, show, plot_save_file, plot_open_close_points,\n     from .plot import plot_result\n \n     result_dict = pd.read_pickle(result_pickle_file_path)\n-    print(plot_open_close_points, plot_weekly_indicators)\n     plot_result(result_dict, show, plot_save_file, plot_weekly_indicators, plot_open_close_points)\n \n \n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "rqalpha/mod/rqalpha_mod_sys_analyser/mod.py",
+            "diff": "diff --git a/rqalpha/mod/rqalpha_mod_sys_analyser/mod.py b/rqalpha/mod/rqalpha_mod_sys_analyser/mod.py\nindex bac474a9..098bfcc2 100644\n--- a/rqalpha/mod/rqalpha_mod_sys_analyser/mod.py\n+++ b/rqalpha/mod/rqalpha_mod_sys_analyser/mod.py\n@@ -420,7 +420,8 @@ class AnalyserMod(AbstractMod):\n         total_portfolios = df.set_index('date').sort_index()\n         if self._benchmark:\n             total_portfolios[\"benchmark_unit_net_value\"] = (self._benchmark_daily_returns + 1).cumprod()\n-            total_portfolios[\"excess_unit_net_value\"] = total_portfolios[\"unit_net_value\"] - total_portfolios[\"benchmark_unit_net_value\"]\n+            total_portfolios[\"arithmetic_excess_unit_net_value\"] = total_portfolios[\"unit_net_value\"] - total_portfolios[\"benchmark_unit_net_value\"]\n+            total_portfolios[\"geometric_excess_unit_net_value\"] = total_portfolios[\"unit_net_value\"] / total_portfolios[\"benchmark_unit_net_value\"] - 1\n         df.index = df['date']\n         weekly_nav = df.resample(\"W\").last().set_index(\"date\").unit_net_value.dropna()\n         monthly_nav = df.resample(\"M\").last().set_index(\"date\").unit_net_value.dropna()\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "rqalpha/mod/rqalpha_mod_sys_analyser/plot/plot.py",
+            "diff": "diff --git a/rqalpha/mod/rqalpha_mod_sys_analyser/plot/plot.py b/rqalpha/mod/rqalpha_mod_sys_analyser/plot/plot.py\nindex f6c375dc..e97b3314 100644\n--- a/rqalpha/mod/rqalpha_mod_sys_analyser/plot/plot.py\n+++ b/rqalpha/mod/rqalpha_mod_sys_analyser/plot/plot.py\n@@ -26,6 +26,7 @@ from matplotlib import gridspec, ticker, image as mpimg, pyplot\n \n import rqalpha\n from rqalpha.const import POSITION_EFFECT\n+from rqalpha.utils.logger import system_log\n from .utils import IndicatorInfo, LineInfo, max_dd as _max_dd, SpotInfo, max_ddd as _max_ddd\n from .utils import weekly_returns, trading_dates_index\n from .consts import PlotTemplate, DefaultPlot\n@@ -245,6 +246,8 @@ def plot_result(\n \n     _plot(summary[\"strategy_file\"], sub_plots, strategy_name)\n \n+    system_log.debug(f\"Matplotlib backend: {pyplot.get_backend()}\")\n+    \n     if save:\n         file_path = save\n         if os.path.isdir(save):\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "rqalpha/model/instrument.py",
+            "diff": "diff --git a/rqalpha/model/instrument.py b/rqalpha/model/instrument.py\nindex da2f2078..df10028b 100644\n--- a/rqalpha/model/instrument.py\n+++ b/rqalpha/model/instrument.py\n@@ -109,7 +109,7 @@ class Instrument(metaclass=PropertyReprMeta):\n     def type(self):\n         # type: () -> str\n         \"\"\"\n-        [sty] \u5408\u7ea6\u7c7b\u578b\uff0c\u76ee\u524d\u652f\u6301\u7684\u7c7b\u578b\u6709: \u2018CS\u2019, \u2018INDX\u2019, \u2018LOF\u2019, \u2018ETF\u2019, \u2018Future\u2019\n+        [str] \u5408\u7ea6\u7c7b\u578b\uff0c\u76ee\u524d\u652f\u6301\u7684\u7c7b\u578b\u6709: \u2018CS\u2019, \u2018INDX\u2019, \u2018LOF\u2019, \u2018ETF\u2019, \u2018Future\u2019\n         \"\"\"\n         return INSTRUMENT_TYPE[self.__dict__[\"type\"]]\n \n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "setup.cfg",
+            "diff": "diff --git a/setup.cfg b/setup.cfg\nindex af0ad9c6..9665569d 100644\n--- a/setup.cfg\n+++ b/setup.cfg\n@@ -5,7 +5,7 @@\n \n [metadata]\n name = rqalpha\n-version = 5.6.3\n+version = 5.6.4\n \n [versioneer]\n VCS = git\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "tests/outs/test_s_buy_and_hold.pkl",
+            "diff": "diff --git a/tests/outs/test_s_buy_and_hold.pkl b/tests/outs/test_s_buy_and_hold.pkl\nindex 3c999039..990f935f 100644\nBinary files a/tests/outs/test_s_buy_and_hold.pkl and b/tests/outs/test_s_buy_and_hold.pkl differ\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "tests/outs/test_s_dual_thrust.pkl",
+            "diff": "diff --git a/tests/outs/test_s_dual_thrust.pkl b/tests/outs/test_s_dual_thrust.pkl\nindex ba5029b6..39377080 100644\nBinary files a/tests/outs/test_s_dual_thrust.pkl and b/tests/outs/test_s_dual_thrust.pkl differ\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "tests/outs/test_s_scheduler.pkl",
+            "diff": "diff --git a/tests/outs/test_s_scheduler.pkl b/tests/outs/test_s_scheduler.pkl\nindex 6991e2fc..8a4e38f5 100644\nBinary files a/tests/outs/test_s_scheduler.pkl and b/tests/outs/test_s_scheduler.pkl differ\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "tests/outs/test_s_tick_size.pkl",
+            "diff": "diff --git a/tests/outs/test_s_tick_size.pkl b/tests/outs/test_s_tick_size.pkl\nindex 47a8ff21..72b7d91a 100644\nBinary files a/tests/outs/test_s_tick_size.pkl and b/tests/outs/test_s_tick_size.pkl differ\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "tests/outs/test_s_turtle.pkl",
+            "diff": "diff --git a/tests/outs/test_s_turtle.pkl b/tests/outs/test_s_turtle.pkl\nindex b15d3ed1..02cf0e87 100644\nBinary files a/tests/outs/test_s_turtle.pkl and b/tests/outs/test_s_turtle.pkl differ\n"
+        },
+        {
+            "commit": "411289ce91c2497290d0d51a16053612f27b43ff",
+            "file_path": "tests/outs/test_s_turtle_signal.pkl",
+            "diff": "diff --git a/tests/outs/test_s_turtle_signal.pkl b/tests/outs/test_s_turtle_signal.pkl\nindex 4639df6a..55079bdc 100644\nBinary files a/tests/outs/test_s_turtle_signal.pkl and b/tests/outs/test_s_turtle_signal.pkl differ\n"
+        }
+    ]
+}

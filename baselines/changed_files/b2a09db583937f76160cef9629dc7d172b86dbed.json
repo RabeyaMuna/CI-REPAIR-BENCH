@@ -1,0 +1,10 @@
+{
+    "sha_fail": "b2a09db583937f76160cef9629dc7d172b86dbed",
+    "changed_files": [
+        {
+            "commit": "b2a09db583937f76160cef9629dc7d172b86dbed",
+            "file_path": "framework/py/flwr/common/message.py",
+            "diff": "diff --git a/framework/py/flwr/common/message.py b/framework/py/flwr/common/message.py\nindex 4d7aebb98..a7d56a8d5 100644\n--- a/framework/py/flwr/common/message.py\n+++ b/framework/py/flwr/common/message.py\n@@ -398,20 +398,17 @@ class Message(InflatableObject):\n         proto_message = ProtoMessage.FromString(obj_body)\n \n         # Prepare content if error wasn't set in protobuf message\n-        content = (\n-            cast(RecordDict, children[children_ids[0]])\n-            if not proto_message.HasField(\"error\")\n-            else None\n-        )\n+        if proto_message.HasField(\"error\"):\n+            content = None\n+            error = error_from_proto(proto_message.error)\n+        else:\n+            content = cast(RecordDict, children[children_ids[0]]\n+            error = None\n         # Return message\n         return make_message(\n             metadata=metadata_from_proto(proto_message.metadata),\n             content=content,\n-            error=(\n-                error_from_proto(proto_message.error)\n-                if proto_message.HasField(\"error\")\n-                else None\n-            ),\n+            error=error,\n         )\n \n \n"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "sha_fail": "6fe4e00e8863c8da28d241cb65632725de6db64b",
+    "changed_files": [
+        {
+            "commit": "6fe4e00e8863c8da28d241cb65632725de6db64b",
+            "file_path": "libs/agno/agno/workflow/v2/workflow.py",
+            "diff": "diff --git a/libs/agno/agno/workflow/v2/workflow.py b/libs/agno/agno/workflow/v2/workflow.py\nindex c2e6ea63c..7321215ce 100644\n--- a/libs/agno/agno/workflow/v2/workflow.py\n+++ b/libs/agno/agno/workflow/v2/workflow.py\n@@ -1,5 +1,4 @@\n import asyncio\n-import time\n from dataclasses import dataclass\n from datetime import datetime\n from os import getenv\n@@ -62,7 +61,6 @@ from agno.workflow.v2.router import Router\n from agno.workflow.v2.step import Step\n from agno.workflow.v2.steps import Steps\n from agno.workflow.v2.types import (\n-    BackgroundWorkflowRun,\n     StepInput,\n     StepMetrics,\n     StepOutput,\n@@ -1252,7 +1250,6 @@ class Workflow:\n \n             thread = threading.Thread(target=run_in_thread, daemon=True)\n             thread.start()\n-            task = thread  # type: ignore\n \n         # Return SAME object that will be updated by background execution\n         return workflow_run_response\n@@ -1354,7 +1351,6 @@ class Workflow:\n \n             thread = threading.Thread(target=run_in_thread, daemon=True)\n             thread.start()\n-            task = thread  # type: ignore\n \n         # Return SAME object that will be updated by background execution\n         return workflow_run_response\n"
+        }
+    ]
+}

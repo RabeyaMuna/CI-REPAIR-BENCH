@@ -1,0 +1,20 @@
+{
+    "sha_fail": "616eb3b10db94cf4a4c209377f36b2ce995bd01c",
+    "changed_files": [
+        {
+            "commit": "616eb3b10db94cf4a4c209377f36b2ce995bd01c",
+            "file_path": "docs/changelog.rst",
+            "diff": "diff --git a/docs/changelog.rst b/docs/changelog.rst\nindex cd66939..2ab73fa 100644\n--- a/docs/changelog.rst\n+++ b/docs/changelog.rst\n@@ -5,7 +5,7 @@ Changelog\n ------------------\n \n - Nothing changed yet.\n-\n+- Remove unnecessary COUNT queries to speed up export\n \n 3.3.4 (2023-12-09)\n ------------------\n"
+        },
+        {
+            "commit": "616eb3b10db94cf4a4c209377f36b2ce995bd01c",
+            "file_path": "import_export/admin.py",
+            "diff": "diff --git a/import_export/admin.py b/import_export/admin.py\nindex 735f91c..6e1f1c0 100644\n--- a/import_export/admin.py\n+++ b/import_export/admin.py\n@@ -1,5 +1,6 @@\n import logging\n import warnings\n+from contextlib import contextmanager\n \n import django\n from django import forms\n@@ -69,6 +70,24 @@ class ImportExportMixinBase:\n         return super().changelist_view(request, extra_context)\n \n \n+class FakePaginator:\n+    count = 0\n+\n+\n+def _get_paginator(request, queryset, per_page):\n+    return FakePaginator()\n+\n+\n+@contextmanager\n+def temp_attr(obj, attr_name, new_value):\n+    original_value = getattr(obj, attr_name)\n+    setattr(obj, attr_name, new_value)\n+    try:\n+        yield\n+    finally:\n+        setattr(obj, attr_name, original_value)\n+\n+\n class ImportMixin(BaseImportMixin, ImportExportMixinBase):\n     \"\"\"\n     Import mixin.\n@@ -741,7 +760,12 @@ class ExportMixin(BaseExportMixin, ImportExportMixinBase):\n         changelist_kwargs[\"sortable_by\"] = self.sortable_by\n         if django.VERSION >= (4, 0):\n             changelist_kwargs[\"search_help_text\"] = self.search_help_text\n-        cl = ChangeList(**changelist_kwargs)\n+\n+        # Temporarily set to False to avoid unnecessary COUNT queries.\n+        with temp_attr(self, \"show_full_result_count\", False):\n+            # Temporarily set to FakePaginator to avoid unnecessary COUNT queries.\n+            with temp_attr(self, \"get_paginator\", _get_paginator):\n+                cl = ChangeList(**changelist_kwargs)\n \n         return cl.get_queryset(request)\n \n"
+        },
+        {
+            "commit": "616eb3b10db94cf4a4c209377f36b2ce995bd01c",
+            "file_path": "tests/core/tests/test_admin_integration.py",
+            "diff": "diff --git a/tests/core/tests/test_admin_integration.py b/tests/core/tests/test_admin_integration.py\nindex fcd39ba..c178c89 100644\n--- a/tests/core/tests/test_admin_integration.py\n+++ b/tests/core/tests/test_admin_integration.py\n@@ -680,7 +680,8 @@ class ExportAdminIntegrationTest(AdminTestMixin, TestCase):\n             \"file_format\": \"0\",\n         }\n         date_str = datetime.now().strftime(\"%Y-%m-%d\")\n-        response = self.client.post(\"/admin/core/book/export/\", data)\n+        with self.assertNumQueries(7):  # Should not contain COUNT queries from ModelAdmin.get_results()\n+            response = self.client.post(\"/admin/core/book/export/\", data)\n         self.assertEqual(response.status_code, 200)\n         self.assertTrue(response.has_header(\"Content-Disposition\"))\n         self.assertEqual(response[\"Content-Type\"], \"text/csv\")\n"
+        }
+    ]
+}

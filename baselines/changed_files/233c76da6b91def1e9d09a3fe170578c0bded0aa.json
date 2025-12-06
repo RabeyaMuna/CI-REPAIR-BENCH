@@ -1,0 +1,15 @@
+{
+    "sha_fail": "233c76da6b91def1e9d09a3fe170578c0bded0aa",
+    "changed_files": [
+        {
+            "commit": "233c76da6b91def1e9d09a3fe170578c0bded0aa",
+            "file_path": "libs/agno/agno/utils/models/aws_claude.py",
+            "diff": "diff --git a/libs/agno/agno/utils/models/aws_claude.py b/libs/agno/agno/utils/models/aws_claude.py\nindex 65e59d3f2..d28006306 100644\n--- a/libs/agno/agno/utils/models/aws_claude.py\n+++ b/libs/agno/agno/utils/models/aws_claude.py\n@@ -152,7 +152,8 @@ def format_messages(messages: List[Message]) -> Tuple[List[Dict[str, str]], str]\n             content = []\n \n             if isinstance(message.content, str) and message.content:\n-                content.append(TextBlock(text=message.content, type=\"text\"))\n+                if message.content != \" \":\n+                    content.append(TextBlock(text=message.content, type=\"text\"))\n \n             if message.tool_calls:\n                 for tool_call in message.tool_calls:\n"
+        },
+        {
+            "commit": "233c76da6b91def1e9d09a3fe170578c0bded0aa",
+            "file_path": "libs/agno/agno/utils/models/claude.py",
+            "diff": "diff --git a/libs/agno/agno/utils/models/claude.py b/libs/agno/agno/utils/models/claude.py\nindex be57dc5fd..0863b7694 100644\n--- a/libs/agno/agno/utils/models/claude.py\n+++ b/libs/agno/agno/utils/models/claude.py\n@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple\n \n from agno.media import File, Image\n from agno.models.message import Message\n-from agno.utils.log import log_error, log_warning\n+from agno.utils.log import log_error, log_info, log_warning\n \n try:\n     from anthropic.types import (\n@@ -232,7 +232,8 @@ def format_messages(messages: List[Message]) -> Tuple[List[Dict[str, str]], str]\n                 content.append(RedactedThinkingBlock(data=message.redacted_thinking, type=\"redacted_thinking\"))\n \n             if isinstance(message.content, str) and message.content:\n-                content.append(TextBlock(text=message.content, type=\"text\"))\n+                if message.content != \" \":\n+                    content.append(TextBlock(text=message.content, type=\"text\"))\n \n             if message.tool_calls:\n                 for tool_call in message.tool_calls:\n"
+        }
+    ]
+}

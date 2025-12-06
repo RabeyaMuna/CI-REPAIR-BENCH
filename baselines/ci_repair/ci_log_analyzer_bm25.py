@@ -388,6 +388,9 @@ RULES:
 - If no file is clearly tied in this chunk, use an empty list for `relevant_files`.
 - Use null for unknown numeric/line values.
 - Return ONLY valid JSON, no markdown, no extra text.
+- All string values must be single-line (no embedded line breaks).
+- Do not paste large raw log blocks; summarize them in your own words including all information.
+- If you need to mention that logs span multiple lines, just say e.g. "the log shows a stack trace mentioning file X and function Y" rather than copying it.
 
 --- LOG_DETAILS (pre-processed explanations for this chunk) ---
 {chunk}
@@ -490,26 +493,29 @@ Each failure dict may contain:
 - message
 - context_lines (raw CI log lines)
 
-TASK:
 - Read every failure in this subset.
 - Build a continuous narrative that:
-- Mentions each failure (line_number, error_type, message, keywords, bm25_score).
-- Explains in natural language what the context_lines show (files involved, error messages, tests, commands, etc.).
-- Does NOT drop any distinct factual information.
-- Summarize at a higher level in `error_context` what these failures collectively indicate for this step.
+  - Mentions each failure (line_number, error_type, message, keywords, bm25_score).
+  - Summarizes what the context_lines show (files involved, error messages, tests, commands, etc.) IN YOUR OWN WORDS.
+  - DO NOT copy raw context_lines or large log blocks. Only paraphrase them in natural language.
+  - Keep the text reasonably short and compact.
 
 OUTPUT (STRICT JSON):
 
-{{
-"step_name": "{step_name}",
-"error_context": "High-level explanation for THIS CHUNK ONLY (subset of failures), summarizing what went wrong, which files and commands were involved, and how the keywords and bm25_score values support this.",
-"relevant_failures": "One combined natural-language explanation for ALL failures in this subset. This string must include, for every failure, its line_number, error_type, message, keywords, bm25_score, and a natural-language reconstruction of its context_lines, mentioning all files and important details without losing any information."
-}}
+{
+  "step_name": "<same as input>",
+  "error_context": "Single-line, high-level explanation for THIS CHUNK ONLY (subset of failures), summarizing what went wrong, which files and commands were involved, and how the keywords and bm25_score values support this. DO NOT include line breaks inside this string.",
+  "relevant_failures": "Single-line narrative for ALL failures in this subset. This string must include, for every failure, its line_number, error_type, message, keywords, bm25_score, and a natural-language summary of its context_lines. DO NOT paste raw logs or multi-line snippets. DO NOT include unescaped line breaks; keep this as one line of text."
+}
+
 
 RULES:
 - Return ONLY valid JSON (no markdown, no comments, no extra text).
-- error_context and relevant_failures must be strings.
-- Do not omit any failure or important detail from the input.
+- error_context and relevant_failures must each be a SINGLE-LINE STRING:
+  - Do not put line breaks inside the quotes.
+  - Use sentences separated by period or semicolon instead of newlines.
+- Never copy raw JSON or raw CI log blocks into the string values. Always paraphrase them in your own words.
+- Do not omit any distinct failure, but you may summarize log details concisely
 """.strip()
 
                 try:
@@ -569,7 +575,7 @@ then produce a structured, evidence-based JSON summary that explains:
 - how to classify the error(s) by category and subcategory,
 - which CI job/step/command failed.
 
-INPUTS:
+## INPUTS:
 1. sha_fail: {self.sha_fail}
 2. log_details (JSON):
 {log_details_text}
@@ -577,7 +583,7 @@ INPUTS:
 3. workflow_details (JSON):
 {workflow_text}
 
-OUTPUT FORMAT (STRICT JSON):
+## OUTPUT FORMAT (STRICT JSON):
 
 {{
   "sha_fail": "{self.sha_fail}",
@@ -607,11 +613,11 @@ OUTPUT FORMAT (STRICT JSON):
   ]
 }}
 
-GUIDANCE:
+## GUIDANCE:
 - Derive everything from log_details + workflow_details; do not invent data.
 - Extract file paths and line numbers from the text where possible; use null if unknown.
-- Use as few items as needed, but do not drop distinct error categories or distinct relevant files.
-- If no file is clearly involved, use an empty list for relevant_files.
+- Do NOT copy long raw CI logs or workflow files directly into any string.
+- All string values must be single-line (no embedded line breaks). Use ". " or "; " to separate sentences, not newline characters.
 - If job/step/command cannot be determined, use null for those fields.
 - Return ONLY valid JSON, no markdown or extra text.
 """.strip()

@@ -1,0 +1,10 @@
+{
+    "sha_fail": "647a2972a332e48cf4d97487d7dccb5abbaf1abc",
+    "changed_files": [
+        {
+            "commit": "647a2972a332e48cf4d97487d7dccb5abbaf1abc",
+            "file_path": "pwndbg/gdblib/ptmalloc2_tracking.py",
+            "diff": "diff --git a/pwndbg/gdblib/ptmalloc2_tracking.py b/pwndbg/gdblib/ptmalloc2_tracking.py\nindex 118436ef..2799490f 100644\n--- a/pwndbg/gdblib/ptmalloc2_tracking.py\n+++ b/pwndbg/gdblib/ptmalloc2_tracking.py\n@@ -254,7 +254,7 @@ class Tracker:\n             return colored_ptr\n \n         idx = len(self.colorized_heap_ptrs) % len(PTRS_COLORS)\n-        colored = PTRS_COLORS[idx]\n+        colored = PTRS_COLORS[idx](f\"{ptr:#x}\")\n \n         self.colorized_heap_ptrs[ptr] = colored\n \n"
+        }
+    ]
+}

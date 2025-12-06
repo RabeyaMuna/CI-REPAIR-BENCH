@@ -1,0 +1,15 @@
+{
+    "sha_fail": "39ad7bd9c837699393e05ebdcc12c0c95119bc8f",
+    "changed_files": [
+        {
+            "commit": "39ad7bd9c837699393e05ebdcc12c0c95119bc8f",
+            "file_path": "dash/_callback_context.py",
+            "diff": "diff --git a/dash/_callback_context.py b/dash/_callback_context.py\nindex f64865c4..72b92e09 100644\n--- a/dash/_callback_context.py\n+++ b/dash/_callback_context.py\n@@ -288,6 +288,14 @@ class CallbackContext:\n         \"\"\"\n         return _get_from_context(\"path\", \"\")\n \n+    @property\n+    @has_context\n+    def args(self):\n+        \"\"\"\n+        Query parameters of the callback request as a dictionary-like object.\n+        \"\"\"\n+        return _get_from_context(\"args\", \"\")\n+\n     @property\n     @has_context\n     def remote(self):\n"
+        },
+        {
+            "commit": "39ad7bd9c837699393e05ebdcc12c0c95119bc8f",
+            "file_path": "dash/dash.py",
+            "diff": "diff --git a/dash/dash.py b/dash/dash.py\nindex 2151f31f..d2067245 100644\n--- a/dash/dash.py\n+++ b/dash/dash.py\n@@ -70,6 +70,7 @@ from .server_factories.base_factory import BaseServerFactory\n from ._get_app import with_app_context, with_app_context_factory\n from ._grouping import map_grouping, grouping_len, update_args_group\n from ._obsolete import ObsoleteChecker\n+from ._callback_context import callback_context\n \n from . import _pages\n from ._pages import (\n@@ -1382,6 +1383,7 @@ class Dash(ObsoleteChecker):\n         )\n         g.cookies = dict(adapter.get_cookies())\n         g.headers = dict(adapter.get_headers())\n+        g.args = adapter.get_args()\n         g.path = adapter.get_full_path()\n         g.remote = adapter.get_remote_addr()\n         g.origin = adapter.get_origin()\n@@ -1529,7 +1531,7 @@ class Dash(ObsoleteChecker):\n                     manager=manager,\n                 )\n                 def cancel_call(*_):\n-                    job_ids = flask.request.args.getlist(\"cancelJob\")\n+                    job_ids = callback_context.args.getlist(\"cancelJob\")\n                     executor = _callback.context_value.get().background_callback_manager\n                     if job_ids:\n                         for job_id in job_ids:\n"
+        }
+    ]
+}

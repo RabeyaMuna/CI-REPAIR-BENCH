@@ -1,0 +1,15 @@
+{
+    "sha_fail": "4b39624a941b0c6fc5e8b54d90174475dd411b5e",
+    "changed_files": [
+        {
+            "commit": "4b39624a941b0c6fc5e8b54d90174475dd411b5e",
+            "file_path": "scapy/layers/dot11.py",
+            "diff": "diff --git a/scapy/layers/dot11.py b/scapy/layers/dot11.py\nindex 862ed66..5d0f176 100644\n--- a/scapy/layers/dot11.py\n+++ b/scapy/layers/dot11.py\n@@ -708,7 +708,7 @@ class Dot11(Packet):\n             [\n                 (\n                     FlagsField(\"FCfield\", 0, 4,\n-                               [\"pw-mgt\", \"MD\", \"protected\", \"order\"]),\n+                               [\"pw_mgt\", \"MD\", \"protected\", \"order\"]),\n                     lambda pkt: (pkt.type, pkt.subtype) == (1, 6)\n                 ),\n                 (\n@@ -718,8 +718,8 @@ class Dot11(Packet):\n                 )\n             ],\n             FlagsField(\"FCfield\", 0, 8,\n-                       [\"to-DS\", \"from-DS\", \"MF\", \"retry\",\n-                        \"pw-mgt\", \"MD\", \"protected\", \"order\"])\n+                       [\"to_DS\", \"from_DS\", \"MF\", \"retry\",\n+                        \"pw_mgt\", \"MD\", \"protected\", \"order\"])\n         ),\n         ConditionalField(\n             BitField(\"FCfield_bw\", 0, 3),\n@@ -746,7 +746,7 @@ class Dot11(Packet):\n         ConditionalField(\n             _Dot11MacField(\"addr4\", ETHER_ANY, 4),\n             lambda pkt: (pkt.type == 2 and\n-                         pkt.FCfield & 3 == 3),  # from-DS+to-DS\n+                         pkt.FCfield & 3 == 3),  # from_DS+to_DS\n         )\n     ]\n \n"
+        },
+        {
+            "commit": "4b39624a941b0c6fc5e8b54d90174475dd411b5e",
+            "file_path": "test/scapy/layers/dot11.uts",
+            "diff": "diff --git a/test/scapy/layers/dot11.uts b/test/scapy/layers/dot11.uts\nindex 0640980..65a59d0 100644\n--- a/test/scapy/layers/dot11.uts\n+++ b/test/scapy/layers/dot11.uts\n@@ -99,6 +99,7 @@ assert raw(PPI()/Dot11(type=2, subtype=8, FCfield=0x40)/Dot11QoS()/Dot11WEP()) =\n conf.wepkey = \"test123\"\n a = PPI(b'\\x00\\x00\\x08\\x00i\\x00\\x00\\x00\\x88@\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x008(^a')\n assert a[Dot11QoS][Dot11WEP].icv == 942169697\n+assert not a[Dot11].FCfield.to_DS\n \n = Dot11TKIP - dissection\n \n"
+        }
+    ]
+}

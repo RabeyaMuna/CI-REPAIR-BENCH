@@ -1,0 +1,10 @@
+{
+    "sha_fail": "b94d6dc7134d3bf6b510a164f1b7f02e4610cdbc",
+    "changed_files": [
+        {
+            "commit": "b94d6dc7134d3bf6b510a164f1b7f02e4610cdbc",
+            "file_path": "setup.py",
+            "diff": "diff --git a/setup.py b/setup.py\nindex a7a4167..a72dfb1 100755\n--- a/setup.py\n+++ b/setup.py\n@@ -1138,7 +1138,7 @@ def build_uniforms_header(skip_generation: bool = False) -> str:\n     dest = 'kitty/uniforms_generated.h'\n     if skip_generation:\n         return dest\n-    lines = ['#include \"gl.h\"', '']\n+    lines = []\n     a = lines.append\n     uniform_names: Dict[str, Tuple[str, ...]] = {}\n     class_names = {}\n@@ -1163,7 +1163,7 @@ def find_uniform_names(raw: str) -> Iterator[str]:\n         class_name, function_name, uniforms = class_names[name], function_names[name], uniform_names[name]\n         a(f'typedef struct {class_name} ''{')\n         for n in uniforms:\n-            a(f'    GLint {n};')\n+            a(f'    int {n};')\n         a('}'f' {class_name};')\n         a('')\n         a(f'static inline void\\n{function_name}(int program, {class_name} *ans) ''{')\n"
+        }
+    ]
+}

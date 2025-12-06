@@ -307,14 +307,15 @@ FAILED JOBS (CI context):
 
                 if faults:
                     all_faults.extend(faults)
-
-            fault_localization.append(
-                {
-                    "file_path": file_path,
-                    "full_file_path": full_file_path,
-                    "faults": all_faults,
-                }
-            )
+            
+            if all_faults:
+                fault_localization.append(
+                    {
+                        "file_path": file_path,
+                        "full_file_path": full_file_path,
+                        "faults": all_faults,
+                    }
+                )
 
         results = {
             "sha_fail": self.failed_commit,

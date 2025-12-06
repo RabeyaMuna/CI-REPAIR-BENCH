@@ -1,0 +1,20 @@
+{
+    "sha_fail": "077f6aaac3ebb96626ac747fb126a0b4d752489c",
+    "changed_files": [
+        {
+            "commit": "077f6aaac3ebb96626ac747fb126a0b4d752489c",
+            "file_path": "wandb/integration/ultralytics/bbox_utils.py",
+            "diff": "diff --git a/wandb/integration/ultralytics/bbox_utils.py b/wandb/integration/ultralytics/bbox_utils.py\nindex 8b924697..798aa573 100644\n--- a/wandb/integration/ultralytics/bbox_utils.py\n+++ b/wandb/integration/ultralytics/bbox_utils.py\n@@ -3,7 +3,10 @@ from typing import Any, Dict, List, Optional, Tuple, Union\n import torch\n from ultralytics.engine.results import Results\n from ultralytics.models.yolo.detect import DetectionPredictor\n-from ultralytics.yolo.utils import ops\n+try:\n+    from ultralytics.yolo.utils import ops\n+except ModuleNotFoundError:\n+    from ultralytics.utils import ops\n \n import wandb\n \n"
+        },
+        {
+            "commit": "077f6aaac3ebb96626ac747fb126a0b4d752489c",
+            "file_path": "wandb/integration/ultralytics/callback.py",
+            "diff": "diff --git a/wandb/integration/ultralytics/callback.py b/wandb/integration/ultralytics/callback.py\nindex 2e133a16..ed8a2246 100644\n--- a/wandb/integration/ultralytics/callback.py\n+++ b/wandb/integration/ultralytics/callback.py\n@@ -42,7 +42,10 @@ try:\n         SegmentationValidator,\n     )\n     from ultralytics.utils.torch_utils import de_parallel\n-    from ultralytics.yolo.utils import RANK, __version__\n+    try:\n+        from ultralytics.yolo.utils import RANK, __version__\n+    except ModuleNotFoundError:\n+        from ultralytics.utils import RANK, __version__\n \n     from wandb.integration.ultralytics.bbox_utils import (\n         plot_predictions,\n"
+        },
+        {
+            "commit": "077f6aaac3ebb96626ac747fb126a0b4d752489c",
+            "file_path": "wandb/integration/yolov8/yolov8.py",
+            "diff": "diff --git a/wandb/integration/yolov8/yolov8.py b/wandb/integration/yolov8/yolov8.py\nindex 310a3911..1c5dbd0f 100644\n--- a/wandb/integration/yolov8/yolov8.py\n+++ b/wandb/integration/yolov8/yolov8.py\n@@ -2,8 +2,13 @@ from typing import Any, Callable, Dict, List, Optional\n \n from ultralytics.yolo.engine.model import YOLO\n from ultralytics.yolo.engine.trainer import BaseTrainer\n-from ultralytics.yolo.utils import RANK\n-from ultralytics.yolo.utils.torch_utils import get_flops, get_num_params\n+\n+try:\n+    from ultralytics.yolo.utils import RANK\n+    from ultralytics.yolo.utils.torch_utils import get_flops, get_num_params\n+except ModuleNotFoundError:\n+    from ultralytics.utils import RANK\n+    from ultralytics.utils.torch_utils import get_flops, get_num_params\n from ultralytics.yolo.v8.classify.train import ClassificationTrainer\n \n import wandb\n"
+        }
+    ]
+}

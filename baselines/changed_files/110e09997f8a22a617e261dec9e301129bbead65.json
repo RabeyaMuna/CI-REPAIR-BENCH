@@ -1,0 +1,10 @@
+{
+    "sha_fail": "110e09997f8a22a617e261dec9e301129bbead65",
+    "changed_files": [
+        {
+            "commit": "110e09997f8a22a617e261dec9e301129bbead65",
+            "file_path": "libs/agno/agno/models/langdb/langdb.py",
+            "diff": "diff --git a/libs/agno/agno/models/langdb/langdb.py b/libs/agno/agno/models/langdb/langdb.py\nindex cab3fe058..46b34f7f7 100644\n--- a/libs/agno/agno/models/langdb/langdb.py\n+++ b/libs/agno/agno/models/langdb/langdb.py\n@@ -27,7 +27,10 @@ class LangDB(OpenAILike):\n     project_id: Optional[str] = getenv(\"LANGDB_PROJECT_ID\")\n     if not project_id:\n         logger.warning(\"LANGDB_PROJECT_ID not set in the environment\")\n-    base_url: str = f\"https://api.us-east-1.langdb.ai/{project_id}/v1\"\n+\n+    base_langdb_url = getenv(\"LANGDB_API_BASE_URL\", \"https://api.us-east-1.langdb.ai\")\n+\n+    base_url: str = f\"{base_langdb_url}/{project_id}/v1\"\n     label: Optional[str] = None\n     default_headers: Optional[dict] = None\n \n"
+        }
+    ]
+}

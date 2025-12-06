@@ -1,0 +1,10 @@
+{
+    "sha_fail": "ce191b811e255722bfb4f5c2c7c30bcb7a4a3d59",
+    "changed_files": [
+        {
+            "commit": "ce191b811e255722bfb4f5c2c7c30bcb7a4a3d59",
+            "file_path": "tools/accuracy_checker/openvino/tools/accuracy_checker/annotation_converters/amazon.py",
+            "diff": "diff --git a/tools/accuracy_checker/openvino/tools/accuracy_checker/annotation_converters/amazon.py b/tools/accuracy_checker/openvino/tools/accuracy_checker/annotation_converters/amazon.py\nindex 7e1c31b20..78a399750 100644\n--- a/tools/accuracy_checker/openvino/tools/accuracy_checker/annotation_converters/amazon.py\n+++ b/tools/accuracy_checker/openvino/tools/accuracy_checker/annotation_converters/amazon.py\n@@ -39,7 +39,7 @@ class DataIterator:\n         self.source_dicts = []\n         for source_dict in [uid_voc, mid_voc, cat_voc]:\n             with open(source_dict, 'rb') as source_content:\n-                self.source_dicts.append(pickle.load(source_content, encoding='UTF-8')) # nosec B301  # disable pickle check\n+                self.source_dicts.append(pickle.load(source_content, encoding='UTF-8'))  # nosec B301  # disable pickle check\n \n         with open(item_info, \"r\", encoding='UTF-8') as f_meta:\n             meta_map = {}\n"
+        }
+    ]
+}

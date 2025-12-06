@@ -1,0 +1,10 @@
+{
+    "sha_fail": "5f24cca27fe01045314ee6ddb7619e164ada0c91",
+    "changed_files": [
+        {
+            "commit": "5f24cca27fe01045314ee6ddb7619e164ada0c91",
+            "file_path": "libs/agno/agno/models/openai/chat.py",
+            "diff": "diff --git a/libs/agno/agno/models/openai/chat.py b/libs/agno/agno/models/openai/chat.py\nindex e30ef1b3d..928f15e7b 100644\n--- a/libs/agno/agno/models/openai/chat.py\n+++ b/libs/agno/agno/models/openai/chat.py\n@@ -278,7 +278,7 @@ class OpenAIChat(Model):\n                     message_dict[\"content\"].extend(audio_to_message(audio=message.audio))\n \n         if message.audio_output is not None:\n-            message_dict[\"content\"] = None\n+            message_dict[\"content\"] = \"\"\n             message_dict[\"audio\"] = {\"id\": message.audio_output.id}\n \n         if message.videos is not None and len(message.videos) > 0:\n@@ -304,7 +304,7 @@ class OpenAIChat(Model):\n \n         # Manually add the content field even if it is None\n         if message.content is None:\n-            message_dict[\"content\"] = None\n+            message_dict[\"content\"] = \"\"\n         return message_dict\n \n     def invoke(\n"
+        }
+    ]
+}

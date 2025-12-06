@@ -1,0 +1,20 @@
+{
+    "sha_fail": "7d4f15d5b669904fa89334b6ac3785a751ea7c86",
+    "changed_files": [
+        {
+            "commit": "7d4f15d5b669904fa89334b6ac3785a751ea7c86",
+            "file_path": "django/contrib/messages/storage/fallback.py",
+            "diff": "diff --git a/django/contrib/messages/storage/fallback.py b/django/contrib/messages/storage/fallback.py\nindex bb6c3432..517c82c2 100644\n--- a/django/contrib/messages/storage/fallback.py\n+++ b/django/contrib/messages/storage/fallback.py\n@@ -1,9 +1,9 @@\n+import weakref\n+\n from django.contrib.messages.storage.base import BaseStorage\n from django.contrib.messages.storage.cookie import CookieStorage\n from django.contrib.messages.storage.session import SessionStorage\n \n-import weakref\n-\n \n class FallbackStorage(BaseStorage):\n     \"\"\"\n"
+        },
+        {
+            "commit": "7d4f15d5b669904fa89334b6ac3785a751ea7c86",
+            "file_path": "docs/ref/contrib/messages.txt",
+            "diff": "diff --git a/docs/ref/contrib/messages.txt b/docs/ref/contrib/messages.txt\nindex a2366a57..adfb3a63 100644\n--- a/docs/ref/contrib/messages.txt\n+++ b/docs/ref/contrib/messages.txt\n@@ -91,8 +91,8 @@ To write your own storage class, subclass the ``BaseStorage`` class in\n ``django.contrib.messages.storage.base`` and implement the ``_get`` and\n ``_store`` methods.\n \n-There is a method called `def _weak_request` at\n-:class:`~django.contrib.messages.storage.fallback.FallbackStorage`\n+There is a method called ``def _weak_request`` at\n+:class:``~django.contrib.messages.storage.fallback.FallbackStorage``\n which will prevent a circular reference of the Request objects\n \n .. _message-level:\n"
+        },
+        {
+            "commit": "7d4f15d5b669904fa89334b6ac3785a751ea7c86",
+            "file_path": "tests/messages_tests/test_fallback.py",
+            "diff": "diff --git a/tests/messages_tests/test_fallback.py b/tests/messages_tests/test_fallback.py\nindex 80c3f3ad..4321261d 100644\n--- a/tests/messages_tests/test_fallback.py\n+++ b/tests/messages_tests/test_fallback.py\n@@ -166,25 +166,18 @@ class FallbackTests(BaseTests, SimpleTestCase):\n         \"\"\"\n         request = self.get_request()\n         storage = self.storage_class(request)\n-\n         # Get the weak reference from your method\n         weak_ref = storage._weak_request()\n-\n         # Test that it points to the same request\n         self.assertIs(weak_ref(), storage.request)\n         self.assertIs(weak_ref(), request)\n-\n         # Test garbage collection\n         del request\n         gc.collect()\n-\n         # Should still exist because storage holds reference\n         self.assertIsNotNone(weak_ref())\n-\n         # Remove storage and test again\n         del storage\n         gc.collect()\n-\n         # Now should be None\n         self.assertIsNone(weak_ref())\n-\n"
+        }
+    ]
+}

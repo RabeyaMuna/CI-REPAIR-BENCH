@@ -1,0 +1,10 @@
+{
+    "sha_fail": "c99ead9542bde331497f2456537fdbb0e37706d0",
+    "changed_files": [
+        {
+            "commit": "c99ead9542bde331497f2456537fdbb0e37706d0",
+            "file_path": "wandb/sdk/data_types/image.py",
+            "diff": "diff --git a/wandb/sdk/data_types/image.py b/wandb/sdk/data_types/image.py\nindex 9c44e7d7..977251b4 100644\n--- a/wandb/sdk/data_types/image.py\n+++ b/wandb/sdk/data_types/image.py\n@@ -277,8 +277,8 @@ class Image(BatchableMedia):\n         )\n         if util.is_matplotlib_typename(util.get_full_typename(data)):\n             buf = BytesIO()\n-            util.ensure_matplotlib_figure(data).savefig(buf)\n-            self._image = pil_image.open(buf)\n+            util.ensure_matplotlib_figure(data).savefig(buf, format='png')\n+            self._image = pil_image.open(buf, formats=[\"PNG\"])\n         elif isinstance(data, pil_image.Image):\n             self._image = data\n         elif util.is_pytorch_tensor_typename(util.get_full_typename(data)):\n"
+        }
+    ]
+}

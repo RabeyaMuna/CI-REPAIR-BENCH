@@ -1,0 +1,15 @@
+{
+    "sha_fail": "a14be35a9de01a87991618a5dbd6b96470d0f799",
+    "changed_files": [
+        {
+            "commit": "a14be35a9de01a87991618a5dbd6b96470d0f799",
+            "file_path": "errbot/botplugin.py",
+            "diff": "diff --git a/errbot/botplugin.py b/errbot/botplugin.py\nindex dcdeffc..79b50b0 100644\n--- a/errbot/botplugin.py\n+++ b/errbot/botplugin.py\n@@ -134,9 +134,7 @@ class Command:\n             update_wrapper(self.definition, args, kwargs)\n         else:\n             log.warning(\n-                \"Attempting to append arguments to {} isn't supported.\".format(\n-                    self.definition\n-                )\n+                f\"Attempting to append arguments to {self.definition} isn't supported.\"\n             )\n \n \n"
+        },
+        {
+            "commit": "a14be35a9de01a87991618a5dbd6b96470d0f799",
+            "file_path": "errbot/core_plugins/vcheck.py",
+            "diff": "diff --git a/errbot/core_plugins/vcheck.py b/errbot/core_plugins/vcheck.py\nindex 2a53611..556ea23 100644\n--- a/errbot/core_plugins/vcheck.py\n+++ b/errbot/core_plugins/vcheck.py\n@@ -48,7 +48,7 @@ class VersionChecker(BotPlugin):\n         try:\n             possible_versions = requests.get(HOME).json()\n             version = possible_versions.get(\n-                \"python{}\".format(major_py_version), VERSION\n+                f\"python{major_py_version}\", VERSION\n             )\n             self.log.debug(\"Latest Errbot version is: %s\", version)\n         except (HTTPError, URLError, ConnectionError, JSONDecodeError):\n"
+        }
+    ]
+}

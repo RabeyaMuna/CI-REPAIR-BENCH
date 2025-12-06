@@ -123,7 +123,7 @@ def process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="l
 
     # Use the full dataset order as the canonical order
     # If you want a subset for processing, change here:
-    subset = dataset  # or dataset[start:end], etc.
+    subset = dataset[144:]  # or dataset[start:end], etc.
 
     for datapoint in subset:
         task_id = datapoint["id"]
@@ -302,7 +302,7 @@ if __name__ == "__main__":
     dataset = dataset_df.to_dict(orient="records")
 
     # Run processing (incrementally updates per-model JSON files)
-    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="bm25")
+    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="llm")
 
     # Optional: also maintain a global generated_patches.json
     # in config.project_result_dir, with same ordered-by-dataset behavior

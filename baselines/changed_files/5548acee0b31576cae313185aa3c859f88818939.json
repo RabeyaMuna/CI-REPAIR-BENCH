@@ -1,0 +1,10 @@
+{
+    "sha_fail": "5548acee0b31576cae313185aa3c859f88818939",
+    "changed_files": [
+        {
+            "commit": "5548acee0b31576cae313185aa3c859f88818939",
+            "file_path": "tests/basic/test_repo.py",
+            "diff": "diff --git a/tests/basic/test_repo.py b/tests/basic/test_repo.py\nindex b70065e6..49de5105 100644\n--- a/tests/basic/test_repo.py\n+++ b/tests/basic/test_repo.py\n@@ -730,18 +730,14 @@ class TestRepo(unittest.TestCase):\n             git_repo_verify = GitRepo(io, None, None, git_commit_verify=True)\n \n             # Attempt to commit - should fail due to pre-commit hook\n-            commit_result = git_repo_verify.commit(\n-                fnames=[str(fname)], message=\"Should fail\"\n-            )\n+            commit_result = git_repo_verify.commit(fnames=[str(fname)], message=\"Should fail\")\n             self.assertIsNone(commit_result)\n \n             # Create GitRepo with verify=False\n             git_repo_no_verify = GitRepo(io, None, None, git_commit_verify=False)\n \n             # Attempt to commit - should succeed by bypassing the hook\n-            commit_result = git_repo_no_verify.commit(\n-                fnames=[str(fname)], message=\"Should succeed\"\n-            )\n+            commit_result = git_repo_no_verify.commit(fnames=[str(fname)], message=\"Should succeed\")\n             self.assertIsNotNone(commit_result)\n \n             # Verify the commit was actually made\n"
+        }
+    ]
+}

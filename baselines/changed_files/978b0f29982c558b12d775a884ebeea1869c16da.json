@@ -1,0 +1,10 @@
+{
+    "sha_fail": "978b0f29982c558b12d775a884ebeea1869c16da",
+    "changed_files": [
+        {
+            "commit": "978b0f29982c558b12d775a884ebeea1869c16da",
+            "file_path": "libs/agno/tests/unit/tools/models/test_gemini.py",
+            "diff": "diff --git a/libs/agno/tests/unit/tools/models/test_gemini.py b/libs/agno/tests/unit/tools/models/test_gemini.py\nindex 82a45df4c..35a6f1124 100644\n--- a/libs/agno/tests/unit/tools/models/test_gemini.py\n+++ b/libs/agno/tests/unit/tools/models/test_gemini.py\n@@ -122,7 +122,7 @@ def test_generate_image_success(mock_gemini_tools, mock_agent, mock_successful_r\n         result = mock_gemini_tools.generate_image(mock_agent, prompt)\n \n         expected_media_id = \"12345678-1234-5678-1234-567812345678\"\n-        assert result == f\"Image generated successfully with ID: {expected_media_id}\"\n+        assert result == f\"Image generated successfully\"\n         mock_gemini_tools.client.models.generate_images.assert_called_once_with(model=image_model, prompt=prompt)\n \n         # Verify agent.add_image was called with the correct ImageArtifact\n@@ -208,7 +208,7 @@ def test_generate_video_success(mock_gemini_tools, mock_agent, mock_video_operat\n     with patch(\"agno.tools.models.gemini.uuid4\", return_value=UUID(\"87654321-4321-8765-4321-876543214321\")):\n         result = mock_gemini_tools.generate_video(mock_agent, prompt)\n         expected_id = \"87654321-4321-8765-4321-876543214321\"\n-        assert result == f\"Video generated successfully with ID: {expected_id}\"\n+        assert result == f\"Video generated successfully\" \n         assert mock_gemini_tools.client.models.generate_videos.called\n         call_args = mock_gemini_tools.client.models.generate_videos.call_args\n         assert call_args.kwargs[\"model\"] == mock_gemini_tools.video_model\n"
+        }
+    ]
+}

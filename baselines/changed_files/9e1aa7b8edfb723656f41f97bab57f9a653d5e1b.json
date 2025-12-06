@@ -1,0 +1,15 @@
+{
+    "sha_fail": "9e1aa7b8edfb723656f41f97bab57f9a653d5e1b",
+    "changed_files": [
+        {
+            "commit": "9e1aa7b8edfb723656f41f97bab57f9a653d5e1b",
+            "file_path": "octodns/manager.py",
+            "diff": "diff --git a/octodns/manager.py b/octodns/manager.py\nindex f52457d..791b3ec 100644\n--- a/octodns/manager.py\n+++ b/octodns/manager.py\n@@ -604,7 +604,7 @@ class Manager(object):\n         for zone_name, config in zones.items():\n             if config is None:\n                 raise ManagerException(\n-                    f'Passed zone: {zone_name} not found in config'\n+                    f'Requested zone \"{zone_name}\" not found in config'\n                 )\n             decoded_zone_name = idna_decode(zone_name)\n             self.log.info('sync:   zone=%s', decoded_zone_name)\n"
+        },
+        {
+            "commit": "9e1aa7b8edfb723656f41f97bab57f9a653d5e1b",
+            "file_path": "tests/test_octodns_manager.py",
+            "diff": "diff --git a/tests/test_octodns_manager.py b/tests/test_octodns_manager.py\nindex 90a1ff1..b8f3c92 100644\n--- a/tests/test_octodns_manager.py\n+++ b/tests/test_octodns_manager.py\n@@ -84,7 +84,7 @@ class TestManager(TestCase):\n             Manager(get_config_filename('dynamic-config.yaml')).sync(\n                 ['missing.zones.']\n             )\n-        self.assertTrue('Passed zone:' in str(ctx.exception))\n+        self.assertTrue('Requested zone:' in str(ctx.exception))\n \n     def test_missing_targets(self):\n         with self.assertRaises(ManagerException) as ctx:\n"
+        }
+    ]
+}

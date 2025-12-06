@@ -1,0 +1,10 @@
+{
+    "sha_fail": "7ab76a8fcbc8388a54cc0ca3caaaac5a56bbe680",
+    "changed_files": [
+        {
+            "commit": "7ab76a8fcbc8388a54cc0ca3caaaac5a56bbe680",
+            "file_path": "Python/optimizer.c",
+            "diff": "diff --git a/Python/optimizer.c b/Python/optimizer.c\nindex 995ddee8..f745f16f 100644\n--- a/Python/optimizer.c\n+++ b/Python/optimizer.c\n@@ -690,7 +690,7 @@ _PyJit_translate_single_bytecode_to_trace(\n     }\n \n     // One for possible _DEOPT, one because _CHECK_VALIDITY itself might _DEOPT\n-    max_length -= 1;\n+    max_length -= 2;\n \n     const struct opcode_macro_expansion *expansion = &_PyOpcode_macro_expansion[opcode];\n \n"
+        }
+    ]
+}

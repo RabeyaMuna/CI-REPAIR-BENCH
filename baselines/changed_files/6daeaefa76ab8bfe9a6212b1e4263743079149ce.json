@@ -1,0 +1,10 @@
+{
+    "sha_fail": "6daeaefa76ab8bfe9a6212b1e4263743079149ce",
+    "changed_files": [
+        {
+            "commit": "6daeaefa76ab8bfe9a6212b1e4263743079149ce",
+            "file_path": "awscli/telemetry.py",
+            "diff": "diff --git a/awscli/telemetry.py b/awscli/telemetry.py\nindex 89beb7011..3cf44e83a 100644\n--- a/awscli/telemetry.py\n+++ b/awscli/telemetry.py\n@@ -66,6 +66,9 @@ class CLISessionDatabaseConnection:\n           id TEXT UNIQUE NOT NULL\n         )\n     \"\"\"\n+    _CHECK_HOST_ID = \"\"\"\n+        SELECT COUNT(*) FROM host_id\n+    \"\"\"\n     _INSERT_HOST_ID = \"\"\"\n         INSERT OR IGNORE INTO host_id (\n             key, id\n@@ -107,15 +110,18 @@ class CLISessionDatabaseConnection:\n         self.execute(self._CREATE_HOST_ID_TABLE)\n \n     def _ensure_host_id(self):\n-        self.execute(\n-            self._INSERT_HOST_ID,\n-            # Hardcode `0` as primary key to ensure\n-            # there's only ever 1 host id in the table.\n-            (\n-                0,\n-                str(uuid.uuid4()),\n-            ),\n-        )\n+        cur = self.execute(self._CHECK_HOST_ID)\n+        host_id_ct = cur.fetchone()[0]\n+        if host_id_ct == 0:\n+            self.execute(\n+                self._INSERT_HOST_ID,\n+                # Hardcode `0` as primary key to ensure\n+                # there's only ever 1 host id in the table.\n+                (\n+                    0,\n+                    str(uuid.uuid4()),\n+                ),\n+            )\n \n     def _try_to_enable_wal(self):\n         try:\n"
+        }
+    ]
+}

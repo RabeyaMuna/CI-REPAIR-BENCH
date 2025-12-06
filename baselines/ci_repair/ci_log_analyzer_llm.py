@@ -15,7 +15,7 @@ from utilities.chunking_logic import chunk_log_by_tokens
 
 load_dotenv()
 
-MAX_TOKENS_SUMMARY = 60_000
+MAX_TOKENS_SUMMARY = 50_000
 
 class CILogAnalyzerLLM:
     def __init__(
@@ -56,13 +56,13 @@ class CILogAnalyzerLLM:
 
             try:
                 log_text = log if isinstance(log, str) else "\n".join(log)
-                enc = tiktoken.encoding_for_model(self.model_name)
-                total_tokens = len(enc.encode(log_text))
+                total_tokens = self._estimate_tokens(log_text)
+
 
                 print(f"Token count for '{step_name}': {total_tokens}")
 
                 if total_tokens > THRESHOLD:
-                    raw_chunks = chunk_log_by_tokens(log_text, max_tokens=60000, overlap=200, model=self.model_name)
+                    raw_chunks = chunk_log_by_tokens(log_text, max_tokens=50000, overlap=200, model=self.model_name)
                     print(f"Chunking activated: {len(raw_chunks)} chunks created for step '{step_name}'")
                     
                     chunk_tracker.append((step_name, len(raw_chunks)))

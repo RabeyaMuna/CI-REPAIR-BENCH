@@ -1,0 +1,10 @@
+{
+    "sha_fail": "67b1780b01f5d7461dc9b3d189d25acecbdb171d",
+    "changed_files": [
+        {
+            "commit": "67b1780b01f5d7461dc9b3d189d25acecbdb171d",
+            "file_path": "libs/agno/agno/team/team.py",
+            "diff": "diff --git a/libs/agno/agno/team/team.py b/libs/agno/agno/team/team.py\nindex dcb17d329..2b27bbe49 100644\n--- a/libs/agno/agno/team/team.py\n+++ b/libs/agno/agno/team/team.py\n@@ -4864,10 +4864,10 @@ class Team:\n                 and references.references is not None\n                 and len(references.references) > 0\n             ):\n-                user_msg_content += \"\\n\\nUse the following references from the knowledge base if it helps:\\n\"\n-                user_msg_content += \"<references>\\n\"\n-                user_msg_content += self._convert_documents_to_string(references.references) + \"\\n\"\n-                user_msg_content += \"</references>\"\n+                user_message_content += \"\\n\\nUse the following references from the knowledge base if it helps:\\n\"\n+                user_message_content += \"<references>\\n\"\n+                user_message_content += self._convert_documents_to_string(references.references) + \"\\n\"\n+                user_message_content += \"</references>\"\n             # Add context to user message\n             if self.add_context and self.context is not None:\n                 user_message_content += \"\\n\\n<context>\\n\"\n"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "sha_fail": "992b9a36ee14ce62ac8639c1ec88ba83e375e525",
+    "changed_files": [
+        {
+            "commit": "992b9a36ee14ce62ac8639c1ec88ba83e375e525",
+            "file_path": "framework/py/flwr/server/serverapp/app.py",
+            "diff": "diff --git a/framework/py/flwr/server/serverapp/app.py b/framework/py/flwr/server/serverapp/app.py\nindex b21e3745c..ed0f4b924 100644\n--- a/framework/py/flwr/server/serverapp/app.py\n+++ b/framework/py/flwr/server/serverapp/app.py\n@@ -16,6 +16,7 @@\n \n \n import argparse\n+import gc\n from logging import DEBUG, ERROR, INFO\n from pathlib import Path\n from queue import Queue\n@@ -248,6 +249,10 @@ def run_serverapp(  # pylint: disable=R0914, disable=W0212, disable=R0915\n             if grid:\n                 grid.close()\n \n+            # Clean up the Context\n+            context = None\n+            gc.collect()\n+\n             event(\n                 EventType.FLWR_SERVERAPP_RUN_LEAVE,\n                 event_details={\"run-id-hash\": hash_run_id, \"success\": success},\n"
+        }
+    ]
+}

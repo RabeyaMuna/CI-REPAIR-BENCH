@@ -1,0 +1,10 @@
+{
+    "sha_fail": "82bdfed0cf9ff57528d78ac9ad9f1179c8e117e3",
+    "changed_files": [
+        {
+            "commit": "82bdfed0cf9ff57528d78ac9ad9f1179c8e117e3",
+            "file_path": "libs/agno/agno/vectordb/mongodb/cosmos_mongodb.py",
+            "diff": "diff --git a/libs/agno/agno/vectordb/mongodb/cosmos_mongodb.py b/libs/agno/agno/vectordb/mongodb/cosmos_mongodb.py\nindex d0a1d4515..ff96a38e6 100644\n--- a/libs/agno/agno/vectordb/mongodb/cosmos_mongodb.py\n+++ b/libs/agno/agno/vectordb/mongodb/cosmos_mongodb.py\n@@ -99,10 +99,10 @@ class CosmosMongoDb(MongoDb):\n         else:\n             log_info(f\"Using existing collection '{self.collection_name}'.\")\n             if not self._search_index_exists():\n-                log_info(f\"Vector search index not found. Creating it.\")\n+                log_info(\"Vector search index not found. Creating it.\")\n                 self._create_search_index()\n             else:\n-                log_info(f\"Using existing vector search index.\")\n+                log_info(\"Using existing vector search index.\")\n \n         return self._collection  # type: ignore\n \n"
+        }
+    ]
+}

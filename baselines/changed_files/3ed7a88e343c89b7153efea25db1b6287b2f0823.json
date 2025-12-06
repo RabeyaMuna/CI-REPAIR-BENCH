@@ -1,0 +1,10 @@
+{
+    "sha_fail": "3ed7a88e343c89b7153efea25db1b6287b2f0823",
+    "changed_files": [
+        {
+            "commit": "3ed7a88e343c89b7153efea25db1b6287b2f0823",
+            "file_path": "tests/test_octodns_processor_filter.py",
+            "diff": "diff --git a/tests/test_octodns_processor_filter.py b/tests/test_octodns_processor_filter.py\nindex 409ec50..6525900 100644\n--- a/tests/test_octodns_processor_filter.py\n+++ b/tests/test_octodns_processor_filter.py\n@@ -194,6 +194,12 @@ class TestNetworkValueFilter(TestCase):\n     ]:\n         zone.add_record(record)\n \n+    def test_bad_config(self):\n+        with self.assertRaises(ValueError):\n+            filter_private = NetworkValueRejectlistFilter(\n+                'rejectlist', set(('string', '42.42.42.42/43'))\n+            )\n+\n     def test_reject(self):\n         filter_private = NetworkValueRejectlistFilter(\n             'rejectlist', set(('10.0.0.0/8', 'fd00::/8'))\n"
+        }
+    ]
+}

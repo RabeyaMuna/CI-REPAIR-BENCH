@@ -1,0 +1,10 @@
+{
+    "sha_fail": "0b08b8e82f8e67d89dd4335e63ecd95ab6f5f048",
+    "changed_files": [
+        {
+            "commit": "0b08b8e82f8e67d89dd4335e63ecd95ab6f5f048",
+            "file_path": "optuna/samplers/_tpe/sampler.py",
+            "diff": "diff --git a/optuna/samplers/_tpe/sampler.py b/optuna/samplers/_tpe/sampler.py\nindex 59a04b4f2..bc9176c10 100644\n--- a/optuna/samplers/_tpe/sampler.py\n+++ b/optuna/samplers/_tpe/sampler.py\n@@ -101,7 +101,7 @@ class TPESampler(BaseSampler):\n \n     .. note::\n         For `v2.9.0 <https://github.com/optuna/optuna/releases/tag/v2.9.0>`_ or later,\n-        :class:`~optuna.samplers.MOTPESampler` is deprecated and TPESampler should be used instead.\n+        MOTPESampler is deprecated and TPESampler should be used instead.\n         The following code shows how you run TPESampler on a multi-objective task:\n \n         .. testcode::\n"
+        }
+    ]
+}

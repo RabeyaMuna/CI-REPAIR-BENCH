@@ -1,0 +1,10 @@
+{
+    "sha_fail": "5f98672f68c7f4acdf3e6f68fd79e66b56d0b529",
+    "changed_files": [
+        {
+            "commit": "5f98672f68c7f4acdf3e6f68fd79e66b56d0b529",
+            "file_path": "framework/py/flwr/server/superlink/serverappio/serverappio_servicer_test.py",
+            "diff": "diff --git a/framework/py/flwr/server/superlink/serverappio/serverappio_servicer_test.py b/framework/py/flwr/server/superlink/serverappio/serverappio_servicer_test.py\nindex 7494f5595..e113d3ad4 100644\n--- a/framework/py/flwr/server/superlink/serverappio/serverappio_servicer_test.py\n+++ b/framework/py/flwr/server/superlink/serverappio/serverappio_servicer_test.py\n@@ -474,7 +474,7 @@ class TestServerAppIoServicer(unittest.TestCase):  # pylint: disable=R0902\n         self._assert_pull_messages_not_allowed(run_id)\n \n     def test_pull_message_from_expired_message_error(self) -> None:\n-        \"\"\"Test that the servicer correctly handles the registration in the ObjecStore\n+        \"\"\"Test that the servicer correctly handles the registration in the ObjectStore\n         of an Error message created by the LinkState due to an expired TTL.\"\"\"\n         # Prepare\n         node_id = self.state.create_node(heartbeat_interval=30)\n"
+        }
+    ]
+}

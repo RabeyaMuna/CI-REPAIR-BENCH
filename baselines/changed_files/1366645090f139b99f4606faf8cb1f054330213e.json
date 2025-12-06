@@ -1,0 +1,10 @@
+{
+    "sha_fail": "1366645090f139b99f4606faf8cb1f054330213e",
+    "changed_files": [
+        {
+            "commit": "1366645090f139b99f4606faf8cb1f054330213e",
+            "file_path": ".github/CODEOWNERS",
+            "diff": "diff --git a/.github/CODEOWNERS b/.github/CODEOWNERS\nindex bcc4038c3..ba913e8a0 100644\n--- a/.github/CODEOWNERS\n+++ b/.github/CODEOWNERS\n@@ -41,3 +41,12 @@ README.md @jafermarq @tanertopal @danieljanes\n **/Dockerfile @Robert-Steiner @Moep90 @tanertopal @danieljanes\n **/*.Dockerfile @Robert-Steiner @Moep90 @tanertopal @danieljanes\n /framework/docker @Robert-Steiner @Moep90 @tanertopal @danieljanes\n+\n+# Flower Framework Infrastructure\n+/framework/py/flwr/superlink/ @panh99 @tanertopal @danieljanes\n+/framework/py/flwr/supernode/ @panh99 @tanertopal @danieljanes\n+/framework/py/flwr/supercore/ @panh99 @tanertopal @danieljanes\n+\n+# Override for CLI\n+/framework/py/flwr/superlink/cli/ @tanertopal @danieljanes\n+/framework/py/flwr/supernode/cli/ @tanertopal @danieljanes\n"
+        }
+    ]
+}

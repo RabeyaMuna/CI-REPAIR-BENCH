@@ -1,0 +1,10 @@
+{
+    "sha_fail": "261adce4ce40a3fbd323f79ba7823cf8523a8110",
+    "changed_files": [
+        {
+            "commit": "261adce4ce40a3fbd323f79ba7823cf8523a8110",
+            "file_path": "scapy/layers/smb2.py",
+            "diff": "diff --git a/scapy/layers/smb2.py b/scapy/layers/smb2.py\nindex d76f982..3595cd4 100644\n--- a/scapy/layers/smb2.py\n+++ b/scapy/layers/smb2.py\n@@ -1506,7 +1506,11 @@ class WINNT_ACL(Packet):\n         ByteField(\"AclRevision\", 2),\n         ByteField(\"Sbz1\", 0x00),\n         FieldLenField(\n-            \"AclSize\", None, length_of=\"Aces\", adjust=lambda _, x: x + 14, fmt=\"<H\"\n+            \"AclSize\",\n+            None,\n+            length_of=\"Aces\",\n+            adjust=lambda _, x: x + 8,\n+            fmt=\"<H\",  # total size including header : AclRevision(1) + Sbz1(1) + AclSize(2) + AceCount(2) + Sbz2(2)\n         ),\n         FieldLenField(\"AceCount\", None, count_of=\"Aces\", fmt=\"<H\"),\n         ShortField(\"Sbz2\", 0),\n"
+        }
+    ]
+}

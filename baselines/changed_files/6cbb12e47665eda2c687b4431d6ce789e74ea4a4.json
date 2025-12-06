@@ -1,0 +1,15 @@
+{
+    "sha_fail": "6cbb12e47665eda2c687b4431d6ce789e74ea4a4",
+    "changed_files": [
+        {
+            "commit": "6cbb12e47665eda2c687b4431d6ce789e74ea4a4",
+            "file_path": "seaborn/_base.py",
+            "diff": "diff --git a/seaborn/_base.py b/seaborn/_base.py\nindex 84d90a3..0b43523 100644\n--- a/seaborn/_base.py\n+++ b/seaborn/_base.py\n@@ -942,8 +942,11 @@ class VectorPlotter:\n \n             for key in iter_keys:\n \n+                pd_key = (\n+                    key[0] if len(key) == 1 and _version_predates(pd, \"2.2.0\") else key\n+                )\n                 try:\n-                    data_subset = grouped_data.get_group(key)\n+                    data_subset = grouped_data.get_group(pd_key)\n                 except KeyError:\n                     # XXX we are adding this to allow backwards compatibility\n                     # with the empty artists that old categorical plots would\n"
+        },
+        {
+            "commit": "6cbb12e47665eda2c687b4431d6ce789e74ea4a4",
+            "file_path": "seaborn/_core/plot.py",
+            "diff": "diff --git a/seaborn/_core/plot.py b/seaborn/_core/plot.py\nindex ffae491..14348e3 100644\n--- a/seaborn/_core/plot.py\n+++ b/seaborn/_core/plot.py\n@@ -41,6 +41,7 @@ from seaborn._core.typing import (\n from seaborn._core.exceptions import PlotSpecError\n from seaborn._core.rules import categorical_order\n from seaborn._compat import get_layout_engine, set_layout_engine\n+from seaborn.utils import _version_predates\n from seaborn.rcmod import axes_style, plotting_context\n from seaborn.palettes import color_palette\n \n@@ -1637,8 +1638,12 @@ class Plotter:\n \n                 for key in itertools.product(*grouping_keys):\n \n+                    pd_key = (\n+                        key[0] if len(key) == 1 and _version_predates(pd, \"2.2.0\")\n+                        else key\n+                    )\n                     try:\n-                        df_subset = grouped_df.get_group(key)\n+                        df_subset = grouped_df.get_group(pd_key)\n                     except KeyError:\n                         # TODO (from initial work on categorical plots refactor)\n                         # We are adding this to allow backwards compatability\n"
+        }
+    ]
+}

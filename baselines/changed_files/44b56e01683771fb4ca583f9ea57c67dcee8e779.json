@@ -1,0 +1,10 @@
+{
+    "sha_fail": "44b56e01683771fb4ca583f9ea57c67dcee8e779",
+    "changed_files": [
+        {
+            "commit": "44b56e01683771fb4ca583f9ea57c67dcee8e779",
+            "file_path": "src/accelerate/big_modeling.py",
+            "diff": "diff --git a/src/accelerate/big_modeling.py b/src/accelerate/big_modeling.py\nindex 8022ab2..5fd2bd5 100644\n--- a/src/accelerate/big_modeling.py\n+++ b/src/accelerate/big_modeling.py\n@@ -73,7 +73,7 @@ def init_empty_weights(include_buffers: bool = None):\n \n     Any model created under this context manager has no weights. As such you can't do something like\n     `model.to(some_device)` with it. To load weights inside your empty model, see [`load_checkpoint_and_dispatch`].\n-\n+    Make sure to overwrite the default device_map param, otherwise dispatch is not called.\n     </Tip>\n     \"\"\"\n     if include_buffers is None:\n@@ -479,7 +479,8 @@ def load_checkpoint_and_dispatch(\n             name, once a given module name is inside, every submodule of it will be sent to the same device.\n \n             To have Accelerate compute the most optimized `device_map` automatically, set `device_map=\"auto\"`. For more\n-            information about each option see [here](big_modeling#designing-a-device-map).\n+            information about each option see [here](../concept_guides/big_model_inference#designing-a-device-map).\n+            Defaults to None, which means `dispatch_model` will not be called.\n         max_memory (`Dict`, *optional*):\n             A dictionary device identifier to maximum memory. Will default to the maximum memory available for each GPU\n             and the available CPU RAM if unset.\n"
+        }
+    ]
+}

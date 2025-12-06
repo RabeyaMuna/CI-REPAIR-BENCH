@@ -1,0 +1,10 @@
+{
+    "sha_fail": "026bbd5ffd1394338d51c1c0c5c8209205ae33ed",
+    "changed_files": [
+        {
+            "commit": "026bbd5ffd1394338d51c1c0c5c8209205ae33ed",
+            "file_path": "flask_admin/contrib/rediscli.py",
+            "diff": "diff --git a/flask_admin/contrib/rediscli.py b/flask_admin/contrib/rediscli.py\nindex 69243f53..48a72de7 100644\n--- a/flask_admin/contrib/rediscli.py\n+++ b/flask_admin/contrib/rediscli.py\n@@ -106,14 +106,12 @@ class RedisCli(BaseView):\n         Execute single command.\n \n         :param name:\n-            Command name\n+            Command name (case-insensitive)\n         :param args:\n             Command arguments\n         \"\"\"\n-        # Do some remapping\n-        new_cmd = self.remapped_commands.get(name)\n-        if new_cmd:\n-            name = new_cmd\n+        name = name.lower() # make commands case-insensitive\n+        name = self.remapped_commands.get(name, name) # Do some remapping\n \n         # Execute command\n         if name not in self.commands:\n"
+        }
+    ]
+}

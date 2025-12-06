@@ -1,0 +1,10 @@
+{
+    "sha_fail": "f231d50356ccfb76ed54d27e9fd32dd40e824f28",
+    "changed_files": [
+        {
+            "commit": "f231d50356ccfb76ed54d27e9fd32dd40e824f28",
+            "file_path": "framework/py/flwr/supercore/scheduler/run_scheduler.py",
+            "diff": "diff --git a/framework/py/flwr/supercore/scheduler/run_scheduler.py b/framework/py/flwr/supercore/scheduler/run_scheduler.py\nindex 82706b129..66e6f2986 100644\n--- a/framework/py/flwr/supercore/scheduler/run_scheduler.py\n+++ b/framework/py/flwr/supercore/scheduler/run_scheduler.py\n@@ -63,7 +63,7 @@ def run_app_scheduler(\n     register_exit_handlers(\n         event_type=EventType.FLWR_APP_SCHEDULER_RUN_LEAVE,\n         exit_message=\"Flower app scheduler terminated gracefully.\",\n-        exit_handlers=[lambda: channel.close()],  # pytlint:disable=W0108\n+        exit_handlers=[lambda: channel.close()],  # pytlint: disable=W0108\n     )\n \n     # Create the gRPC stub for the AppIO API\n"
+        }
+    ]
+}

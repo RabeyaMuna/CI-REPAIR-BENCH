@@ -1,0 +1,10 @@
+{
+    "sha_fail": "1559358d5679d353417ef140c1894997b4c7160f",
+    "changed_files": [
+        {
+            "commit": "1559358d5679d353417ef140c1894997b4c7160f",
+            "file_path": "taipy/event/event_consumer.py",
+            "diff": "diff --git a/taipy/event/event_consumer.py b/taipy/event/event_consumer.py\nindex 947107c3..9ff96a85 100644\n--- a/taipy/event/event_consumer.py\n+++ b/taipy/event/event_consumer.py\n@@ -13,7 +13,7 @@ from typing import Callable, Dict, List, Optional, Union\n \n from taipy import DataNode, Gui, Scenario, Submission, SubmissionStatus\n from taipy.common.logger._taipy_logger import _TaipyLogger\n-from taipy.core.common._check_dependencies import EnterpriseEditionUtils\n+from taipy.common._check_dependencies import EnterpriseEditionUtils\n from taipy.core.common._utils import _load_fct\n from taipy.core.config import DataNodeConfig, ScenarioConfig, TaskConfig\n from taipy.core.notification import (\n"
+        }
+    ]
+}

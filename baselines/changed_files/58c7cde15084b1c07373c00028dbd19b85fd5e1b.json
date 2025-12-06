@@ -1,0 +1,10 @@
+{
+    "sha_fail": "58c7cde15084b1c07373c00028dbd19b85fd5e1b",
+    "changed_files": [
+        {
+            "commit": "58c7cde15084b1c07373c00028dbd19b85fd5e1b",
+            "file_path": "tests/test_responses.py",
+            "diff": "diff --git a/tests/test_responses.py b/tests/test_responses.py\nindex 6bccd23..8106fad 100644\n--- a/tests/test_responses.py\n+++ b/tests/test_responses.py\n@@ -329,6 +329,38 @@ def test_file_response_with_method_warns(tmpdir, test_client_factory):\n         FileResponse(path=tmpdir, filename=\"example.png\", method=\"GET\")\n \n \n+@pytest.mark.anyio\n+async def test_file_response_with_pathsend(tmpdir: Path):\n+    path = os.path.join(tmpdir, \"xyz\")\n+    content = b\"<file content>\" * 1000\n+    with open(path, \"wb\") as file:\n+        file.write(content)\n+\n+    app = FileResponse(path=path, filename=\"example.png\")\n+\n+    async def receive() -> Message:  # type: ignore[empty-body]\n+        ...  # pragma: no cover\n+\n+    async def send(message: Message) -> None:\n+        if message[\"type\"] == \"http.response.start\":\n+            assert message[\"status\"] == status.HTTP_200_OK\n+            headers = Headers(raw=message[\"headers\"])\n+            assert headers[\"content-type\"] == \"image/png\"\n+            assert \"content-length\" in headers\n+            assert \"content-disposition\" in headers\n+            assert \"last-modified\" in headers\n+            assert \"etag\" in headers\n+        elif message[\"type\"] == \"http.response.pathsend\":\n+            assert message[\"path\"] == str(path)\n+\n+    # Since the TestClient doesn't support `pathsend`, we need to test this directly.\n+    await app(\n+        {\"type\": \"http\", \"method\": \"get\", \"extensions\": {\"http.response.pathsend\", {}}},\n+        receive,\n+        send,\n+    )\n+\n+\n def test_set_cookie(test_client_factory, monkeypatch):\n     # Mock time used as a reference for `Expires` by stdlib `SimpleCookie`.\n     mocked_now = dt.datetime(2037, 1, 22, 12, 0, 0, tzinfo=dt.timezone.utc)\n"
+        }
+    ]
+}

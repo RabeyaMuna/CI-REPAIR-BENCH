@@ -1,0 +1,10 @@
+{
+    "sha_fail": "275119c05eb95555e52b5c4b25ee27baf150fbe6",
+    "changed_files": [
+        {
+            "commit": "275119c05eb95555e52b5c4b25ee27baf150fbe6",
+            "file_path": "benchmarks/benchmarks/linalg.py",
+            "diff": "diff --git a/benchmarks/benchmarks/linalg.py b/benchmarks/benchmarks/linalg.py\nindex dce5dcd55..4feed8e36 100644\n--- a/benchmarks/benchmarks/linalg.py\n+++ b/benchmarks/benchmarks/linalg.py\n@@ -102,6 +102,23 @@ class Bench(Benchmark):\n     )\n \n \n+class BatchedBench(Benchmark):\n+    params = [\n+        [(10, 10, 10, 2), (100, 10, 10), (100, 20, 20), (100, 100, 100)],\n+        [\"scipy\", \"numpy\"]\n+    ]\n+    param_names = ['shape',  'module']\n+\n+    def setup(self, shape, module):\n+        self.a = random(shape)\n+\n+    def time_svd(self, shape, module):\n+        if module == 'numpy':\n+            nl.svd(self.a)\n+        else:\n+            sl.svd(self.a)\n+\n+\n class Norm(Benchmark):\n     params = [\n         [(20, 20), (100, 100), (1000, 1000), (20, 1000), (1000, 20)],\n"
+        }
+    ]
+}

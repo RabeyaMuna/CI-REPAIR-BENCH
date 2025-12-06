@@ -1,0 +1,10 @@
+{
+    "sha_fail": "c3f4fe9eefdb297183b6d51bfc305e40feeec358",
+    "changed_files": [
+        {
+            "commit": "c3f4fe9eefdb297183b6d51bfc305e40feeec358",
+            "file_path": "sky/resources.py",
+            "diff": "diff --git a/sky/resources.py b/sky/resources.py\nindex 3056e104..b965401b 100644\n--- a/sky/resources.py\n+++ b/sky/resources.py\n@@ -836,8 +836,8 @@ class Resources:\n             image_size = self.cloud.get_image_size(image_id, region)\n             if image_size >= self.disk_size:\n                 with ux_utils.print_exception_no_traceback():\n-                    size_comp = 'larger than' if image_size > self.disk_size \\\n-                        else 'equal to'\n+                    size_comp = ('larger than' if image_size > self.disk_size\n+                                 else 'equal to')\n                     raise ValueError(\n                         f'Image {image_id!r} is {image_size}GB, which is '\n                         f'{size_comp} the specified disk_size: '\n"
+        }
+    ]
+}

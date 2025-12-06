@@ -1,0 +1,25 @@
+{
+    "sha_fail": "1635d1811c3630bf60e4392671e04be7765d902e",
+    "changed_files": [
+        {
+            "commit": "1635d1811c3630bf60e4392671e04be7765d902e",
+            "file_path": "tests/test_auto_detection.py",
+            "diff": "diff --git a/tests/test_auto_detection.py b/tests/test_auto_detection.py\nindex ea2ee73..3cafa9b 100644\n--- a/tests/test_auto_detection.py\n+++ b/tests/test_auto_detection.py\n@@ -11,17 +11,14 @@ from uvicorn.protocols.http.auto import AutoHTTPProtocol\n from uvicorn.protocols.websockets.auto import AutoWebSocketsProtocol\n from uvicorn.server import ServerState\n \n-# Determine expected loop implementation based on platform\n try:\n-    if sys.platform == \"win32\":\n-        # On Windows, check for winloop first, then asyncio\n+    if sys.platform == \"win32\":  # pragma: py-not-win32\n         importlib.import_module(\"winloop\")\n         expected_loop = \"winloop\"\n-    else:\n-        # On Unix, check for uvloop first, then asyncio\n+    else:  # pragma: py-win32\n         importlib.import_module(\"uvloop\")\n-        expected_loop = \"uvloop\"  # pragma: py-win32\n-except ImportError:  # pragma: py-not-win32\n+        expected_loop = \"uvloop\"\n+except ImportError:  # pragma: no cover\n     expected_loop = \"asyncio\"\n \n try:\n"
+        },
+        {
+            "commit": "1635d1811c3630bf60e4392671e04be7765d902e",
+            "file_path": "tests/test_config.py",
+            "diff": "diff --git a/tests/test_config.py b/tests/test_config.py\nindex 8df9eb9..9c80ca4 100644\n--- a/tests/test_config.py\n+++ b/tests/test_config.py\n@@ -593,17 +593,3 @@ def test_setup_event_loop_is_removed(caplog: pytest.LogCaptureFixture) -> None:\n         AttributeError, match=\"The `setup_event_loop` method was replaced by `get_loop_factory` in uvicorn 0.36.0.\"\n     ):\n         config.setup_event_loop()\n-\n-\n-@pytest.mark.skipif(sys.platform != \"win32\", reason=\"winloop is for Windows only\")\n-def test_winloop_loop_factory() -> None:\n-    \"\"\"Test that winloop can be explicitly configured on Windows.\"\"\"\n-    pytest.importorskip(\"winloop\")\n-    config = Config(app=asgi_app, loop=\"winloop\")\n-    config.load()\n-    loop_factory = config.get_loop_factory()\n-    assert loop_factory is not None\n-    event_loop = loop_factory()\n-    with closing(event_loop):\n-        assert event_loop is not None\n-        assert type(event_loop).__module__.startswith(\"winloop\")\n"
+        },
+        {
+            "commit": "1635d1811c3630bf60e4392671e04be7765d902e",
+            "file_path": "uvicorn/loops/asyncio.py",
+            "diff": "diff --git a/uvicorn/loops/asyncio.py b/uvicorn/loops/asyncio.py\nindex ad6121e..3a4ca9d 100644\n--- a/uvicorn/loops/asyncio.py\n+++ b/uvicorn/loops/asyncio.py\n@@ -6,6 +6,6 @@ from collections.abc import Callable\n \n \n def asyncio_loop_factory(use_subprocess: bool = False) -> Callable[[], asyncio.AbstractEventLoop]:\n-    if sys.platform == \"win32\" and not use_subprocess:\n+    if sys.platform == \"win32\" and not use_subprocess:  # pragma: py-win32\n         return asyncio.ProactorEventLoop\n-    return asyncio.SelectorEventLoop\n+    return asyncio.SelectorEventLoop  # pragma: py-not-win32\n"
+        },
+        {
+            "commit": "1635d1811c3630bf60e4392671e04be7765d902e",
+            "file_path": "uvicorn/loops/auto.py",
+            "diff": "diff --git a/uvicorn/loops/auto.py b/uvicorn/loops/auto.py\nindex 40d2518..a1753b2 100644\n--- a/uvicorn/loops/auto.py\n+++ b/uvicorn/loops/auto.py\n@@ -7,9 +7,9 @@ from collections.abc import Callable\n \n def auto_loop_factory(use_subprocess: bool = False) -> Callable[[], asyncio.AbstractEventLoop]:\n     try:\n-        if sys.platform == \"win32\":\n+        if sys.platform == \"win32\":  # pragma: py-win32\n             from uvicorn.loops.winloop import winloop_loop_factory as loop_factory\n-        else:\n+        else:  # pragma: py-not-win32\n             from uvicorn.loops.uvloop import uvloop_loop_factory as loop_factory\n     except ImportError:  # pragma: no cover\n         from uvicorn.loops.asyncio import asyncio_loop_factory as loop_factory\n"
+        }
+    ]
+}

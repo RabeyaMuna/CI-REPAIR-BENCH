@@ -1,0 +1,10 @@
+{
+    "sha_fail": "efe1611a385c2853ac5406082ab72d78b5dfcbfb",
+    "changed_files": [
+        {
+            "commit": "efe1611a385c2853ac5406082ab72d78b5dfcbfb",
+            "file_path": "locust/runners.py",
+            "diff": "diff --git a/locust/runners.py b/locust/runners.py\nindex 361b2be..f6e3b6a 100644\n--- a/locust/runners.py\n+++ b/locust/runners.py\n@@ -1474,12 +1474,12 @@ class WorkerRunner(DistributedRunner):\n             # dont complain about getting CTRL-C\n             sys.exit(1)\n         if not success:\n-            if self.retry < 3:\n+            if self.retry < 30 / CONNECT_TIMEOUT:  # lower log level during the first 30 seconds\n                 logger.debug(\n                     f\"Failed to connect to master {self.master_host}:{self.master_port}{self.web_base_path}, retry {self.retry}/{CONNECT_RETRY_COUNT}.\"\n                 )\n             else:\n-                logger.warning(\n+                logger.info(\n                     f\"Failed to connect to master {self.master_host}:{self.master_port}{self.web_base_path}, retry {self.retry}/{CONNECT_RETRY_COUNT}.\"\n                 )\n             if self.retry > CONNECT_RETRY_COUNT:\n"
+        }
+    ]
+}

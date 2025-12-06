@@ -1,0 +1,10 @@
+{
+    "sha_fail": "6ad4e8d6bb1ea167fa88d68f5396968b713dd7ba",
+    "changed_files": [
+        {
+            "commit": "6ad4e8d6bb1ea167fa88d68f5396968b713dd7ba",
+            "file_path": "libs/agno/agno/tools/mcp.py",
+            "diff": "diff --git a/libs/agno/agno/tools/mcp.py b/libs/agno/agno/tools/mcp.py\nindex b104454bc..5c7ad8b25 100644\n--- a/libs/agno/agno/tools/mcp.py\n+++ b/libs/agno/agno/tools/mcp.py\n@@ -165,21 +165,24 @@ class MCPTools(Toolkit):\n             if \"url\" not in sse_params:\n                 sse_params[\"url\"] = self.url\n             self._context = sse_client(**sse_params)\n+            client_timeout = max(self.timeout_seconds, sse_params.get(\"timeout\", self.timeout_seconds))\n         elif self.transport == \"streamable-http\":\n             streamable_http_params = asdict(self.server_params) if self.server_params is not None else {}\n             if \"url\" not in streamable_http_params:\n                 streamable_http_params[\"url\"] = self.url\n             self._context = streamablehttp_client(**streamable_http_params)\n-        elif self.transport == \"stdio\":\n+            client_timeout = max(self.timeout_seconds, streamable_http_params.get(\"timeout\", self.timeout_seconds))\n+        else:\n             if self.server_params is None:\n                 raise ValueError(\"server_params must be provided when using stdio transport.\")\n             self._context = stdio_client(self.server_params)  # type: ignore\n+            client_timeout = self.timeout_seconds\n \n         session_params = await self._context.__aenter__()  # type: ignore\n         read, write = session_params[0:2]\n \n-        self._session_context = ClientSession(read, write, read_timeout_seconds=timedelta(seconds=self.timeout_seconds))  # type: ignore\n-        self.session = await self._session_context.__aenter__()  # type: ignore\n+        self._session_context = ClientSession(read, write, read_timeout_seconds=timedelta(seconds=client_timeout))\n+        self.session = await self._session_context.__aenter__()\n \n         # Initialize with the new session\n         await self.initialize()\n"
+        }
+    ]
+}

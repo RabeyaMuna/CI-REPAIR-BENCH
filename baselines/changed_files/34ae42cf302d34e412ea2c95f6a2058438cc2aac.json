@@ -1,0 +1,10 @@
+{
+    "sha_fail": "34ae42cf302d34e412ea2c95f6a2058438cc2aac",
+    "changed_files": [
+        {
+            "commit": "34ae42cf302d34e412ea2c95f6a2058438cc2aac",
+            "file_path": "docs/changelog.rst",
+            "diff": "diff --git a/docs/changelog.rst b/docs/changelog.rst\nindex f0154ae..54a81bf 100644\n--- a/docs/changelog.rst\n+++ b/docs/changelog.rst\n@@ -9,6 +9,16 @@ To update |kitty|, :doc:`follow the instructions <binary>`.\n Recent major new features\n ---------------------------\n \n+Sessions [0.43]\n+~~~~~~~~~~~~~~~~\n+\n+kitty has long had support for :doc:`sessions`, aka simple text files where you\n+can define what tabs, windows and programs you wish to run in kitty. Now in\n+addition to that kitty has the ability to :ref:`create and switch between\n+sessions <goto_session>` with a single keypress and also to manually setup some\n+tabs/windows in kitty and :ref:`save it as a session file <complex_sessions>`,\n+for seamless and intuitive session file creation.\n+\n Access kitty with a single keypress [0.42]\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n \n@@ -109,6 +119,9 @@ Detailed list of changes\n 0.43.0 [2025-07-16]\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n \n+- New support for creating and switching to :doc:`sessions` easily, allowing\n+  users to define and use sessions/projects efficiently\n+\n - A new :opt:`cursor_trail_color` setting to independently control the color of\n   cursor trails (:pull:`8830`)\n \n"
+        }
+    ]
+}

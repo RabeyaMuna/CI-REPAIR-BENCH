@@ -1,0 +1,10 @@
+{
+    "sha_fail": "7f351340260c165e18ccd7c83dc783bb371b3797",
+    "changed_files": [
+        {
+            "commit": "7f351340260c165e18ccd7c83dc783bb371b3797",
+            "file_path": "httpx/_config.py",
+            "diff": "diff --git a/httpx/_config.py b/httpx/_config.py\nindex 33a49cb..303388d 100644\n--- a/httpx/_config.py\n+++ b/httpx/_config.py\n@@ -48,6 +48,7 @@ class SSLContext(ssl.SSLContext):\n         verify: VerifyTypes = True,\n         cert: typing.Optional[CertTypes] = None,\n     ) -> None:\n+        self.verify = verify\n         set_minimum_tls_version_1_2(self)\n         self.options |= ssl.OP_NO_COMPRESSION\n         self.set_ciphers(DEFAULT_CIPHERS)\n@@ -134,6 +135,9 @@ class SSLContext(ssl.SSLContext):\n                     password=cert[2],\n                 )\n \n+    def __repr__(self) -> str:\n+        return f\"<SSLContext [verify={self.verify}]>\"\n+\n     def __new__(\n         cls,\n         protocol: ssl._SSLMethod = ssl.PROTOCOL_TLS_CLIENT,\n"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "sha_fail": "bbfcebbc60b0bc5d238af2941a175f019d5b2aa4",
+    "changed_files": [
+        {
+            "commit": "bbfcebbc60b0bc5d238af2941a175f019d5b2aa4",
+            "file_path": "faster_whisper/vad.py",
+            "diff": "diff --git a/faster_whisper/vad.py b/faster_whisper/vad.py\nindex b5bf843..4a921d1 100644\n--- a/faster_whisper/vad.py\n+++ b/faster_whisper/vad.py\n@@ -320,9 +320,9 @@ class SileroVADModel:\n             audio.ndim == 2\n         ), \"Input should be a 2D array with size (batch_size, num_samples)\"\n \n-        batch_size, num_samples = audio.shape\n         rhs_padding = window_size_samples - num_samples % window_size_samples\n         audio = np.pad(audio, ((0, 0), (context_size_samples, rhs_padding)))\n+        batch_size, num_samples = audio.shape\n \n         encoder_batch_size = 2000\n         batch_samples = encoder_batch_size // batch_size * window_size_samples\n"
+        }
+    ]
+}

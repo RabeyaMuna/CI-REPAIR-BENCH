@@ -1,0 +1,15 @@
+{
+    "sha_fail": "d76dc85f4b7ccf18eb28510f36e2b8fcd7ce2bff",
+    "changed_files": [
+        {
+            "commit": "d76dc85f4b7ccf18eb28510f36e2b8fcd7ce2bff",
+            "file_path": "Tools/cases_generator/tier2_generator.py",
+            "diff": "diff --git a/Tools/cases_generator/tier2_generator.py b/Tools/cases_generator/tier2_generator.py\nindex 87b26b1c..0f7284fa 100644\n--- a/Tools/cases_generator/tier2_generator.py\n+++ b/Tools/cases_generator/tier2_generator.py\n@@ -93,7 +93,7 @@ def deopt_if(\n         self.emit(\"}\\n\")\n         return not always_true(first_tkn)\n \n-    def exit_if(\n+    def exit_if(     # type: ignore[override]\n         self,\n         tkn: Token,\n         tkn_iter: TokenIterator,\n"
+        },
+        {
+            "commit": "d76dc85f4b7ccf18eb28510f36e2b8fcd7ce2bff",
+            "file_path": "Tools/cases_generator/tracer_generator.py",
+            "diff": "diff --git a/Tools/cases_generator/tracer_generator.py b/Tools/cases_generator/tracer_generator.py\nindex ebc9a636..5594d0bd 100644\n--- a/Tools/cases_generator/tracer_generator.py\n+++ b/Tools/cases_generator/tracer_generator.py\n@@ -117,7 +117,7 @@ def deopt_if(\n \n def generate_tracer_cases(\n     analysis: Analysis, out: CWriter\n-):\n+) -> None:\n     out.emit(f\"#ifdef _Py_TIER2 /* BEGIN TRACING INSTRUCTIONS */\\n\")\n     generate_tier1_cases(analysis, out, TracerEmitter(out, analysis.labels), is_tracing=True)\n     out.emit(f\"#endif /* END TRACING INSTRUCTIONS */\\n\")\n"
+        }
+    ]
+}

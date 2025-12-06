@@ -1,0 +1,10 @@
+{
+    "sha_fail": "700c695eea898caaa6fe527ec9957c47e9c3002c",
+    "changed_files": [
+        {
+            "commit": "700c695eea898caaa6fe527ec9957c47e9c3002c",
+            "file_path": "taipy/gui/gui.py",
+            "diff": "diff --git a/taipy/gui/gui.py b/taipy/gui/gui.py\nindex 3c7fc350..b3ec7843 100644\n--- a/taipy/gui/gui.py\n+++ b/taipy/gui/gui.py\n@@ -138,7 +138,7 @@ def _get_valid_timezone():\n         tzname = TIMEZONE_FALLBACKS.get(tzname, tzname)\n         zoneinfo.ZoneInfo(tzname)\n         return tzname\n-    except (zoneinfo.ZoneInfoNotFoundError, AttributeError):\n+    except (zoneinfo.ZoneInfoNotFoundError, AttributeError) as e:\n         _warn('Cannot retrieve time zone, default is \"UTC\"', e)\n         return \"UTC\"\n \n"
+        }
+    ]
+}

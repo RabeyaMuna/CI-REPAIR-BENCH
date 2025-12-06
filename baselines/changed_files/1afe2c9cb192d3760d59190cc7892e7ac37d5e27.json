@@ -1,0 +1,10 @@
+{
+    "sha_fail": "1afe2c9cb192d3760d59190cc7892e7ac37d5e27",
+    "changed_files": [
+        {
+            "commit": "1afe2c9cb192d3760d59190cc7892e7ac37d5e27",
+            "file_path": "httpx/_client.py",
+            "diff": "diff --git a/httpx/_client.py b/httpx/_client.py\nindex e4cd577..e5cff5d 100644\n--- a/httpx/_client.py\n+++ b/httpx/_client.py\n@@ -1455,6 +1455,9 @@ class AsyncClient(BaseClient):\n     ) -> AsyncBaseTransport:\n         return AsyncHTTPTransport(\n             ssl_context=ssl_context,\n+            verify=verify,\n+            cert=cert,\n+            http1=http1,\n             http2=http2,\n             limits=limits,\n             proxy=proxy,\n"
+        }
+    ]
+}

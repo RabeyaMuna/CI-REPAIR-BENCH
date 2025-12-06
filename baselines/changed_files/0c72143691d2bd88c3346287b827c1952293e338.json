@@ -1,0 +1,10 @@
+{
+    "sha_fail": "0c72143691d2bd88c3346287b827c1952293e338",
+    "changed_files": [
+        {
+            "commit": "0c72143691d2bd88c3346287b827c1952293e338",
+            "file_path": "setup/unix-ci.py",
+            "diff": "diff --git a/setup/unix-ci.py b/setup/unix-ci.py\nindex dba93b3c..4fb12899 100644\n--- a/setup/unix-ci.py\n+++ b/setup/unix-ci.py\n@@ -183,7 +183,7 @@ def install_grype() -> str:\n \n \n def install_bundle(dest=SW, which=''):\n-    run('sudo', 'mkdir', '-p', SW)\n+    run('sudo', 'mkdir', '-p', dest)\n     run('sudo', 'chown', '-R', os.environ['USER'], SWBASE)\n     tball = which or (MACOS_BUNDLE if ismacos else LINUX_BUNDLE)\n     download_and_decompress(\n@@ -193,10 +193,8 @@ def install_bundle(dest=SW, which=''):\n \n def check_dependencies() -> None:\n     dest = os.path.join(SW, LINUX_BUNDLE)\n-    os.makedirs(dest, exist_ok=True)\n     install_bundle(dest, os.path.basename(dest))\n     dest = os.path.join(SW, MACOS_BUNDLE)\n-    os.makedirs(dest, exist_ok=True)\n     install_bundle(dest, os.path.basename(dest))\n     grype = install_grype()\n     with open((gc := os.path.expanduser('~/.grype.yml')), 'w') as f:\n"
+        }
+    ]
+}

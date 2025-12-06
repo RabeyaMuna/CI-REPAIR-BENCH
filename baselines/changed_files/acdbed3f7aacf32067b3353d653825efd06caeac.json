@@ -1,0 +1,10 @@
+{
+    "sha_fail": "acdbed3f7aacf32067b3353d653825efd06caeac",
+    "changed_files": [
+        {
+            "commit": "acdbed3f7aacf32067b3353d653825efd06caeac",
+            "file_path": "libs/agno/agno/team/team.py",
+            "diff": "diff --git a/libs/agno/agno/team/team.py b/libs/agno/agno/team/team.py\nindex 8e5e0e7d7..f9abf4f6b 100644\n--- a/libs/agno/agno/team/team.py\n+++ b/libs/agno/agno/team/team.py\n@@ -4753,6 +4753,7 @@ class Team:\n         \"\"\"Format a message with the session state variables.\"\"\"\n         format_variables = ChainMap(\n             self.session_state or {},\n+            self.team_session_state or {},\n             self.context or {},\n             self.extra_data or {},\n             {\"user_id\": user_id} if user_id is not None else {},\n"
+        }
+    ]
+}

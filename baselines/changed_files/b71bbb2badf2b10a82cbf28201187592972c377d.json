@@ -1,0 +1,10 @@
+{
+    "sha_fail": "b71bbb2badf2b10a82cbf28201187592972c377d",
+    "changed_files": [
+        {
+            "commit": "b71bbb2badf2b10a82cbf28201187592972c377d",
+            "file_path": "libs/agno/agno/agent/agent.py",
+            "diff": "diff --git a/libs/agno/agno/agent/agent.py b/libs/agno/agno/agent/agent.py\nindex 8cc2de204..59e84797a 100644\n--- a/libs/agno/agno/agent/agent.py\n+++ b/libs/agno/agno/agent/agent.py\n@@ -3565,8 +3565,9 @@ class Agent:\n                 return None\n \n         # Use knowledge base search\n+        #If use LangChainKnowledgeBase, then we no need to check if the vector_db is None because we have LangChainKnowledgeBase's retriever\n         try:\n-            if self.knowledge is None or self.knowledge.vector_db is None:\n+            if self.knowledge is None or (self.knowledge.vector_db is None and self.knowledge.retriever is None):\n                 return None\n \n             if num_documents is None:\n@@ -3628,8 +3629,9 @@ class Agent:\n                 return None\n \n         # Use knowledge base search\n+        #If use LangChainKnowledgeBase, then we no need to check if the vector_db is None because we have LangChainKnowledgeBase's retriever\n         try:\n-            if self.knowledge is None or self.knowledge.vector_db is None:\n+            if self.knowledge is None or (self.knowledge.vector_db is None and self.knowledge.retriever is None):\n                 return None\n \n             if num_documents is None:\n"
+        }
+    ]
+}

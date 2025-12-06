@@ -1,0 +1,10 @@
+{
+    "sha_fail": "86e4cd55fa5e00e99c72cd91c4b69b231d79a270",
+    "changed_files": [
+        {
+            "commit": "86e4cd55fa5e00e99c72cd91c4b69b231d79a270",
+            "file_path": "sqlmap.py",
+            "diff": "diff --git a/sqlmap.py b/sqlmap.py\nindex 6462080..b8c870c 100755\n--- a/sqlmap.py\n+++ b/sqlmap.py\n@@ -601,7 +601,7 @@ def main():\n \n         # short delay for thread finalization\n         _ = time.time()\n-        while threading.active_count() > 1 and (time.time() - _) > THREAD_FINALIZATION_TIMEOUT:\n+        while threading.active_count() > 1 and (time.time() - _) < THREAD_FINALIZATION_TIMEOUT:\n             time.sleep(0.01)\n \n         if cmdLineOptions.get(\"sqlmapShell\"):\n"
+        }
+    ]
+}

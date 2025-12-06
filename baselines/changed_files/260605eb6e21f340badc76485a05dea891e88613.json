@@ -1,0 +1,15 @@
+{
+    "sha_fail": "260605eb6e21f340badc76485a05dea891e88613",
+    "changed_files": [
+        {
+            "commit": "260605eb6e21f340badc76485a05dea891e88613",
+            "file_path": "dask/dataframe/io/sql.py",
+            "diff": "diff --git a/dask/dataframe/io/sql.py b/dask/dataframe/io/sql.py\nindex 2df3f650..9eca9313 100644\n--- a/dask/dataframe/io/sql.py\n+++ b/dask/dataframe/io/sql.py\n@@ -84,6 +84,9 @@ def read_sql_query(\n     \"\"\"\n     import sqlalchemy as sa\n \n+    if isinstance(sql, str):\n+        raise ValueError(\"`sql` must be a SQLAlchemy Selectable, not a string\")\n+\n     if not isinstance(con, str):\n         raise TypeError(\n             \"'con' must be of type str, not \"\n"
+        },
+        {
+            "commit": "260605eb6e21f340badc76485a05dea891e88613",
+            "file_path": "dask/dataframe/io/tests/test_sql.py",
+            "diff": "diff --git a/dask/dataframe/io/tests/test_sql.py b/dask/dataframe/io/tests/test_sql.py\nindex 07207a71..a3c4ad23 100644\n--- a/dask/dataframe/io/tests/test_sql.py\n+++ b/dask/dataframe/io/tests/test_sql.py\n@@ -447,6 +447,11 @@ def test_query_with_meta(db):\n     assert_eq(out, df[[\"name\", \"age\"]], check_dtype=sys.platform != \"win32\")\n \n \n+def test_read_sql_query_string_raises_error(db):\n+    with pytest.raises(ValueError):\n+        read_sql_query(\"SELECT * FROM test\", db, npartitions=2, index_col=\"number\")\n+\n+\n def test_no_character_index_without_divisions(db):\n     # attempt to read the sql table with a character index and no divisions\n     with pytest.raises(TypeError):\n"
+        }
+    ]
+}

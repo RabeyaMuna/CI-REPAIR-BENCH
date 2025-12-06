@@ -1,0 +1,10 @@
+{
+    "sha_fail": "e5b5fcb646e6fa9cab60fb4fff930888149b88fe",
+    "changed_files": [
+        {
+            "commit": "e5b5fcb646e6fa9cab60fb4fff930888149b88fe",
+            "file_path": "mindsdb/integrations/handlers/rag_handler/requirements.txt",
+            "diff": "diff --git a/mindsdb/integrations/handlers/rag_handler/requirements.txt b/mindsdb/integrations/handlers/rag_handler/requirements.txt\nindex e1102f970..0efbb04b7 100644\n--- a/mindsdb/integrations/handlers/rag_handler/requirements.txt\n+++ b/mindsdb/integrations/handlers/rag_handler/requirements.txt\n@@ -3,3 +3,4 @@ openai==1.6.1\n html2text\n writerai~=1.1.0\n pydantic\n+sentence-transformers\n"
+        }
+    ]
+}

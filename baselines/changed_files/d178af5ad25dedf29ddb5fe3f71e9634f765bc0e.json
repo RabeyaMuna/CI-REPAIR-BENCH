@@ -1,0 +1,10 @@
+{
+    "sha_fail": "d178af5ad25dedf29ddb5fe3f71e9634f765bc0e",
+    "changed_files": [
+        {
+            "commit": "d178af5ad25dedf29ddb5fe3f71e9634f765bc0e",
+            "file_path": "youtube_dl/extractor/francetv.py",
+            "diff": "diff --git a/youtube_dl/extractor/francetv.py b/youtube_dl/extractor/francetv.py\nindex 164e90f..9802442 100644\n--- a/youtube_dl/extractor/francetv.py\n+++ b/youtube_dl/extractor/francetv.py\n@@ -269,6 +269,11 @@ class FranceTVIE(InfoExtractor):\n                     # 2017: Cette vid\u00e9o n'est pas disponible depuis le site web mobile (b/c DRM)\n                     drm_formats = True\n                     continue\n+                elif code == 2007:\n+                    # 2007: Ce direct est termin\u00e9.\n+                    raise ExtractorError(\n+                        'Live broadcast has ended; video unavailable.',\n+                        video_id=video_id, expected=True)\n                 self.report_warning('{0} said: \"({1}) {2}\"'.format(\n                     self.IE_NAME, code, clean_html(dinfo.get('message'))))\n                 continue\n@@ -326,7 +331,9 @@ class FranceTVIE(InfoExtractor):\n class FranceTVEmbedIE(FranceTVBaseIE):\n     _VALID_URL = r'''(?x)\n         https?://embed\\.francetv\\.fr(?:/?\\?(?:.*&)?(?P<ue>ue)=|/)\n-        (?P<id>[\\da-f]{32})(?:(?(ue)&|/?[?#]).*)?$\n+        # Say (?:...|) instead of (?:...)? when ... ends .* to avoid\n+        # python/cpython#62847 (fixed from at least 3.5 and late 2.7)\n+        (?P<id>[\\da-f]{32})(?:(?(ue)&|/?[?#]).*|)$```\n     '''\n     _TESTS = [{\n         'url': 'http://embed.francetv.fr/?ue=7fd581a2ccf59d2fc5719c5c13cf6961',\n"
+        }
+    ]
+}

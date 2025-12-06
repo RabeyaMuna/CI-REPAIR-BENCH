@@ -1,0 +1,10 @@
+{
+    "sha_fail": "1ab3bc774b390a52cf998b70586f980b6684375a",
+    "changed_files": [
+        {
+            "commit": "1ab3bc774b390a52cf998b70586f980b6684375a",
+            "file_path": "docs/changelog.rst",
+            "diff": "diff --git a/docs/changelog.rst b/docs/changelog.rst\nindex f02a3c15..0ea25000 100644\n--- a/docs/changelog.rst\n+++ b/docs/changelog.rst\n@@ -32,6 +32,8 @@ New features:\n   ``played_ratio_threshold``, to allow configuring the percentage the song must\n   be played for it to be counted as played instead of skipped.\n - :doc:`plugins/web`: Display artist and album as part of the search results.\n+- :doc:`/plugins/unimported`: Add ``ignore_as_globs`` option to use globbing for\n+  the ``ignore_subdirectories`` option.\n \n Bug fixes:\n \n"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "sha_fail": "73f1acb9539c928be57de3ecb4e9d2b49da62d9f",
+    "changed_files": [
+        {
+            "commit": "73f1acb9539c928be57de3ecb4e9d2b49da62d9f",
+            "file_path": "aider/models.py",
+            "diff": "diff --git a/aider/models.py b/aider/models.py\nindex 8e839f56..0216777e 100644\n--- a/aider/models.py\n+++ b/aider/models.py\n@@ -979,7 +979,7 @@ class Model(ModelSettings):\n \n             self.github_copilot_token_to_open_ai_key(kwargs[\"extra_headers\"])\n \n-        res = litellm.completion(**kwargs)\n+        res = litellm.completion(tools=[{\"googleSearch\": {}}], **kwargs)\n         return hash_object, res\n \n     def simple_send_with_retries(self, messages):\n"
+        }
+    ]
+}

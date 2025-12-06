@@ -1,0 +1,10 @@
+{
+    "sha_fail": "11bab0fb5ed6c9b67ae9a4de2694c2fda47e2b62",
+    "changed_files": [
+        {
+            "commit": "11bab0fb5ed6c9b67ae9a4de2694c2fda47e2b62",
+            "file_path": "README.rst",
+            "diff": "diff --git a/README.rst b/README.rst\nindex f6065791..5dd214e6 100644\n--- a/README.rst\n+++ b/README.rst\n@@ -151,7 +151,7 @@ Last but not least, you can use the fetch mode to get a quick look of a machine:\n \n Results look like this:\n \n-.. image:: _static/screenshot-fetch.png\n+.. image:: ./docs/_static/screenshot-fetch.png\n \n and RTFM, always.\n \n"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "sha_fail": "b7ec6c4678dec0418367309d4cec8a94da0feff8",
+    "changed_files": [
+        {
+            "commit": "b7ec6c4678dec0418367309d4cec8a94da0feff8",
+            "file_path": "docker/Dockerfile",
+            "diff": "diff --git a/docker/Dockerfile b/docker/Dockerfile\nindex d7faf03..8cefdba 100644\n--- a/docker/Dockerfile\n+++ b/docker/Dockerfile\n@@ -46,6 +46,6 @@ RUN git clone --recursive https://github.com/FunAudioLLM/CosyVoice.git\n \n RUN conda activate ${VENV} && conda install -y -c conda-forge pynini==2.1.5\n RUN conda activate ${VENV} && cd CosyVoice && \\\n-    pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host=mirrors.aliyun.com\n+    pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host=mirrors.aliyun.com --no-cache-dir\n \n WORKDIR /workspace/CosyVoice\n"
+        },
+        {
+            "commit": "b7ec6c4678dec0418367309d4cec8a94da0feff8",
+            "file_path": "runtime/python/Dockerfile",
+            "diff": "diff --git a/runtime/python/Dockerfile b/runtime/python/Dockerfile\nindex ae7e01f..e2d2012 100644\n--- a/runtime/python/Dockerfile\n+++ b/runtime/python/Dockerfile\n@@ -9,5 +9,5 @@ RUN apt-get -y install git unzip git-lfs g++\n RUN git lfs install\n RUN git clone --recursive https://github.com/FunAudioLLM/CosyVoice.git\n # here we use python==3.10 because we cannot find an image which have both python3.8 and torch2.0.1-cu118 installed\n-RUN cd CosyVoice && pip3 install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host=mirrors.aliyun.com\n+RUN cd CosyVoice && pip3 install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host=mirrors.aliyun.com --no-cache-dir\n RUN cd CosyVoice/runtime/python/grpc && python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. cosyvoice.proto\n\\ No newline at end of file\n"
+        }
+    ]
+}

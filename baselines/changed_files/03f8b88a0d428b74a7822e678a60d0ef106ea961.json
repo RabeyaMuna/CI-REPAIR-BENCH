@@ -1,0 +1,10 @@
+{
+    "sha_fail": "03f8b88a0d428b74a7822e678a60d0ef106ea961",
+    "changed_files": [
+        {
+            "commit": "03f8b88a0d428b74a7822e678a60d0ef106ea961",
+            "file_path": "src/openai/resources/vector_stores/file_batches.py",
+            "diff": "diff --git a/src/openai/resources/vector_stores/file_batches.py b/src/openai/resources/vector_stores/file_batches.py\nindex 5c1470b..adf399d 100644\n--- a/src/openai/resources/vector_stores/file_batches.py\n+++ b/src/openai/resources/vector_stores/file_batches.py\n@@ -186,7 +186,7 @@ class FileBatches(SyncAPIResource):\n         self,\n         vector_store_id: str,\n         *,\n-        file_ids: List[str],\n+        file_ids: SequenceNotStr[str],\n         poll_interval_ms: int | NotGiven = NOT_GIVEN,\n         chunking_strategy: FileChunkingStrategyParam | NotGiven = NOT_GIVEN,\n     ) -> VectorStoreFileBatch:\n@@ -320,7 +320,7 @@ class FileBatches(SyncAPIResource):\n         *,\n         files: Iterable[FileTypes],\n         max_concurrency: int = 5,\n-        file_ids: List[str] = [],\n+        file_ids: SequenceNotStr[str] = [],\n         poll_interval_ms: int | NotGiven = NOT_GIVEN,\n         chunking_strategy: FileChunkingStrategyParam | NotGiven = NOT_GIVEN,\n     ) -> VectorStoreFileBatch:\n@@ -523,7 +523,7 @@ class AsyncFileBatches(AsyncAPIResource):\n         self,\n         vector_store_id: str,\n         *,\n-        file_ids: List[str],\n+        file_ids: SequenceNotStr[str],\n         poll_interval_ms: int | NotGiven = NOT_GIVEN,\n         chunking_strategy: FileChunkingStrategyParam | NotGiven = NOT_GIVEN,\n     ) -> VectorStoreFileBatch:\n@@ -657,7 +657,7 @@ class AsyncFileBatches(AsyncAPIResource):\n         *,\n         files: Iterable[FileTypes],\n         max_concurrency: int = 5,\n-        file_ids: List[str] = [],\n+        file_ids: SequenceNotStr[str] = [],\n         poll_interval_ms: int | NotGiven = NOT_GIVEN,\n         chunking_strategy: FileChunkingStrategyParam | NotGiven = NOT_GIVEN,\n     ) -> VectorStoreFileBatch:\n"
+        }
+    ]
+}

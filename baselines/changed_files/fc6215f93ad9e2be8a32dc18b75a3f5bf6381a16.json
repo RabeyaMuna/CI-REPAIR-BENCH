@@ -1,0 +1,10 @@
+{
+    "sha_fail": "fc6215f93ad9e2be8a32dc18b75a3f5bf6381a16",
+    "changed_files": [
+        {
+            "commit": "fc6215f93ad9e2be8a32dc18b75a3f5bf6381a16",
+            "file_path": "doc/whatsnew/fragments/9307.false_positive",
+            "diff": "diff --git a/doc/whatsnew/fragments/9307.false_positive b/doc/whatsnew/fragments/9307.false_positive\nnew file mode 100644\nindex 00000000..b8aaef5c\n--- /dev/null\n+++ b/doc/whatsnew/fragments/9307.false_positive\n@@ -0,0 +1,7 @@\n+Fixed false positive nested-min-max for nested lists\n+\n+Nesting is useful for finding the maximum in a matrix.\n+Therefore, pylint now allows nesting of the form:\n+max(max([[1, 2, 3], [4, 5, 6]]))\n+\n+Closes #9307\n"
+        }
+    ]
+}

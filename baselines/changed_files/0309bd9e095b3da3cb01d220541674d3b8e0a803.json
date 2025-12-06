@@ -1,0 +1,10 @@
+{
+    "sha_fail": "0309bd9e095b3da3cb01d220541674d3b8e0a803",
+    "changed_files": [
+        {
+            "commit": "0309bd9e095b3da3cb01d220541674d3b8e0a803",
+            "file_path": "libs/agno/agno/cli/auth_server.py",
+            "diff": "diff --git a/libs/agno/agno/cli/auth_server.py b/libs/agno/agno/cli/auth_server.py\nindex 128e38551..039c69352 100644\n--- a/libs/agno/agno/cli/auth_server.py\n+++ b/libs/agno/agno/cli/auth_server.py\n@@ -16,24 +16,6 @@ class CliAuthRequestHandler(BaseHTTPRequestHandler):\n         * Fix the header and limit to only localhost or agno.com\n     \"\"\"\n \n-    def _get_token_from_cookies(self) -> Optional[str]:\n-        \"\"\"Get the auth token from the cookies.\"\"\"\n-        cookies_header = self.headers.get(\"Cookie\")\n-        if not cookies_header:\n-            return\n-\n-        cookies = {}\n-        for cookie in cookies_header.split(\";\"):\n-            if \"=\" in cookie:\n-                name, value = cookie.strip().split(\"=\", 1)\n-                cookies[name] = value\n-\n-        auth_token = cookies.get(agno_cli_settings.auth_token_cookie)\n-        if not auth_token:\n-            return\n-\n-        return auth_token\n-\n     def _redirect_with_status(self, theme: str, redirect_uri, result: str, error_type: str = \"\"):\n         \"\"\"Render a simple HTML page with 'Authenticating...' and redirect with a loader.\"\"\"\n         redirect_url = f\"{redirect_uri}?cli_auth={result}\"\n"
+        }
+    ]
+}

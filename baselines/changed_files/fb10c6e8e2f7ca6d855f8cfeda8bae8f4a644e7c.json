@@ -1,0 +1,10 @@
+{
+    "sha_fail": "fb10c6e8e2f7ca6d855f8cfeda8bae8f4a644e7c",
+    "changed_files": [
+        {
+            "commit": "fb10c6e8e2f7ca6d855f8cfeda8bae8f4a644e7c",
+            "file_path": "libs/agno/agno/app/discord/client.py",
+            "diff": "diff --git a/libs/agno/agno/app/discord/client.py b/libs/agno/agno/app/discord/client.py\nindex fee7edbd0..0bff91c2d 100644\n--- a/libs/agno/agno/app/discord/client.py\n+++ b/libs/agno/agno/app/discord/client.py\n@@ -138,7 +138,7 @@ class DiscordClient:\n                     )\n                     await self._handle_response_in_thread(team_response, thread)\n \n-    async def _handle_hitl(self, run_response: RunResponse, thread: discord.Thread):\n+    async def _handle_hitl(self, run_response: RunResponse | TeamRunResponse, thread: discord.Thread):\n         for tool in run_response.tools_requiring_confirmation:\n             view = RequiresConfirmationView()\n             await thread.send(f\"Tool requiring confirmation: {tool.tool_name}\", view=view)\n"
+        }
+    ]
+}

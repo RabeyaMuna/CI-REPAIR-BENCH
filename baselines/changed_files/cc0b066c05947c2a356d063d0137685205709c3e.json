@@ -1,0 +1,10 @@
+{
+    "sha_fail": "cc0b066c05947c2a356d063d0137685205709c3e",
+    "changed_files": [
+        {
+            "commit": "cc0b066c05947c2a356d063d0137685205709c3e",
+            "file_path": "starlette/routing.py",
+            "diff": "diff --git a/starlette/routing.py b/starlette/routing.py\nindex 9a21349..90387f7 100644\n--- a/starlette/routing.py\n+++ b/starlette/routing.py\n@@ -421,9 +421,12 @@ class Mount(BaseRoute):\n             path = scope[\"path\"]\n             root_path = scope.get(\"route_root_path\", scope.get(\"root_path\", \"\"))\n             route_path = scope.get(\"route_path\", re.sub(r\"^\" + root_path, \"\", path))\n-            match = self.path_regex.match(route_path)\n-            if match:\n-                matched_params = match.groupdict()\n+            mount_match = self.path_regex.match(route_path)\n+            path_match = self.routes == [] or any(\n+                [route.matches(scope)[0] == Match.FULL for route in self.routes]\n+            )\n+            if mount_match and path_match:\n+                matched_params = mount_match.groupdict()\n                 for key, value in matched_params.items():\n                     matched_params[key] = self.param_convertors[key].convert(value)\n                 remaining_path = \"/\" + matched_params.pop(\"path\")\n"
+        }
+    ]
+}

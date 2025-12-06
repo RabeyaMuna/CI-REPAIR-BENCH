@@ -1,0 +1,10 @@
+{
+    "sha_fail": "63b90b943bab2b7897e968fcea280f6a8ecc229b",
+    "changed_files": [
+        {
+            "commit": "63b90b943bab2b7897e968fcea280f6a8ecc229b",
+            "file_path": "framework/py/flwr/superexec/exec_event_log_interceptor_test.py",
+            "diff": "diff --git a/framework/py/flwr/superexec/exec_event_log_interceptor_test.py b/framework/py/flwr/superexec/exec_event_log_interceptor_test.py\nindex 5fdcbff64..634125fd7 100644\n--- a/framework/py/flwr/superexec/exec_event_log_interceptor_test.py\n+++ b/framework/py/flwr/superexec/exec_event_log_interceptor_test.py\n@@ -92,7 +92,7 @@ class TestExecEventLogInterceptor(unittest.TestCase):\n         \"\"\"Initialize.\"\"\"\n         self.log_plugin = DummyLogPlugin()\n         self.interceptor = ExecEventLogInterceptor(log_plugin=self.log_plugin)\n-        # Because shared_account_info.get() is read-only, we need to set the user info\n+        # Because shared_account_info.get() is read-only, we need to set the account info\n         # and store the token to reset it after the test.\n         self.expected_account_info = AccountInfo(\n             flwr_aid=\"flwr_aid\", account_name=\"account_name\"\n"
+        }
+    ]
+}

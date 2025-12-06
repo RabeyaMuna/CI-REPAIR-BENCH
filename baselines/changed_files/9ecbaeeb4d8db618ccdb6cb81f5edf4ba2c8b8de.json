@@ -1,0 +1,10 @@
+{
+    "sha_fail": "9ecbaeeb4d8db618ccdb6cb81f5edf4ba2c8b8de",
+    "changed_files": [
+        {
+            "commit": "9ecbaeeb4d8db618ccdb6cb81f5edf4ba2c8b8de",
+            "file_path": "github/IssueType.py",
+            "diff": "diff --git a/github/IssueType.py b/github/IssueType.py\nindex 50bb271..6b8bae9 100644\n--- a/github/IssueType.py\n+++ b/github/IssueType.py\n@@ -35,6 +35,8 @@\n #                                                                              #\n ################################################################################\n \n+from __future__ import annotations\n+\n from datetime import datetime\n \n from typing import Any\n"
+        }
+    ]
+}

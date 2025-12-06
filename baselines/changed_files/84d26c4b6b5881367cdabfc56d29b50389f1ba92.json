@@ -1,0 +1,10 @@
+{
+    "sha_fail": "84d26c4b6b5881367cdabfc56d29b50389f1ba92",
+    "changed_files": [
+        {
+            "commit": "84d26c4b6b5881367cdabfc56d29b50389f1ba92",
+            "file_path": "libs/agno/agno/team/team.py",
+            "diff": "diff --git a/libs/agno/agno/team/team.py b/libs/agno/agno/team/team.py\nindex a2a8f4cb5..0319cf415 100644\n--- a/libs/agno/agno/team/team.py\n+++ b/libs/agno/agno/team/team.py\n@@ -548,8 +548,6 @@ class Team:\n             member.parent_team_id = self.team_id\n             for sub_member in member.members:\n                 self._initialize_member(sub_member, session_id)\n-        if member.name is None:\n-            log_warning(\"Team member name is undefined.\")\n \n     def _set_default_model(self) -> None:\n         # Set the default model\n@@ -4755,11 +4753,10 @@ class Team:\n                     system_message_content += member.get_members_system_message_content(indent=indent + 2)\n             else:\n                 system_message_content += f\"{indent * ' '} - Agent {idx + 1}:\\n\"\n-                if member.name is not None:\n+                if url_safe_member_id is not None:\n                     system_message_content += f\"{indent * ' '}   - ID: {url_safe_member_id}\\n\"\n+                if member.name is not None:\n                     system_message_content += f\"{indent * ' '}   - Name: {member.name}\\n\"\n-                else:\n-                    system_message_content += f\"{indent * ' '}   - ID: {member.agent_id}\\n\"\n                 if member.role is not None:\n                     system_message_content += f\"{indent * ' '}   - Role: {member.role}\\n\"\n                 if member.tools is not None and self.add_member_tools_to_system_message:\n@@ -6169,7 +6166,7 @@ class Team:\n         \"\"\"\n         # First check direct members\n         for i, member in enumerate(self.members):\n-            if member.name is not None:\n+            if member.name or member.agent_id is not None:\n                 url_safe_member_id = self._get_member_id(member)\n                 if url_safe_member_id == member_id:\n                     return i, member\n"
+        }
+    ]
+}

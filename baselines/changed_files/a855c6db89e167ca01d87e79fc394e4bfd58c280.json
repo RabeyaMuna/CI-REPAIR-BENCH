@@ -1,0 +1,15 @@
+{
+    "sha_fail": "a855c6db89e167ca01d87e79fc394e4bfd58c280",
+    "changed_files": [
+        {
+            "commit": "a855c6db89e167ca01d87e79fc394e4bfd58c280",
+            "file_path": "dash/backends/__init__.py",
+            "diff": "diff --git a/dash/backends/__init__.py b/dash/backends/__init__.py\nindex 940c8f18..e4d4141b 100644\n--- a/dash/backends/__init__.py\n+++ b/dash/backends/__init__.py\n@@ -15,12 +15,8 @@ _backend_imports = {\n }\n \n \n-request_adapter: RequestAdapter\n-backend: BaseDashServer\n-\n-\n def get_backend(\n-    name: Literal[\"flask\", \"fastapi\", \"quart\"] | str\n+    name: str\n ) -> tuple[BaseDashServer, RequestAdapter]:\n     module_name, server_class, request_class = _backend_imports[name.lower()]\n     try:\n"
+        },
+        {
+            "commit": "a855c6db89e167ca01d87e79fc394e4bfd58c280",
+            "file_path": "dash/backends/_fastapi.py",
+            "diff": "diff --git a/dash/backends/_fastapi.py b/dash/backends/_fastapi.py\nindex 540238f7..be2308d5 100644\n--- a/dash/backends/_fastapi.py\n+++ b/dash/backends/_fastapi.py\n@@ -52,7 +52,6 @@ def get_current_request() -> Request:\n class CurrentRequestMiddleware:\n     def __init__(self, app: ASGIApp) -> None:  # type: ignore[name-defined]\n         self.app = app\n-        print(\"loaded CurrentRequestMiddleware\")\n \n     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:  # type: ignore[name-defined]\n         # non-http/ws scopes pass through (lifespan etc.)\n"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "sha_fail": "18f4596992d6c36ccf9da84ae30083ef65878130",
+    "changed_files": [
+        {
+            "commit": "18f4596992d6c36ccf9da84ae30083ef65878130",
+            "file_path": "libs/agno/agno/embedder/jina.py",
+            "diff": "diff --git a/libs/agno/agno/embedder/jina.py b/libs/agno/agno/embedder/jina.py\nindex 99efc0a25..ae478d315 100644\n--- a/libs/agno/agno/embedder/jina.py\n+++ b/libs/agno/agno/embedder/jina.py\n@@ -27,7 +27,6 @@ class JinaEmbedder(Embedder):\n     timeout: Optional[float] = None\n \n     def _get_headers(self) -> Dict[str, str]:\n-        \"\"\"Get request headers with authorization.\"\"\"\n         if not self.api_key:\n             raise ValueError(\n                 \"API key is required for Jina embedder. Set JINA_API_KEY environment variable or pass api_key parameter.\"\n"
+        }
+    ]
+}

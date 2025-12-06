@@ -1,0 +1,10 @@
+{
+    "sha_fail": "c9991372b81edabb86965638db110ab930f8e165",
+    "changed_files": [
+        {
+            "commit": "c9991372b81edabb86965638db110ab930f8e165",
+            "file_path": "src/accelerate/utils/fsdp_utils.py",
+            "diff": "diff --git a/src/accelerate/utils/fsdp_utils.py b/src/accelerate/utils/fsdp_utils.py\nindex f6714aa..35126fc 100644\n--- a/src/accelerate/utils/fsdp_utils.py\n+++ b/src/accelerate/utils/fsdp_utils.py\n@@ -18,6 +18,7 @@ import torch\n from ..logging import get_logger\n from .constants import FSDP_MODEL_NAME, FSDP_PYTORCH_VERSION, OPTIMIZER_NAME\n from .imports import is_torch_distributed_available, is_peft_available\n+from .other import extract_model_from_parallel\n from .versions import is_torch_version\n \n \n@@ -35,8 +36,7 @@ logger = get_logger(__name__)\n def _is_peft_model(model):\n     if is_peft_available():\n         from peft import PeftModel\n-    unwrapped_model = getattr(model.module, \"_orig_mod\", model.module)\n-    return is_peft_available() and isinstance(unwrapped_model, PeftModel)\n+    return is_peft_available() and isinstance(extract_model_from_parallel(model), PeftModel)\n \n \n def _get_model_state_dict(model, adapter_only=False):\n"
+        }
+    ]
+}

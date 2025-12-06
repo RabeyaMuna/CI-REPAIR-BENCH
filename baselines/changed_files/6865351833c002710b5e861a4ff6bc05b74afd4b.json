@@ -1,0 +1,10 @@
+{
+    "sha_fail": "6865351833c002710b5e861a4ff6bc05b74afd4b",
+    "changed_files": [
+        {
+            "commit": "6865351833c002710b5e861a4ff6bc05b74afd4b",
+            "file_path": "libs/agno/agno/embedder/huggingface.py",
+            "diff": "diff --git a/libs/agno/agno/embedder/huggingface.py b/libs/agno/agno/embedder/huggingface.py\nindex 3085c6e9e..28391fccc 100644\n--- a/libs/agno/agno/embedder/huggingface.py\n+++ b/libs/agno/agno/embedder/huggingface.py\n@@ -17,9 +17,8 @@ except ImportError:\n class HuggingfaceCustomEmbedder(Embedder):\n     \"\"\"Huggingface Custom Embedder\"\"\"\n \n-    id: str = \"jinaai/jina-embeddings-v2-base-code\"\n+    id: str = \"intfloat/multilingual-e5-large\"\n     api_key: Optional[str] = getenv(\"HUGGINGFACE_API_KEY\")\n-    task: str = \"feature-extraction\"\n     client_params: Optional[Dict[str, Any]] = None\n     huggingface_client: Optional[InferenceClient] = None\n \n@@ -36,16 +35,21 @@ class HuggingfaceCustomEmbedder(Embedder):\n         return self.huggingface_client\n \n     def _response(self, text: str):\n-        return self.client.post(json={\"inputs\": text}, model=self.id, task=self.task)\n+        return self.client.feature_extraction(text=text, model=self.id)\n \n     def get_embedding(self, text: str) -> List[float]:\n         response = self._response(text=text)\n         try:\n-            decoded_string = response.decode(\"utf-8\")\n-            return json.loads(decoded_string)\n-\n+            # If already a list, return directly\n+            if isinstance(response, list):  \n+                return response\n+            # If numpy array, convert to list\n+            elif hasattr(response, 'tolist'):  \n+                return response.tolist()\n+            else:\n+                return list(response)\n         except Exception as e:\n-            logger.warning(e)\n+            logger.warning(f\"Failed to process embeddings: {e}\")\n             return []\n \n     def get_embedding_and_usage(self, text: str) -> Tuple[List[float], Optional[Dict]]:\n"
+        }
+    ]
+}

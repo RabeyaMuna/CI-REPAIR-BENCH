@@ -1,0 +1,20 @@
+{
+    "sha_fail": "ed13d89504c50a1b3f5d9757b74c7aaf38356150",
+    "changed_files": [
+        {
+            "commit": "ed13d89504c50a1b3f5d9757b74c7aaf38356150",
+            "file_path": "framework/py/flwr/superexec/exec_servicer.py",
+            "diff": "diff --git a/framework/py/flwr/superexec/exec_servicer.py b/framework/py/flwr/superexec/exec_servicer.py\nindex 954bf200c..4ff6f1577 100644\n--- a/framework/py/flwr/superexec/exec_servicer.py\n+++ b/framework/py/flwr/superexec/exec_servicer.py\n@@ -50,6 +50,7 @@ from flwr.proto.exec_pb2 import (  # pylint: disable=E0611\n from flwr.server.superlink.ffs.ffs_factory import FfsFactory\n from flwr.server.superlink.linkstate import LinkState, LinkStateFactory\n \n+from .exec_user_auth_interceptor import shared_account_info\n from .executor import Executor\n \n \n@@ -75,10 +76,12 @@ class ExecServicer(exec_pb2_grpc.ExecServicer):\n         \"\"\"Create run ID.\"\"\"\n         log(INFO, \"ExecServicer.StartRun\")\n \n+        flwr_aid = shared_account_info.get().flwr_aid if self.auth_plugin else None\n         run_id = self.executor.start_run(\n             request.fab.content,\n             user_config_from_proto(request.override_config),\n             config_record_from_proto(request.federation_options),\n+            flwr_aid,\n         )\n \n         if run_id is None:\n"
+        },
+        {
+            "commit": "ed13d89504c50a1b3f5d9757b74c7aaf38356150",
+            "file_path": "framework/py/flwr/superexec/exec_servicer_test.py",
+            "diff": "diff --git a/framework/py/flwr/superexec/exec_servicer_test.py b/framework/py/flwr/superexec/exec_servicer_test.py\nindex fe6eae559..f1fd3e66d 100644\n--- a/framework/py/flwr/superexec/exec_servicer_test.py\n+++ b/framework/py/flwr/superexec/exec_servicer_test.py\n@@ -47,7 +47,7 @@ def test_start_run() -> None:\n         run_res.proc = proc\n \n     executor = MagicMock()\n-    executor.start_run = lambda _, __, ___, ____: run_res.run_id\n+    executor.start_run.return_value = run_res.run_id\n \n     context_mock = MagicMock()\n \n"
+        },
+        {
+            "commit": "ed13d89504c50a1b3f5d9757b74c7aaf38356150",
+            "file_path": "framework/py/flwr/superexec/executor.py",
+            "diff": "diff --git a/framework/py/flwr/superexec/executor.py b/framework/py/flwr/superexec/executor.py\nindex c7c096a4b..483202f51 100644\n--- a/framework/py/flwr/superexec/executor.py\n+++ b/framework/py/flwr/superexec/executor.py\n@@ -90,7 +90,8 @@ class Executor(ABC):\n         federation_options: ConfigRecord\n             The federation options sent by the user (using `flwr run`).\n         flwr_aid : Optional[str]\n-            The ID of the user starting the run, if authentication is enabled.\n+            The Flower Account ID of the user starting the run, if authentication is\n+            enabled.\n \n         Returns\n         -------\n"
+        }
+    ]
+}

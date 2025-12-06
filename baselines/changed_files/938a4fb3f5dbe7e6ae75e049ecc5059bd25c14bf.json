@@ -1,0 +1,10 @@
+{
+    "sha_fail": "938a4fb3f5dbe7e6ae75e049ecc5059bd25c14bf",
+    "changed_files": [
+        {
+            "commit": "938a4fb3f5dbe7e6ae75e049ecc5059bd25c14bf",
+            "file_path": "lm_eval/tasks/lm_syneval/_template_yaml",
+            "diff": "diff --git a/lm_eval/tasks/lm_syneval/_template_yaml b/lm_eval/tasks/lm_syneval/_template_yaml\nnew file mode 100644\nindex 00000000..bfd9d0c9\n--- /dev/null\n+++ b/lm_eval/tasks/lm_syneval/_template_yaml\n@@ -0,0 +1,14 @@\n+dataset_path: jmichaelov/lm_syneval\n+output_type: multiple_choice\n+test_split: test\n+doc_to_text: \"\"\n+target_delimiter: \"\"\n+doc_to_target: 0\n+doc_to_choice: \"{{[sentence_good, sentence_bad]}}\"\n+num_fewshot: 0\n+metric_list:\n+  - metric: acc\n+    aggregation: mean\n+    higher_is_better: true\n+metadata:\n+  version: 1.0\n"
+        }
+    ]
+}

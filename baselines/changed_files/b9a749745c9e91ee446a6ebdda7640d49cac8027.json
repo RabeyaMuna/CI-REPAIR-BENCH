@@ -1,0 +1,10 @@
+{
+    "sha_fail": "b9a749745c9e91ee446a6ebdda7640d49cac8027",
+    "changed_files": [
+        {
+            "commit": "b9a749745c9e91ee446a6ebdda7640d49cac8027",
+            "file_path": "libs/agno/agno/models/google/gemini.py",
+            "diff": "diff --git a/libs/agno/agno/models/google/gemini.py b/libs/agno/agno/models/google/gemini.py\nindex a317dac14..aa8ac8099 100644\n--- a/libs/agno/agno/models/google/gemini.py\n+++ b/libs/agno/agno/models/google/gemini.py\n@@ -398,7 +398,7 @@ class Gemini(Model):\n                             # Case 1: Video is a file_types.File object (Recommended)\n                             # Add it as a File object\n                             if video.content is not None and isinstance(video.content, GeminiFile):\n-                                # Google recommends that if using a single image, place the text prompt after the image.\n+                                # Google recommends that if using a single video, place the text prompt after the video.\n                                 if video.content.uri and video.content.mime_type:\n                                     message_parts.insert(\n                                         0, Part.from_uri(file_uri=video.content.uri, mime_type=video.content.mime_type)\n@@ -416,7 +416,7 @@ class Gemini(Model):\n                     try:\n                         for audio_snippet in message.audio:\n                             if audio_snippet.content is not None and isinstance(audio_snippet.content, GeminiFile):\n-                                # Google recommends that if using a single image, place the text prompt after the image.\n+                                # Google recommends that if using a single audio file, place the text prompt after the audio file.\n                                 if audio_snippet.content.uri and audio_snippet.content.mime_type:\n                                     message_parts.insert(\n                                         0,\n"
+        }
+    ]
+}

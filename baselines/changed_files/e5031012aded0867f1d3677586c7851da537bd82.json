@@ -1,0 +1,10 @@
+{
+    "sha_fail": "e5031012aded0867f1d3677586c7851da537bd82",
+    "changed_files": [
+        {
+            "commit": "e5031012aded0867f1d3677586c7851da537bd82",
+            "file_path": "tools/frontend/bundle_build.py",
+            "diff": "diff --git a/tools/frontend/bundle_build.py b/tools/frontend/bundle_build.py\nindex 26ba54cc..a56c3c8b 100644\n--- a/tools/frontend/bundle_build.py\n+++ b/tools/frontend/bundle_build.py\n@@ -19,7 +19,7 @@\n #          workflows\\partial-tests.yml\n #          workflows\\prebuild.yml\n # --------------------------------------------------------------------------------------------------\n-\n+import os\n import platform\n import subprocess\n import sys\n@@ -42,6 +42,7 @@ def build_gui(root_path: Path):\n     if already_exists:\n         print(f'Found taipy-gui frontend bundle in {root_path  / \"taipy\" / \"gui\" / \"webapp\"}.')  # noqa: T201\n     else:\n+        print(f\"Node Env: ${os.environ['NODE_OPTIONS']}\")\n         subprocess.run([\"npm\", \"ci\"], cwd=root_path / \"frontend\" / \"taipy-gui\" / \"dom\", check=True, shell=with_shell)\n         subprocess.run([\"npm\", \"ci\"], cwd=root_path / \"frontend\" / \"taipy-gui\", check=True, shell=with_shell)\n         subprocess.run([\"npm\", \"run\", \"build\"], cwd=root_path / \"frontend\" / \"taipy-gui\", check=True, shell=with_shell)\n"
+        }
+    ]
+}

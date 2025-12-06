@@ -1,0 +1,10 @@
+{
+    "sha_fail": "d4593aedbc14dbd885f63009dcb0a4b962a04be6",
+    "changed_files": [
+        {
+            "commit": "d4593aedbc14dbd885f63009dcb0a4b962a04be6",
+            "file_path": "framework/py/flwr/common/record/recorddict_test.py",
+            "diff": "diff --git a/framework/py/flwr/common/record/recorddict_test.py b/framework/py/flwr/common/record/recorddict_test.py\nindex 5c8c0a71e..2d91d8f75 100644\n--- a/framework/py/flwr/common/record/recorddict_test.py\n+++ b/framework/py/flwr/common/record/recorddict_test.py\n@@ -274,7 +274,7 @@ def test_set_metrics_to_metricrecord_with_and_without_keeping_input(\n     my_metrics_copy = my_metrics.copy()\n \n     # Add metric\n-    m_record = MetricRecord(my_metrics, keep_input=keep_input)\n+    m_record = MetricRecord(my_metrics, keep_input=keep_input)  # type: ignore\n \n     # Check metrics are actually added\n     # Check that input dict has been emptied when enabled such behaviour\n"
+        }
+    ]
+}

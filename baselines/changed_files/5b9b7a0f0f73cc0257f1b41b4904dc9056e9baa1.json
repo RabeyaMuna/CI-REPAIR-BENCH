@@ -1,0 +1,25 @@
+{
+    "sha_fail": "5b9b7a0f0f73cc0257f1b41b4904dc9056e9baa1",
+    "changed_files": [
+        {
+            "commit": "5b9b7a0f0f73cc0257f1b41b4904dc9056e9baa1",
+            "file_path": "tests/common.py",
+            "diff": "diff --git a/tests/common.py b/tests/common.py\nindex 9b4c400..190a2fb 100644\n--- a/tests/common.py\n+++ b/tests/common.py\n@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, Mock, patch\n from aiohttp import ClientSession, ClientWebSocketResponse\n from aiohttp.typedefs import StrOrURL\n from awesomeversion import AwesomeVersion\n-from homeassistant import auth, bootstrap, config_entries, core as ha\n+from homeassistant import auth, bootstrap, config_entries, core as ha, config as ha_config\n from homeassistant.auth import auth_store, models as auth_models\n from homeassistant.const import (\n     EVENT_HOMEASSISTANT_CLOSE,\n@@ -49,6 +49,14 @@ TOKEN = \"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\"\n INSTANCES = []\n REQUEST_CONTEXT: ContextVar[pytest.FixtureRequest] = ContextVar(\"request_context\", default=None)\n \n+IGNORED_BASE_FILES = set([\n+        \"/config/automations.yaml\",\n+        \"/config/configuration.yaml\",\n+        \"/config/scenes.yaml\",\n+        \"/config/scripts.yaml\",\n+        \"/config/secrets.yaml\",\n+    ])\n+\n \n def safe_json_dumps(data: dict | list) -> str:\n     return json_func.dumps(\n@@ -219,6 +227,7 @@ async def async_test_home_assistant(loop, tmpdir):\n         INSTANCES.remove(hass)\n \n     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_CLOSE, clear_instance)\n+    await ha_config.async_ensure_config_exists(hass)\n \n     return hass\n \n"
+        },
+        {
+            "commit": "5b9b7a0f0f73cc0257f1b41b4904dc9056e9baa1",
+            "file_path": "tests/conftest.py",
+            "diff": "diff --git a/tests/conftest.py b/tests/conftest.py\nindex ccac9fa..ef2195e 100644\n--- a/tests/conftest.py\n+++ b/tests/conftest.py\n@@ -46,6 +46,7 @@ from custom_components.hacs.utils.store import async_load_from_store\n from custom_components.hacs.validate.manager import ValidationManager\n \n from tests.common import (\n+    IGNORED_BASE_FILES,\n     REQUEST_CONTEXT,\n     TOKEN,\n     MockOwner,\n@@ -273,7 +274,7 @@ def snapshots(snapshot: Snapshot) -> SnapshotFixture:\n             safe_json_dumps(\n                 recursive_remove_key(\n                     {\n-                        \"directory\": sorted(downloaded),\n+                        \"directory\": sorted(f for f in downloaded if f not in IGNORED_BASE_FILES),\n                         \"data\": data,\n                         \"hacs\": {\n                             \"system\": asdict(hacs.system),\n"
+        },
+        {
+            "commit": "5b9b7a0f0f73cc0257f1b41b4904dc9056e9baa1",
+            "file_path": "tests/repositories/test_download_repository.py",
+            "diff": "diff --git a/tests/repositories/test_download_repository.py b/tests/repositories/test_download_repository.py\nindex 05c0e35..39c7b6c 100644\n--- a/tests/repositories/test_download_repository.py\n+++ b/tests/repositories/test_download_repository.py\n@@ -13,6 +13,7 @@ from tests.conftest import SnapshotFixture\n         (\"hacs-test-org/integration-basic\"),\n         (\"hacs-test-org/template-basic\"),\n         (\"hacs-test-org/plugin-basic\"),\n+        (\"hacs-test-org/theme-basic\"),\n     ),\n )\n @pytest.mark.asyncio\n@@ -31,6 +32,9 @@ async def test_download_repository(\n \n     assert len(hacs.repositories.list_downloaded) == 1\n \n+    # workaround for local path bug in tests\n+    repo.content.path.local = repo.localpath\n+\n     response = await ws_client.send_and_receive_json(\n         \"hacs/repository/download\", {\"repository\": repo.data.id}\n     )\n"
+        },
+        {
+            "commit": "5b9b7a0f0f73cc0257f1b41b4904dc9056e9baa1",
+            "file_path": "tests/repositories/test_update_repository.py",
+            "diff": "diff --git a/tests/repositories/test_update_repository.py b/tests/repositories/test_update_repository.py\nindex 9ddc1f1..a9d18bd 100644\n--- a/tests/repositories/test_update_repository.py\n+++ b/tests/repositories/test_update_repository.py\n@@ -14,6 +14,7 @@ test_data = (\n     (\"hacs-test-org/integration-basic\", \"1.0.0\", \"2.0.0\"),\n     (\"hacs-test-org/template-basic\", \"1.0.0\", \"2.0.0\"),\n     (\"hacs-test-org/plugin-basic\", \"1.0.0\", \"2.0.0\"),\n+    (\"hacs-test-org/theme-basic\", \"1.0.0\", \"2.0.0\"),\n )\n \n \n"
+        }
+    ]
+}

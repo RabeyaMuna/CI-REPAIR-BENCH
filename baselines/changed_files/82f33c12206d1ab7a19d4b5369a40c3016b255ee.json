@@ -1,0 +1,10 @@
+{
+    "sha_fail": "82f33c12206d1ab7a19d4b5369a40c3016b255ee",
+    "changed_files": [
+        {
+            "commit": "82f33c12206d1ab7a19d4b5369a40c3016b255ee",
+            "file_path": "aider/website/assets/2025-05-08-qwen3.jpg",
+            "diff": "diff --git a/aider/website/assets/2025-05-08-qwen3.jpg b/aider/website/assets/2025-05-08-qwen3.jpg\nnew file mode 100644\nindex 00000000..69934518\nBinary files /dev/null and b/aider/website/assets/2025-05-08-qwen3.jpg differ\n"
+        }
+    ]
+}

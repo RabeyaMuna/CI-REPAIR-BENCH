@@ -1,0 +1,15 @@
+{
+    "sha_fail": "3fecab1b8e5668d6fa49529e87195f6ee7eba268",
+    "changed_files": [
+        {
+            "commit": "3fecab1b8e5668d6fa49529e87195f6ee7eba268",
+            "file_path": "docs/changelog.rst",
+            "diff": "diff --git a/docs/changelog.rst b/docs/changelog.rst\nindex ccac40e..eb45d0a 100644\n--- a/docs/changelog.rst\n+++ b/docs/changelog.rst\n@@ -14,12 +14,12 @@ Changelog\n - Added support for django 6.0a (`2112 <https://github.com/django-import-export/django-import-export/pull/2112>`_)\n - Removed the deprecated :meth:`~import_export.admin.ExportMixin.get_valid_export_item_pks` method in favour of :meth:`~import_export.admin.ExportMixin.get_queryset` (`1898 <https://github.com/django-import-export/django-import-export/pull/1898>`_)\n \n-4.3.12 (2025-10-18)\n+4.3.12 (2025-10-19)\n -------------------\n \n - Minor documentation fix\n \n-4.3.11 (2025-10-18)\n+4.3.11 (2025-10-19)\n -------------------\n \n - Fix for export not retaining URI query params (`2097 <https://github.com/django-import-export/django-import-export/pull/2097>`_)\n"
+        },
+        {
+            "commit": "3fecab1b8e5668d6fa49529e87195f6ee7eba268",
+            "file_path": "tests/core/tests/admin_integration/test_action_export.py",
+            "diff": "diff --git a/tests/core/tests/admin_integration/test_action_export.py b/tests/core/tests/admin_integration/test_action_export.py\nindex 2166fae..c566cf0 100644\n--- a/tests/core/tests/admin_integration/test_action_export.py\n+++ b/tests/core/tests/admin_integration/test_action_export.py\n@@ -340,7 +340,14 @@ class TestExportFilterPreservation(AdminTestMixin, TestCase):\n         }\n \n         # POST to the export URL that should have preserved filters\n-        final_response = self._post_url_response(export_url, export_data)\n+        # Suppress the deprecation warning for get_valid_export_item_pks\n+        with warnings.catch_warnings():\n+            warnings.filterwarnings(\n+                \"ignore\",\n+                message=r\"The 'get_valid_export_item_pks\\(\\)' method\",\n+                category=DeprecationWarning,\n+            )\n+            final_response = self._post_url_response(export_url, export_data)\n \n         # Should get CSV export that respects the filter context\n         self.assertEqual(final_response[\"Content-Type\"], \"text/csv\")\n"
+        }
+    ]
+}

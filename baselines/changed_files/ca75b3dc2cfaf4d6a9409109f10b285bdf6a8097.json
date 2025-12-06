@@ -1,0 +1,10 @@
+{
+    "sha_fail": "ca75b3dc2cfaf4d6a9409109f10b285bdf6a8097",
+    "changed_files": [
+        {
+            "commit": "ca75b3dc2cfaf4d6a9409109f10b285bdf6a8097",
+            "file_path": "libs/agno/agno/utils/chain.py",
+            "diff": "diff --git a/libs/agno/agno/utils/chain.py b/libs/agno/agno/utils/chain.py\nindex 4db3fbdda..f16681030 100644\n--- a/libs/agno/agno/utils/chain.py\n+++ b/libs/agno/agno/utils/chain.py\n@@ -79,7 +79,9 @@ class SequentialWorkFlow(Workflow):\n                 current_message = json.dumps(all_responses)\n \n             # Return the final response\n-            final_response: RunResponse = deepcopy(self.agents[-1].run_response)\n+            final_response: RunResponse = RunResponse()\n+            if isinstance(self.agents[-1].run_response, RunResponse):\n+                final_response = deepcopy(self.agents[-1].run_response)\n             final_response.messages = messages\n             return final_response\n \n"
+        }
+    ]
+}

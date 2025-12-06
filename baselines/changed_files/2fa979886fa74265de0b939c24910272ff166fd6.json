@@ -1,0 +1,10 @@
+{
+    "sha_fail": "2fa979886fa74265de0b939c24910272ff166fd6",
+    "changed_files": [
+        {
+            "commit": "2fa979886fa74265de0b939c24910272ff166fd6",
+            "file_path": "IPython/utils/py3compat.py",
+            "diff": "diff --git a/IPython/utils/py3compat.py b/IPython/utils/py3compat.py\nindex ef0f4c45..4f953214 100644\n--- a/IPython/utils/py3compat.py\n+++ b/IPython/utils/py3compat.py\n@@ -57,13 +57,3 @@ def execfile(fname, glob, loc=None, compiler=None):\n \n \n PYPY = platform.python_implementation() == \"PyPy\"\n-\n-\n-# Cython still rely on that as a Dec 28 2019\n-# See https://github.com/cython/cython/pull/3291 and\n-# https://github.com/ipython/ipython/issues/12068\n-def no_code(x, encoding=None):\n-    return x\n-\n-\n-unicode_to_str = cast_bytes_py2 = no_code\n"
+        }
+    ]
+}

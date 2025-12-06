@@ -1,0 +1,10 @@
+{
+    "sha_fail": "48376e59c2d51260b1c6d2a14dcf58ab5066f88e",
+    "changed_files": [
+        {
+            "commit": "48376e59c2d51260b1c6d2a14dcf58ab5066f88e",
+            "file_path": "tests/basic/test_onboarding.py",
+            "diff": "diff --git a/tests/basic/test_onboarding.py b/tests/basic/test_onboarding.py\nindex ad32d06f..398bd7f4 100644\n--- a/tests/basic/test_onboarding.py\n+++ b/tests/basic/test_onboarding.py\n@@ -93,9 +93,7 @@ class TestOnboarding(unittest.TestCase):\n     @patch.dict(os.environ, {\"OPENROUTER_API_KEY\": \"or_key\"}, clear=True)\n     def test_try_select_default_model_openrouter_free(self, mock_check_tier):\n         \"\"\"Test OpenRouter free model selection.\"\"\"\n-        self.assertEqual(\n-            try_to_select_default_model(), \"openrouter/deepseek/deepseek-r1:free\"\n-        )\n+        self.assertEqual(try_to_select_default_model(), \"openrouter/deepseek/deepseek-r1:free\")\n         mock_check_tier.assert_called_once_with(\"or_key\")\n \n     @patch(\"aider.onboarding.check_openrouter_tier\", return_value=False)  # Assume paid tier\n"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "sha_fail": "b79f8486bf2063658bf3b2e658c07b7cfbe519bc",
+    "changed_files": [
+        {
+            "commit": "b79f8486bf2063658bf3b2e658c07b7cfbe519bc",
+            "file_path": "aider/io.py",
+            "diff": "diff --git a/aider/io.py b/aider/io.py\nindex 90f581aa..c3b2e6ac 100644\n--- a/aider/io.py\n+++ b/aider/io.py\n@@ -71,6 +71,24 @@ def restore_multiline(func):\n     return wrapper\n \n \n+def with_history_disabled(func):\n+    \"\"\"Decorator to temporarily disable history saving for the prompt session buffer.\"\"\"\n+\n+    @functools.wraps(func)\n+    def wrapper(self, *args, **kwargs):\n+        orig_buf_append = self.prompt_session.default_buffer.append_to_history\n+        self.prompt_session.default_buffer.append_to_history = lambda: None  # Replace with no-op\n+\n+        try:\n+            return func(self, *args, **kwargs)\n+        except Exception:\n+            raise\n+        finally:\n+            self.prompt_session.default_buffer.append_to_history = orig_buf_append\n+\n+    return wrapper\n+\n+\n class CommandCompletionException(Exception):\n     \"\"\"Raised when a command should use the normal autocompleter instead of\n     command-specific completion.\"\"\"\n@@ -793,6 +811,7 @@ class InputOutput:\n         return False\n \n     @restore_multiline\n+    @with_history_disabled\n     def confirm_ask(\n         self,\n         question,\n"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "sha_fail": "e56badcacbfa6003c45430e8b618073519844b07",
+    "changed_files": [
+        {
+            "commit": "e56badcacbfa6003c45430e8b618073519844b07",
+            "file_path": "tests/rest/test_middleware.py",
+            "diff": "diff --git a/tests/rest/test_middleware.py b/tests/rest/test_middleware.py\nindex 3db27070..9e4c5d56 100644\n--- a/tests/rest/test_middleware.py\n+++ b/tests/rest/test_middleware.py\n@@ -23,7 +23,7 @@ def mock_enterprise_middleware(f):\n     return wrapper\n \n \n-@patch(\"taipy.common._check_dependencies.EnterpriseEdition._is_installed\")\n+@patch(\"taipy.common._modules.EnterpriseEdition._is_installed\")\n @patch(\"taipy.rest.api.middlewares._middleware._enterprise_middleware\")\n def test_enterprise_middleware_applied_when_enterprise_is_installed(\n     enterprise_middleware: MagicMock, is_enterprise_installed: MagicMock\n@@ -41,7 +41,7 @@ def test_enterprise_middleware_applied_when_enterprise_is_installed(\n     enterprise_middleware.assert_called_once()\n \n \n-@patch(\"taipy.common._check_dependencies.EnterpriseEdition._is_installed\")\n+@patch(\"taipy.common._modules.EnterpriseEdition._is_installed\")\n @patch(\"taipy.rest.api.middlewares._middleware._enterprise_middleware\")\n def test_enterprise_middleware_not_applied_when_enterprise_is_not_installed(\n     enterprise_middleware: MagicMock, is_enterprise_installed: MagicMock\n"
+        }
+    ]
+}

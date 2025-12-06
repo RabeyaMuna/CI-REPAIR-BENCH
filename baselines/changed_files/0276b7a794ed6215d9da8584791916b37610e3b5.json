@@ -1,0 +1,10 @@
+{
+    "sha_fail": "0276b7a794ed6215d9da8584791916b37610e3b5",
+    "changed_files": [
+        {
+            "commit": "0276b7a794ed6215d9da8584791916b37610e3b5",
+            "file_path": "dspy/adapters/types/base_type.py",
+            "diff": "diff --git a/dspy/adapters/types/base_type.py b/dspy/adapters/types/base_type.py\nindex e3536922..7cc11858 100644\n--- a/dspy/adapters/types/base_type.py\n+++ b/dspy/adapters/types/base_type.py\n@@ -64,7 +64,11 @@ class Type(pydantic.BaseModel):\n     def serialize_model(self):\n         formatted = self.format()\n         if isinstance(formatted, list):\n-            return f\"{CUSTOM_TYPE_START_IDENTIFIER}{self.format()}{CUSTOM_TYPE_END_IDENTIFIER}\"\n+            try:\n+                str_rep = json.dumps(formatted)\n+            except TypeError:\n+                str_rep = formatted\n+            return f\"{CUSTOM_TYPE_START_IDENTIFIER}{str_rep}{CUSTOM_TYPE_END_IDENTIFIER}\"\n         return formatted\n \n \n@@ -115,9 +119,13 @@ def split_message_content_for_custom_types(messages: list[dict[str, Any]]) -> li\n             # Parse the JSON inside the block\n             custom_type_content = match.group(1).strip()\n             try:\n-                parsed = json_repair.loads(custom_type_content)\n+                try:\n+                    parsed = json.loads(custom_type_content)\n+                except json.JSONDecodeError:\n+                    parsed = json_repair.loads(custom_type_content)\n                 for custom_type_content in parsed:\n                     result.append(custom_type_content)\n+\n             except json.JSONDecodeError:\n                 # fallback to raw string if it's not valid JSON\n                 parsed = {\"type\": \"text\", \"text\": custom_type_content}\n"
+        }
+    ]
+}

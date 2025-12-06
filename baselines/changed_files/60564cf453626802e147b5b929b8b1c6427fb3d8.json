@@ -1,0 +1,10 @@
+{
+    "sha_fail": "60564cf453626802e147b5b929b8b1c6427fb3d8",
+    "changed_files": [
+        {
+            "commit": "60564cf453626802e147b5b929b8b1c6427fb3d8",
+            "file_path": "lightrag/kg/postgres_impl.py",
+            "diff": "diff --git a/lightrag/kg/postgres_impl.py b/lightrag/kg/postgres_impl.py\nindex 4663aadb..3ab8bfb8 100644\n--- a/lightrag/kg/postgres_impl.py\n+++ b/lightrag/kg/postgres_impl.py\n@@ -3068,7 +3068,7 @@ class PGGraphStorage(BaseGraphStorage):\n             if readonly:\n                 data = await self.db.query(\n                     query,\n-                    params=self.params,\n+                    params=params,\n                     multirows=True,\n                     with_age=True,\n                     graph_name=self.graph_name,\n"
+        }
+    ]
+}

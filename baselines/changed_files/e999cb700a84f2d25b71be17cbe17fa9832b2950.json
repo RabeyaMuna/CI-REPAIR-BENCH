@@ -1,0 +1,15 @@
+{
+    "sha_fail": "e999cb700a84f2d25b71be17cbe17fa9832b2950",
+    "changed_files": [
+        {
+            "commit": "e999cb700a84f2d25b71be17cbe17fa9832b2950",
+            "file_path": "requirements.txt",
+            "diff": "diff --git a/requirements.txt b/requirements.txt\nindex 75066bb..699194c 100644\n--- a/requirements.txt\n+++ b/requirements.txt\n@@ -1,4 +1,4 @@\n-numpy<2.0.0\n+numpy<3.0.0\n numba\n torch>=2.1.0\n torchaudio\n"
+        },
+        {
+            "commit": "e999cb700a84f2d25b71be17cbe17fa9832b2950",
+            "file_path": "setup.py",
+            "diff": "diff --git a/setup.py b/setup.py\nindex da7b609..dde50e3 100644\n--- a/setup.py\n+++ b/setup.py\n@@ -20,7 +20,7 @@ setup(\n     license=\"AGPLv3+\",\n     install_requires=[\n         \"numba\",\n-        \"numpy<2.0.0\",\n+        \"numpy<3.0.0\",\n         \"pybase16384\",\n         \"torch>=2.1.0\",\n         \"torchaudio\",\n"
+        }
+    ]
+}

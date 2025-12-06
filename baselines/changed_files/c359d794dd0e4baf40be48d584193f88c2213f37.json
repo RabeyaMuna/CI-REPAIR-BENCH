@@ -1,0 +1,10 @@
+{
+    "sha_fail": "c359d794dd0e4baf40be48d584193f88c2213f37",
+    "changed_files": [
+        {
+            "commit": "c359d794dd0e4baf40be48d584193f88c2213f37",
+            "file_path": "tests/core/tests/test_results.py",
+            "diff": "diff --git a/tests/core/tests/test_results.py b/tests/core/tests/test_results.py\nindex bb11eef..35db026 100644\n--- a/tests/core/tests/test_results.py\n+++ b/tests/core/tests/test_results.py\n@@ -56,7 +56,6 @@ class ResultTest(TestCase):\n         self.assertEqual(\"\", row_result.object_repr)\n \n     def test_add_instance_info(self):\n-\n         row_result = RowResult()\n         row_result.add_instance_info(Book(pk=1, name=\"some book\"))\n         self.assertEqual(1, row_result.object_id)\n"
+        }
+    ]
+}

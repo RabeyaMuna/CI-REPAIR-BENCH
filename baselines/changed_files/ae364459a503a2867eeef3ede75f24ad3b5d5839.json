@@ -1,0 +1,10 @@
+{
+    "sha_fail": "ae364459a503a2867eeef3ede75f24ad3b5d5839",
+    "changed_files": [
+        {
+            "commit": "ae364459a503a2867eeef3ede75f24ad3b5d5839",
+            "file_path": "libs/agno/agno/tools/mcp.py",
+            "diff": "diff --git a/libs/agno/agno/tools/mcp.py b/libs/agno/agno/tools/mcp.py\nindex bd1b4df43..b195984d2 100644\n--- a/libs/agno/agno/tools/mcp.py\n+++ b/libs/agno/agno/tools/mcp.py\n@@ -220,7 +220,7 @@ class MCPTools(Toolkit):\n     def _start_connection(self):\n         \"\"\"Ensure there are no active connections and setup a new one\"\"\"\n         if self._connection_task is None or self._connection_task.done():\n-            self._connection_task = asyncio.create_task(self._connect())\n+            self._connection_task = asyncio.create_task(self._connect())  # type: ignore\n \n     async def _connect(self) -> None:\n         \"\"\"Connects to the MCP server and initializes the tools\"\"\"\n@@ -507,7 +507,7 @@ class MultiMCPTools(Toolkit):\n     def _start_connection(self):\n         \"\"\"Ensure there are no active connections and setup a new one\"\"\"\n         if self._connection_task is None or self._connection_task.done():\n-            self._connection_task = asyncio.create_task(self._connect())\n+            self._connection_task = asyncio.create_task(self._connect())  # type: ignore\n \n     async def _connect(self) -> None:\n         \"\"\"Connects to the MCP servers and initializes the tools\"\"\"\n"
+        }
+    ]
+}

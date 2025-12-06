@@ -1,0 +1,10 @@
+{
+    "sha_fail": "6f27d0e8dbbb74ef34579d283621da82ebf3ba26",
+    "changed_files": [
+        {
+            "commit": "6f27d0e8dbbb74ef34579d283621da82ebf3ba26",
+            "file_path": "tests/unittests/early_patches.py",
+            "diff": "diff --git a/tests/unittests/early_patches.py b/tests/unittests/early_patches.py\nindex 01b894d3..3848263e 100644\n--- a/tests/unittests/early_patches.py\n+++ b/tests/unittests/early_patches.py\n@@ -6,8 +6,15 @@ cached_functions = []\n \n \n def wrapped_lru_cache(*args, **kwargs):\n-    def wrapper(func: Callable, *a, **k):\n-        new_func = old_lru_cache(*args, **kwargs)(func, *a, **k)\n+    def wrapper(*a, **k):\n+        func: Callable\n+        if len(args) > 0 and callable(args[0]):\n+            func = args[0]\n+        elif len(a) > 0 and callable(a[0]):\n+            func = a[0]\n+        else:\n+            raise NotImplementedError(\"cannot find cached func\")\n+        new_func = old_lru_cache(*args, **kwargs)(*a, **k)\n \n         # Without this check, we'll also store stdlib functions with @lru_cache\n         if \"cloudinit\" in func.__module__:\n"
+        }
+    ]
+}

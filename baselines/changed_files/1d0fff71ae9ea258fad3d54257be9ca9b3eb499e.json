@@ -1,0 +1,10 @@
+{
+    "sha_fail": "1d0fff71ae9ea258fad3d54257be9ca9b3eb499e",
+    "changed_files": [
+        {
+            "commit": "1d0fff71ae9ea258fad3d54257be9ca9b3eb499e",
+            "file_path": "libs/agno/tests/unit/tools/models/test_gemini.py",
+            "diff": "diff --git a/libs/agno/tests/unit/tools/models/test_gemini.py b/libs/agno/tests/unit/tools/models/test_gemini.py\nindex 94ce2f2c0..3a823ca4d 100644\n--- a/libs/agno/tests/unit/tools/models/test_gemini.py\n+++ b/libs/agno/tests/unit/tools/models/test_gemini.py\n@@ -262,25 +262,7 @@ def test_generate_video_exception(mock_gemini_tools, mock_agent):\n def test_empty_response_handling(mock_gemini_tools, mock_agent):\n     \"\"\"Test that empty responses from Gemini are handled correctly.\"\"\"\n     mock_response = MagicMock()\n-    mock_response.candidates = [\n-        MagicMock(\n-            content=MagicMock(\n-                role=\"model\",\n-                parts=[],\n-            ),\n-            finishReason=\"STOP\",\n-            index=0,\n-        )\n-    ]\n-    mock_response.usage_metadata = MagicMock(\n-        prompt_token_count=16425,\n-        total_token_count=16425,\n-        cached_content_token_count=13947,\n-    )\n-    mock_gemini_tools.client.models.generate_content.return_value = mock_response\n-    test_message = Message(role=\"user\", content=\"Test message\")\n-    response = mock_gemini_tools.invoke([test_message])\n-    parsed_response = mock_gemini_tools.parse_provider_response(response)\n-    assert parsed_response.role == \"assistant\"\n-    assert parsed_response.content == \"\"\n-    assert len(parsed_response.tool_calls) == 0\n+    mock_response.generated_images = []\n+    mock_gemini_tools.client.models.generate_images.return_value = mock_response\n+    response = mock_gemini_tools.generate_image(mock_agent, \"Test prompt\")\n+    assert response == \"Failed to generate image: No images were generated.\"\n"
+        }
+    ]
+}

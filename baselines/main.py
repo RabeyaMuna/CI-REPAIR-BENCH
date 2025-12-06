@@ -191,7 +191,7 @@ if __name__ == "__main__":
     dataset_df = pd.read_parquet(dataset_path)
     dataset = dataset_df.to_dict(orient="records")
 
-    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="bm25")
+    results = process_entire_dataset(dataset, config, llm, model_key, log_analyzer_type="llm")
 
     output_file = os.path.join(config.project_result_dir, "generated_patches.json")
     with open(output_file, "w") as f:

@@ -247,6 +247,10 @@ class CIFixBenchmark:
             jobs_results = self.jobs_ids
 
         results_df = pd.DataFrame(jobs_results)
+        
+        if "conclusion" not in results_df.columns:
+            print("No completed jobs yet. 'conclusion' column not found.")
+            return
         total_evaluated = len(results_df)
         total_dataset_size = len(self.dataset) if hasattr(self, "dataset") and self.dataset is not None else None
 

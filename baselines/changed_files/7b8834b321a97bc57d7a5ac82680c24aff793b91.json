@@ -1,0 +1,10 @@
+{
+    "sha_fail": "7b8834b321a97bc57d7a5ac82680c24aff793b91",
+    "changed_files": [
+        {
+            "commit": "7b8834b321a97bc57d7a5ac82680c24aff793b91",
+            "file_path": "libs/agno/agno/models/anthropic/claude.py",
+            "diff": "diff --git a/libs/agno/agno/models/anthropic/claude.py b/libs/agno/agno/models/anthropic/claude.py\nindex 65dc7ec18..d2414b17c 100644\n--- a/libs/agno/agno/models/anthropic/claude.py\n+++ b/libs/agno/agno/models/anthropic/claude.py\n@@ -515,7 +515,6 @@ class Claude(Model):\n                         function_def[\"arguments\"] = json.dumps(tool_input)\n \n                     model_response.extra = model_response.extra or {}\n-                    model_response.extra.setdefault(\"tool_ids\", []).append(block.id)\n                     model_response.tool_calls.append(\n                         {\n                             \"id\": block.id,\n@@ -582,7 +581,6 @@ class Claude(Model):\n                     function_def[\"arguments\"] = json.dumps(tool_input)\n \n                 model_response.extra = model_response.extra or {}\n-                model_response.extra.setdefault(\"tool_ids\", []).append(tool_use.id)\n \n                 model_response.tool_calls = [\n                     {\n"
+        }
+    ]
+}
